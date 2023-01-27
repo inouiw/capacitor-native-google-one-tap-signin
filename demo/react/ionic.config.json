@@ -1,0 +1,7 @@
+{
+  "name": "Google One Tap Signin React Demo",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}

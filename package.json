@@ -1,0 +1,64 @@
+{
+  "name": "capacitor-native-google-one-tap-signin",
+  "version": "0.0.17",
+  "description": "Google One Tap sign-in plugin for capacitor.",
+  "main": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
+  "scripts": {
+    "build": "npm run clean && tsc",
+    "clean": "rm -rf ./dist",
+    "watch": "tsc --watch",
+    "prepublishOnly": "npm run build",
+    "prepare": "tsc"
+  },
+  "author": "David Neuy",
+  "license": "MIT",
+  "devDependencies": {
+    "@capacitor/android": "^4.0.1",
+    "@capacitor/cli": "^4.0.1",
+    "@capacitor/core": "^4.0.1",
+    "@capacitor/ios": "^4.0.1",
+    "@ionic/prettier-config": "^2.0.0",
+    "@types/gapi": "0.0.42",
+    "@types/gapi.auth2": "0.0.56",
+    "prettier": "^2.7.1",
+    "typescript": "^4.7.4"
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^4"
+  },
+  "files": [
+    "dist/",
+    "ios/",
+    "android/",
+    "CapacitorNativeGoogleOneTapSignin.podspec"
+  ],
+  "keywords": [
+    "capacitor",
+    "plugin",
+    "native",
+    "google",
+    "auth",
+    "firebase",
+    "angular",
+    "vue",
+    "react",
+    "ionic"
+  ],
+  "capacitor": {
+    "ios": {
+      "src": "ios"
+    },
+    "android": {
+      "src": "android"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inouiw/capacitor-native-google-one-tap-signin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/inouiw/capacitor-native-google-one-tap-signin/issues"
+  },
+  "prettier": "@ionic/prettier-config"
+}
