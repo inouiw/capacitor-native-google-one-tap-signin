@@ -32,7 +32,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 public class GoogleOneTapAuth extends Plugin {
     private static final String TAG = "GoogleOneTapAuth Plugin";
 
-    private String webClientId;
+    private String androidClientId;
     private SignInClient oneTapClient;
     private BeginSignInRequest signInRequest;
     private CredentialsClient mCredentialsClient;
@@ -42,16 +42,16 @@ public class GoogleOneTapAuth extends Plugin {
 
     @Override
     public void load() {
-        webClientId = getConfig().getString("androidClientId");
+        androidClientId = getConfig().getString("androidClientId");
 
-        if (webClientId == null || webClientId.endsWith("apps.googleusercontent.com") == false) {
-            throw new RuntimeException("clientId must ebd with 'apps.googleusercontent.com' but is: " + webClientId);
+        if (androidClientId == null || androidClientId.endsWith("apps.googleusercontent.com") == false) {
+            throw new RuntimeException("androidClientId must end with 'apps.googleusercontent.com' but is: " + androidClientId);
         }
 
         oneTapClient = Identity.getSignInClient(this.getActivity());
         mCredentialsClient = Credentials.getClient(this.getContext());
         var gsoBuilder = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(webClientId);
+                .requestIdToken(androidClientId);
         mSignInClient = GoogleSignIn.getClient(this.getContext(), gsoBuilder.build());
 
         googleOneTapSignInActivityResultHandlerIntentSenderRequest = bridge.registerForActivityResult(
@@ -74,7 +74,7 @@ public class GoogleOneTapAuth extends Plugin {
                             pluginResult.put("id", id);
                             savedCall.resolve(pluginResult);
                         } catch (ApiException e) {
-                            savedCall.reject(e.getMessage(), pluginResult);
+                            savedCall.reject(e.toString(), pluginResult);
                         }
                     } else {
                         savedCall.reject(resultCodeString, pluginResult);
@@ -124,7 +124,7 @@ public class GoogleOneTapAuth extends Plugin {
                 .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                         .setSupported(true)
                         // Your server's client ID, not your Android client ID.
-                        .setServerClientId(webClientId)
+                        .setServerClientId(androidClientId)
                         // Show all accounts on the device.
                         .setFilterByAuthorizedAccounts(false)
                         .build())
