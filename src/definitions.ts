@@ -9,6 +9,10 @@ declare module '@capacitor/cli' {
 export interface User {
   id: string;
   idToken: string;
+  displayName: string;
+  givenName: string;
+  familyName: string;
+  profilePictureUri: string;
 }
 
 export interface GoogleOneTapAuthPluginOptions {
