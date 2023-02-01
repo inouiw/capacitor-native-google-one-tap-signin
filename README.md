@@ -8,6 +8,8 @@ Currently the idToken, id (e-mail), displayName, givenName, familyName, profileP
 
 The user is automatically signed-in, without a prompt after the first sign-in.
 
+API version 29 or higher seems to be required for one-tap sign-in to work.
+
 
 # Demos
 See the `demo` folder.

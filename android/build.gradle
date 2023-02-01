@@ -14,7 +14,7 @@ apply plugin: 'com.android.library'
 android {
     compileSdkVersion 31
     defaultConfig {
-        minSdkVersion 22
+        minSdkVersion 29
         targetSdkVersion 31
         versionCode 1
         versionName "1.0"
@@ -44,11 +44,12 @@ repositories {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':capacitor-android')
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.appcompat:appcompat:1.4.2'
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation 'com.google.android.gms:play-services-auth:20.4.1'
     implementation 'com.google.android.gms:play-services-tasks:18.0.2'
+    implementation 'com.google.android.gms:play-services-base:18.0.1'
 }
 
