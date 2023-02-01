@@ -9,7 +9,6 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -17,35 +16,32 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.google.android.gms.auth.api.identity.BeginSignInRequest;
-import com.google.android.gms.auth.api.identity.BeginSignInResult;
 import com.google.android.gms.auth.api.identity.Identity;
 import com.google.android.gms.auth.api.identity.SignInClient;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 
 @CapacitorPlugin()
 public class GoogleOneTapAuth extends Plugin {
     private static final String TAG = "GoogleOneTapAuth Plugin";
-
     private String androidClientId;
     private SignInClient oneTapClient;
     private PluginCall currentPluginCall = null;
     private ActivityResultLauncher<IntentSenderRequest> googleOneTapSignInActivityResultHandlerIntentSenderRequest;
-    private boolean isSignInInProgress = false;
+
 
     @Override
     public void load() {
         androidClientId = getConfig().getString("androidClientId");
 
         if (androidClientId == null || androidClientId.endsWith("apps.googleusercontent.com") == false) {
-            throw new RuntimeException("androidClientId must end with 'apps.googleusercontent.com' but is: " + androidClientId);
+            throw new RuntimeException("androidClientId must end with 'apps.googleusercontent.com' but is: " + androidClientId + ". Check capacitor.config.ts.");
         }
 
         oneTapClient = Identity.getSignInClient(this.getActivity());
 
+    private void RegisterSignInResultHandler() {
         googleOneTapSignInActivityResultHandlerIntentSenderRequest = bridge.registerForActivityResult(
                 new ActivityResultContracts.StartIntentSenderForResult(),
                 result -> {
@@ -72,17 +68,47 @@ public class GoogleOneTapAuth extends Plugin {
                     } else {
                         currentPluginCall.reject(resultCodeString, pluginResult);
                     }
-                    isSignInInProgress = false;
                 });
     }
 
     @PluginMethod()
     public void signIn(PluginCall call) {
-        if (!isSignInInProgress) {
-            isSignInInProgress = true;
-            currentPluginCall = call;
-            beginSignIn(true);
-        }
+        currentPluginCall = call;
+        beginSignIn(true);
+    }
+
+    // This method is called first with tryAutoLogin=true and if not successful then with tryAutoLogin=false.
+    private void beginSignIn(boolean tryAutoLogin) {
+        var context = this.getContext();
+        var beginSignInRequest = createBeginSignInRequest(tryAutoLogin);
+
+        oneTapClient.beginSignIn(beginSignInRequest)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        var result = task.getResult();
+                        var intentSender = result.getPendingIntent().getIntentSender();
+                        var intentSenderRequest = new IntentSenderRequest.Builder(intentSender).build();
+                        googleOneTapSignInActivityResultHandlerIntentSenderRequest.launch(intentSenderRequest);
+                    } else {
+                        if (tryAutoLogin) {
+                            beginSignIn(false);
+                        } else {
+                            Log.e(TAG, "beginSignIn failed", task.getException());
+                            var errorMessage = task.getException().toString();
+
+                            if (!isGooglePlayServicesAvailable(context)) {
+                                errorMessage += "\nGooglePlayService is not installed or must be updated.";
+                            }
+                            if (errorMessage.contains("Missing Feature{name=auth_api_credentials_begin_sign_in")) {
+                                errorMessage += "\nGooglePlay is not installed or must be logged in to setup.";
+                            }
+                            if (errorMessage.contains("ApiException: 8")) {
+                                errorMessage += "\nOne reason for the exception is when the device has no internet.";
+                            }
+                            currentPluginCall.reject(errorMessage);
+                        }
+                    }
+                });
     }
 
     private BeginSignInRequest createBeginSignInRequest(boolean tryAutoLogin) {
@@ -90,7 +116,7 @@ public class GoogleOneTapAuth extends Plugin {
         return BeginSignInRequest.builder()
                 .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                         .setSupported(true)
-                        // Your server's client ID, not your Android client ID.
+                        // A OAuth client ID with application type "Web application".
                         .setServerClientId(androidClientId)
                         // If true, only the Google accounts that the user has authorized before will show up in the credential list. This can
                         // help prevent a new account being created when the user has an existing account registered with the application.
@@ -148,15 +174,12 @@ public class GoogleOneTapAuth extends Plugin {
     @PluginMethod()
     public void signOut(final PluginCall call) {
         oneTapClient.signOut()
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            call.resolve(null);
-                        } else {
-                            Log.e(TAG, "signOut failed", task.getException());
-                            call.reject(task.getException().toString());
-                        }
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        call.resolve(null);
+                    } else {
+                        Log.e(TAG, "signOut failed", task.getException());
+                        call.reject(task.getException().toString());
                     }
                 });
     }
