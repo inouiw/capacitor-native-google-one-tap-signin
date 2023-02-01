@@ -1,6 +1,7 @@
 package com.proventask.capacitor.GoogleOneTapAuth;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
@@ -15,15 +16,12 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
-import com.google.android.gms.auth.api.credentials.Credentials;
-import com.google.android.gms.auth.api.credentials.CredentialsClient;
 import com.google.android.gms.auth.api.identity.BeginSignInRequest;
 import com.google.android.gms.auth.api.identity.BeginSignInResult;
 import com.google.android.gms.auth.api.identity.Identity;
 import com.google.android.gms.auth.api.identity.SignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -34,8 +32,6 @@ public class GoogleOneTapAuth extends Plugin {
 
     private String androidClientId;
     private SignInClient oneTapClient;
-    private CredentialsClient mCredentialsClient;
-    private GoogleSignInClient mSignInClient;
     private PluginCall currentPluginCall = null;
     private ActivityResultLauncher<IntentSenderRequest> googleOneTapSignInActivityResultHandlerIntentSenderRequest;
     private boolean isSignInInProgress = false;
@@ -49,11 +45,6 @@ public class GoogleOneTapAuth extends Plugin {
         }
 
         oneTapClient = Identity.getSignInClient(this.getActivity());
-        mCredentialsClient = Credentials.getClient(this.getContext());
-        // DEFAULT_SIGN_IN scopes are id and profile, see GoogleSignInOptions
-        var gsoBuilder = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(androidClientId);
-        mSignInClient = GoogleSignIn.getClient(this.getContext(), gsoBuilder.build());
 
         googleOneTapSignInActivityResultHandlerIntentSenderRequest = bridge.registerForActivityResult(
                 new ActivityResultContracts.StartIntentSenderForResult(),
@@ -95,6 +86,7 @@ public class GoogleOneTapAuth extends Plugin {
     }
 
     private BeginSignInRequest createBeginSignInRequest(boolean tryAutoLogin) {
+
         return BeginSignInRequest.builder()
                 .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                         .setSupported(true)
@@ -110,24 +102,32 @@ public class GoogleOneTapAuth extends Plugin {
     }
 
     private void beginSignIn(boolean tryAutoLogin) {
-        var beginSignInRequest = createBeginSignInRequest(tryAutoLogin);
+        var context = this.getContext();
 
+        var beginSignInRequest = createBeginSignInRequest(tryAutoLogin);
         oneTapClient.beginSignIn(beginSignInRequest)
                 .addOnCompleteListener(new OnCompleteListener<BeginSignInResult>() {
                     @Override
                     public void onComplete(@NonNull Task<BeginSignInResult> task) {
                         if (task.isSuccessful()) {
+
                             var result = task.getResult();
                             var intentSender = result.getPendingIntent().getIntentSender();
                             var intentSenderRequest = new IntentSenderRequest.Builder(intentSender).build();
                             googleOneTapSignInActivityResultHandlerIntentSenderRequest.launch(intentSenderRequest);
+
                         } else {
                             if (tryAutoLogin) {
                                 beginSignIn(false);
-                            }
-                            else {
+                            } else {
                                 Log.e(TAG, "beginSignIn failed", task.getException());
                                 var errorMessage = task.getException().toString();
+                                if (!isGooglePlayServicesAvailable(context)) {
+                                    errorMessage += "\nGooglePlayService is not installed or must be updated.";
+                                }
+                                if (errorMessage.contains("Missing Feature{name=auth_api_credentials_begin_sign_in")) {
+                                    errorMessage += "\nGooglePlay is not installed or must be logged in to setup.";
+                                }
                                 if (errorMessage.contains("ApiException: 8")) {
                                     errorMessage += "\nOne reason for the exception is when the device has no internet.";
                                 }
@@ -137,6 +137,12 @@ public class GoogleOneTapAuth extends Plugin {
                         }
                     }
                 });
+    }
+
+    private boolean isGooglePlayServicesAvailable(Context context) {
+        var googleApiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = googleApiAvailability.isGooglePlayServicesAvailable(context);
+        return resultCode == ConnectionResult.SUCCESS;
     }
 
     @PluginMethod()
