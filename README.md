@@ -2,7 +2,10 @@
 
 Wraps the native android One Tap sign-in api for ionic capacitor apps.
 
-<img src="screenshots/one-tap-sign-in-demo.jpg" alt="One tap signin screenshot" width=300/>
+<img src="screenshots/one-tap-sign-in-demo-initial-sign-in.jpg" alt="One tap signin screenshot initial sign-in" width=250/>
+<img src="screenshots/one-tap-sign-in-demo-sign-back-in.jpg" alt="One tap signin screenshot sign back in" width=250/>
+<img src="screenshots/one-tap-sign-in-demo-without-filter-by-authorized-acounts.jpg" alt="One tap signin screenshot without filter by authorized accounts" width=250/>
+
 
 Currently the idToken, id (e-mail), displayName, givenName, familyName, profilePictureUri are returned. You may check the idToken contents on https://jwt.io/.
 

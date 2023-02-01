@@ -77,13 +77,14 @@ public class GoogleOneTapAuth extends Plugin {
     @PluginMethod()
     public void signIn(PluginCall call) {
         currentPluginCall = call;
-        beginSignIn(true);
+        var filterByAuthorizedAccounts = call.getBoolean("filterByAuthorizedAccounts", true);
+        beginSignIn(filterByAuthorizedAccounts);
     }
 
-    // This method is called first with tryAutoLogin=true and if not successful then with tryAutoLogin=false.
-    private void beginSignIn(boolean tryAutoLogin) {
+    // If filterByAuthorizedAccounts is true and the sign in is not successful then the method is called again with filterByAuthorizedAccounts=false.
+    private void beginSignIn(boolean filterByAuthorizedAccounts) {
         var context = this.getContext();
-        var beginSignInRequest = createBeginSignInRequest(tryAutoLogin);
+        var beginSignInRequest = createBeginSignInRequest(filterByAuthorizedAccounts);
 
         oneTapClient.beginSignIn(beginSignInRequest)
                 .addOnCompleteListener(task -> {
@@ -93,7 +94,7 @@ public class GoogleOneTapAuth extends Plugin {
                         var intentSenderRequest = new IntentSenderRequest.Builder(intentSender).build();
                         googleOneTapSignInActivityResultHandlerIntentSenderRequest.launch(intentSenderRequest);
                     } else {
-                        if (tryAutoLogin) {
+                        if (filterByAuthorizedAccounts) {
                             beginSignIn(false);
                         } else {
                             Log.e(TAG, "beginSignIn failed", task.getException());
@@ -108,13 +109,17 @@ public class GoogleOneTapAuth extends Plugin {
                             if (errorMessage.contains("ApiException: 8")) {
                                 errorMessage += "\nOne reason for the exception is when the device has no internet.";
                             }
+                            // Other errors:
+                            // com.google.android.gms.common.api.ApiException: 10: Caller not whitelisted to call this API.
+                            // --> Try if restarting the phone fixes the problem.
+                            // --> Test to sign in several times to ensure it works repeatedly.
                             currentPluginCall.reject(errorMessage);
                         }
                     }
                 });
     }
 
-    private BeginSignInRequest createBeginSignInRequest(boolean tryAutoLogin) {
+    private BeginSignInRequest createBeginSignInRequest(boolean filterByAuthorizedAccounts) {
         return BeginSignInRequest.builder()
                 .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                         .setSupported(true)
@@ -122,10 +127,10 @@ public class GoogleOneTapAuth extends Plugin {
                         .setServerClientId(androidClientId)
                         // If true, only the Google accounts that the user has authorized before will show up in the credential list. This can
                         // help prevent a new account being created when the user has an existing account registered with the application.
-                        .setFilterByAuthorizedAccounts(tryAutoLogin)
+                        .setFilterByAuthorizedAccounts(filterByAuthorizedAccounts)
                         .build())
                 // For users who opt-in, Auto Select allows a credential to be selected automatically without waiting for a user action (such as tapping on the "continue" button).
-                .setAutoSelectEnabled(tryAutoLogin)
+                .setAutoSelectEnabled(true)
                 .build();
     }
 

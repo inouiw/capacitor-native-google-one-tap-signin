@@ -28,7 +28,7 @@ export interface GoogleOneTapAuthPluginOptions {
 }
 
 export interface GoogleOneTapAuthPlugin {
-  signIn(): Promise<User>;
+  signIn(options: { filterByAuthorizedAccounts: boolean }): Promise<User>;
   signOut(): Promise<any>;
 }
 
