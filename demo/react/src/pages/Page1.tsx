@@ -18,16 +18,16 @@ const Page1: React.FC = () => {
   }
 
   async function renderButton() {
-    const signInResult: any = await GoogleOneTapAuth.renderButton('appleid-signin', { clientId: clientId }, { locale: 'en-us' });
-    setOneTapAuthResult(`signIn success. \nemail: ${signInResult.email}\nSee browser console for full result.`);
+    const signInResult = await GoogleOneTapAuth.renderButton('appleid-signin', { clientId: clientId }, { locale: 'en-us' });
+    setOneTapAuthResult(`signIn success. \nemail: ${signInResult.decodedIdToken.email}\nSee browser console for full result.`);
     console.log('login success' + JSON.stringify(signInResult));
   }
 
   async function autoSignInGoogle() {
     try {
-      const signInResult: any = await GoogleOneTapAuth.tryAutoSignIn({ clientId: clientId });
+      const signInResult = await GoogleOneTapAuth.tryAutoSignIn({ clientId: clientId });
       console.log(signInResult);
-      setOneTapAuthResult(`signIn success. \nemail: ${signInResult.email}\nSee browser console for full result.`);
+      setOneTapAuthResult(`signIn success. \nemail: ${signInResult.decodedIdToken.email}\nSee browser console for full result.`);
     }
     catch (ex) {
       setOneTapAuthResult(formatError(ex));
@@ -37,23 +37,23 @@ const Page1: React.FC = () => {
   async function signInGoogle() {
     setOneTapAuthResult('');
     try {
-      const signInResult: any = await GoogleOneTapAuth.tryAutoSignInThenTrySignInWithPrompt({ clientId: clientId });
+      const signInResult = await GoogleOneTapAuth.tryAutoSignInThenTrySignInWithPrompt({ clientId: clientId });
       console.log(signInResult);
-      setOneTapAuthResult(`signIn success. \nemail: ${signInResult.email}\nSee browser console for full result.`);
+      setOneTapAuthResult(`signIn success. \nemail: ${signInResult.decodedIdToken.email}\nSee browser console for full result.`);
     }
     catch (ex) {
       setOneTapAuthResult(formatError(ex));
-      const signInResult: any = await GoogleOneTapAuth.renderButton('appleid-signin', { clientId: clientId }, { locale: 'en-us' });
-      setOneTapAuthResult(`signIn success. \nemail: ${signInResult.email}\nSee browser console for full result.`);
+      const signInResult = await GoogleOneTapAuth.renderButton('appleid-signin', { clientId: clientId }, { locale: 'en-us' });
+      setOneTapAuthResult(`signIn success. \nemail: ${signInResult.decodedIdToken.email}\nSee browser console for full result.`);
       console.log('login success' + JSON.stringify(signInResult));
     }
   }
 
   function formatError(error: unknown) {
     let result = `error: ${error}`;
-    if ((error as string).startsWith('{')) {
-      result += `, additionalData: ${JSON.stringify(error)}`
-    }
+    // if ((error as string).startsWith('{')) {
+    //   result += `, additionalData: ${JSON.stringify(error)}`
+    // }
     return result;
   }
 

@@ -51,6 +51,7 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
   }
 
   async tryAutoSignInThenTrySignInWithPrompt(options: SignInOptions): Promise<SignInResult> {
+    await this.initialize();
     this.createSignInPromise();
     try {
       await this.doSignIn(options, true);
@@ -92,7 +93,7 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
     }
     this.oneTapInitialize(options, autoSelect);
 
-    window.google.accounts.id.prompt((notification) => {
+    google.accounts.id.prompt((notification) => {
       if (notification.isNotDisplayed()) {
         this.rejectSignInPromise('GoogleOneTapAuthPlugin(web).doSignIn - login not displayed. Reason: ' + notification.getNotDisplayedReason());
       }
