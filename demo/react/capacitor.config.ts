@@ -9,7 +9,7 @@ const config: CapacitorConfig = {
   bundledWebRuntime: false,
   plugins: {
     GoogleOneTapAuth: {
-      androidClientId: '333448133894-oo2gapskrr4j7p7gg5kn6b0sims22mcu.apps.googleusercontent.com',
+      clientId: '333448133894-oo2gapskrr4j7p7gg5kn6b0sims22mcu.apps.googleusercontent.com',
     },
   },
 };

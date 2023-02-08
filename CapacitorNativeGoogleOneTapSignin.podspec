@@ -11,5 +11,6 @@
     s.ios.deployment_target  = '12.0'
     s.dependency 'Capacitor'
     s.dependency 'GoogleSignIn', '~> 6.2.4'
-    s.static_framework = true
+    s.static_framework = true,
+    s.swift_version = '5.1'
   end

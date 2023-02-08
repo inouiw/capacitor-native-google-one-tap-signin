@@ -26,18 +26,17 @@ import com.google.android.gms.common.api.ApiException;
 @CapacitorPlugin()
 public class GoogleOneTapAuth extends Plugin {
     private static final String TAG = "GoogleOneTapAuth Plugin";
-    private String androidClientId;
+    private String clientId;
     private SignInClient oneTapClient;
     private PluginCall currentPluginCall = null;
     private ActivityResultLauncher<IntentSenderRequest> googleOneTapSignInActivityResultHandlerIntentSenderRequest;
 
-
     @Override
     public void load() {
-        androidClientId = getConfig().getString("androidClientId");
+        clientId = getConfig().getString("clientId");
 
-        if (androidClientId == null || androidClientId.endsWith("apps.googleusercontent.com") == false) {
-            throw new RuntimeException("androidClientId must end with 'apps.googleusercontent.com' but is: " + androidClientId + ". Check capacitor.config.ts.");
+        if (clientId == null || clientId.endsWith("apps.googleusercontent.com") == false) {
+            throw new RuntimeException("clientId must end with 'apps.googleusercontent.com' but is: " + clientId + ". Check capacitor.config.ts.");
         }
 
         oneTapClient = Identity.getSignInClient(this.getActivity());
@@ -124,7 +123,7 @@ public class GoogleOneTapAuth extends Plugin {
                 .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                         .setSupported(true)
                         // A OAuth client ID with application type "Web application".
-                        .setServerClientId(androidClientId)
+                        .setServerClientId(clientId)
                         // If true, only the Google accounts that the user has authorized before will show up in the credential list. This can
                         // help prevent a new account being created when the user has an existing account registered with the application.
                         .setFilterByAuthorizedAccounts(filterByAuthorizedAccounts)

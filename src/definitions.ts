@@ -6,31 +6,84 @@ declare module '@capacitor/cli' {
   }
 }
 
-export interface User {
-  id: string;
-  idToken: string;
-  displayName: string;
-  givenName: string;
-  familyName: string;
-  profilePictureUri: string;
-}
+// export interface User {
+//   id: string;
+//   idToken: string;
+//   displayName: string;
+//   givenName: string;
+//   familyName: string;
+//   profilePictureUri: string;
+// }
 
+/**
+ * Options that can be defined in capacitor.config.ts.
+ */
 export interface GoogleOneTapAuthPluginOptions {
   /**
-   * Web application client ID key for android platform
+   * Your client ID of type Web application. Can also be set in capacitor.config.ts.
    */
-  androidClientId?: string;
+  clientId?: string;
+}
+
+export interface SignInOptions extends GoogleOneTapAuthPluginOptions {
+  /**
+   * A random string for ID tokens.
+   */
+  nonce?: string;
+
+  // /**
+  //  * If true and there is one account from which the user logged in previously then auto-login is iniated.
+  //  * If false then the user must always confirm to log in with the displayed account.
+  //  * The default value is true.
+  //  */
+  // autoSignIn?: boolean;
 
   /**
-   * Web application client ID key for web platform
+   * Additional options for the web platform.
    */
-  webClientId?: string;
+  webOptions?: SignInWebOptions;
+}
+
+export interface SignInWebOptions {
+  /**
+   * 	Enables upgraded One Tap UX on ITP browsers. The default value is false.
+   */
+  itpSupport?: boolean;
+
+  /**
+   * 	The Sign In With Google button UX flow. The default value is 'popup'.
+   */
+  uxMode?: 'popup' | 'redirect';
+}
+
+export interface SignInResult {
+  //isSuccess: boolean;
+  idToken: string;
 }
 
 export interface GoogleOneTapAuthPlugin {
-  signIn(options: { filterByAuthorizedAccounts: boolean }): Promise<User>;
-  signOut(): Promise<any>;
-}
-
-export interface WebInitOptions extends Pick<GoogleOneTapAuthPluginOptions, 'webClientId'> {
+  /**
+   * For the web platform, starts pre-loading the google one tap JavaScript library. Calling initialize is optional.
+   */
+  initialize(): Promise<void>;
+  /**
+   * Tries to auto-sign in the user.
+   * If there is no single user session that logged in previously in the app, the sign-in will fail.
+   * @param options 
+   */
+  tryAutoSignIn(options: SignInOptions): Promise<SignInResult>;
+  /**
+   * Tries to shows the one-tab user selection popup.
+   * If there is no authorized session in the browser it will fail and the login button must be shown.
+   * @param options 
+   */
+  trySignInWithPrompt(options: SignInOptions): Promise<SignInResult>;
+  /**
+   * Tries to auto-sign in the user and if not possible tries to shows the one-tab user selection.
+   * If there is no authorized session in the browser it will fail and the login button must be shown.
+   * @param options 
+   */
+  tryAutoSignInThenSignInWithPrompt(options: SignInOptions): Promise<SignInResult>;
+  signOut(): Promise<void>;
+  renderButton(parentElementId: string, options?: google.GsiButtonConfiguration): Promise<SignInResult>;
 }

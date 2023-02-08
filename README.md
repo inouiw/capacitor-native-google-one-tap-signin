@@ -1,6 +1,6 @@
 # Capacitor Native Google One Tap Signin plugin
 
-Wraps the native android One Tap sign-in api for ionic capacitor apps.
+Wraps the native android One Tap api for ionic capacitor apps. One Tap Sign In is part of Sign in with Google and offers features as automatic sign-in on return visits.
 
 <img src="screenshots/one-tap-sign-in-demo-initial-sign-in.jpg" alt="One tap signin screenshot initial sign-in" width=250/>
 <img src="screenshots/one-tap-sign-in-demo-sign-back-in.jpg" alt="One tap signin screenshot sign back in" width=250/>
