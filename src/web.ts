@@ -36,20 +36,22 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
     });
   }
 
-  tryAutoSignIn(options: SignInOptions): Promise<SignInResult> {
-    this.initializeSignInPromise();
-    this.doSignIn(options, true);
+  async tryAutoSignIn(options: SignInOptions): Promise<SignInResult> {
+    await this.initialize();
+    this.createSignInPromise();
+    await this.doSignIn(options, true);
     return this.signInPromise;
   }
 
   async trySignInWithPrompt(options: SignInOptions): Promise<SignInResult> {
-    this.initializeSignInPromise();
-    this.doSignIn(options, false);
+    await this.initialize();
+    this.createSignInPromise();
+    await this.doSignIn(options, false);
     return this.signInPromise;
   }
 
-  async tryAutoSignInThenSignInWithPrompt(options: SignInOptions): Promise<SignInResult> {
-    this.initializeSignInPromise();
+  async tryAutoSignInThenTrySignInWithPrompt(options: SignInOptions): Promise<SignInResult> {
+    this.createSignInPromise();
     try {
       await this.doSignIn(options, true);
     }
@@ -59,22 +61,24 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
     return this.signInPromise;
   }
 
-  renderButton(parentElementId: string, options?: google.GsiButtonConfiguration): Promise<SignInResult> {
+  async renderButton(parentElementId: string, options: SignInOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SignInResult> {
     const parentElem = document.getElementById(parentElementId);
     if (!parentElem) {
       return Promise.reject(`Element with id ${parentElementId} was not found.`);
     }
-    this.initializeSignInPromise();
+    await this.initialize();
+    this.createSignInPromise();
+    this.oneTapInitialize(options, false);
 
     google.accounts.id.renderButton(
-       parentElem!,
-       options || {}
-     );
+      parentElem!,
+      gsiButtonConfiguration || {}
+    );
 
-     return this.signInPromise;
+    return this.signInPromise;
   }
 
-  private initializeSignInPromise() {
+  private createSignInPromise() {
     this.signInPromise = new Promise<SignInResult>((resolve, reject) => {
       this.resolveSignInPromise = resolve;
       this.rejectSignInPromise = reject;
@@ -86,50 +90,43 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
       this.rejectSignInPromise('GoogleOneTapAuthPlugin(web).doSignIn - options.clientId is empty');
       return;
     }
+    this.oneTapInitialize(options, autoSelect);
 
-    try {
-      await this.initialize();
-
-      google.accounts.id.initialize({
-        client_id: options.clientId,
-        callback: this.handleCredentialResponse.bind(this),
-        auto_select: autoSelect,
-        itp_support: options.webOptions?.itpSupport || false,
-        cancel_on_tap_outside: false,
-        ux_mode: options.webOptions?.uxMode || 'popup',
-      });
-
-      window.google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed()) {
-          this.rejectSignInPromise('GoogleOneTapAuthPlugin(web).doSignIn - login not displayed. Reason: ' + notification.getNotDisplayedReason());
-        }
-        else if (notification.isSkippedMoment()) {
-          this.rejectSignInPromise('GoogleOneTapAuthPlugin(web).doSignIn - login was skipped. Reason: ' + notification.getSkippedReason());
-        }
-        else if (notification.isDismissedMoment()) {
-          this.rejectSignInPromise('GoogleOneTapAuthPlugin(web).doSignIn - login was dismissed. Reason: ' + notification.getDismissedReason());
-        }
-      });
-    }
-    catch (error) {
-      this.rejectSignInPromise(error);
-    }
+    window.google.accounts.id.prompt((notification) => {
+      if (notification.isNotDisplayed()) {
+        this.rejectSignInPromise('GoogleOneTapAuthPlugin(web).doSignIn - login not displayed. Reason: ' + notification.getNotDisplayedReason());
+      }
+      else if (notification.isSkippedMoment()) {
+        this.rejectSignInPromise('GoogleOneTapAuthPlugin(web).doSignIn - login was skipped. Reason: ' + notification.getSkippedReason());
+      }
+      else if (notification.isDismissedMoment()) {
+        this.rejectSignInPromise('GoogleOneTapAuthPlugin(web).doSignIn - login was dismissed. Reason: ' + notification.getDismissedReason());
+      }
+    });
   }
 
-  // todo return CredentialResponse instead of User
+  private oneTapInitialize(options: SignInOptions, autoSelect: boolean) {
+    google.accounts.id.initialize({
+      client_id: options.clientId,
+      callback: this.handleCredentialResponse.bind(this),
+      auto_select: autoSelect,
+      itp_support: options.webOptions?.itpSupport || false,
+      cancel_on_tap_outside: false,
+      ux_mode: options.webOptions?.uxMode || 'popup',
+    });
+  }
+
   private handleCredentialResponse(credentialResponse: google.CredentialResponse) {
-    let user: SignInResult = {
-      //id: '',
+    const decodedIdToken = jwt_decode(credentialResponse.credential) as any;
+    let signInResult: SignInResult = {
+      isSuccess: true,
       idToken: credentialResponse.credential,
-      // displayName: '',
-      // givenName: '',
-      // familyName: '',
-      // profilePictureUri: ''
+      selectBy: credentialResponse.select_by,
+      decodedIdToken: decodedIdToken
     };
-    const decoded = jwt_decode(credentialResponse.credential) as any;
-    this.authenticatedUserId = decoded['sub'] as string;
-    console.log(decoded);
-    this.resolveSignInPromise(user);
+    this.authenticatedUserId = decodedIdToken['sub'] as string;
+    console.log(decodedIdToken);
+    this.resolveSignInPromise(signInResult);
   }
 
   signOut(): Promise<void> {

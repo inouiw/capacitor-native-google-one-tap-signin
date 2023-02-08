@@ -57,8 +57,20 @@ export interface SignInWebOptions {
 }
 
 export interface SignInResult {
-  //isSuccess: boolean;
-  idToken: string;
+  isSuccess: boolean;
+  errorCode?: string;
+  errorMessage?: string;
+  idToken?: string;
+  selectBy?: 
+    | 'auto'
+    | 'user'
+    | 'user_1tap'
+    | 'user_2tap'
+    | 'btn'
+    | 'btn_confirm'
+    | 'btn_add_session'
+    | 'btn_confirm_add_session' // see google.CredentialResponse.select_by
+  decodedIdToken?: any;
 }
 
 export interface GoogleOneTapAuthPlugin {
@@ -83,7 +95,7 @@ export interface GoogleOneTapAuthPlugin {
    * If there is no authorized session in the browser it will fail and the login button must be shown.
    * @param options 
    */
-  tryAutoSignInThenSignInWithPrompt(options: SignInOptions): Promise<SignInResult>;
+  tryAutoSignInThenTrySignInWithPrompt(options: SignInOptions): Promise<SignInResult>;
   signOut(): Promise<void>;
-  renderButton(parentElementId: string, options?: google.GsiButtonConfiguration): Promise<SignInResult>;
+  renderButton(parentElementId: string, options: SignInOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SignInResult>;
 }

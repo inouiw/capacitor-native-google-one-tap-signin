@@ -17,23 +17,17 @@ const Page1: React.FC = () => {
     GoogleOneTapAuth.initialize();
   }
 
-  function renderButton() {
-    GoogleOneTapAuth.renderButton('appleid-signin');
+  async function renderButton() {
+    const signInResult: any = await GoogleOneTapAuth.renderButton('appleid-signin', { clientId: clientId }, { locale: 'en-us' });
+    setOneTapAuthResult(`signIn success. \nemail: ${signInResult.email}\nSee browser console for full result.`);
+    console.log('login success' + JSON.stringify(signInResult));
   }
 
   async function autoSignInGoogle() {
     try {
-      const user = await GoogleOneTapAuth.tryAutoSignIn({ clientId: clientId });
-      let result = `, idToken: ${user.idToken}`;
-      // let result = `id: ${user.id}`;
-      // result += `, idToken: ${user.idToken}`;
-      // result += `, displayName: ${user.displayName}`;
-      // result += `, givenName: ${user.givenName}`;
-      // result += `, familyName: ${user.familyName}`;
-      // result += `, profilePictureUri: ${user.profilePictureUri}`;
-      console.log(result);
-      //setOneTapAuthResult(`signIn success. \nid: ${user.id}\nSee browser console for full result.`);
-      setOneTapAuthResult(`signIn success.\nSee browser console for full result.`);
+      const signInResult: any = await GoogleOneTapAuth.tryAutoSignIn({ clientId: clientId });
+      console.log(signInResult);
+      setOneTapAuthResult(`signIn success. \nemail: ${signInResult.email}\nSee browser console for full result.`);
     }
     catch (ex) {
       setOneTapAuthResult(formatError(ex));
@@ -43,23 +37,15 @@ const Page1: React.FC = () => {
   async function signInGoogle() {
     setOneTapAuthResult('');
     try {
-      const user = await GoogleOneTapAuth.tryAutoSignInThenSignInWithPrompt({ clientId: clientId });
-      let result = `, idToken: ${user.idToken}`;
-      // let result = `id: ${user.id}`;
-      // result += `, idToken: ${user.idToken}`;
-      // result += `, displayName: ${user.displayName}`;
-      // result += `, givenName: ${user.givenName}`;
-      // result += `, familyName: ${user.familyName}`;
-      // result += `, profilePictureUri: ${user.profilePictureUri}`;
-      console.log(result);
-      //setOneTapAuthResult(`signIn success. \nid: ${user.id}\nSee browser console for full result.`);
-      setOneTapAuthResult(`signIn success.\nSee browser console for full result.`);
+      const signInResult: any = await GoogleOneTapAuth.tryAutoSignInThenTrySignInWithPrompt({ clientId: clientId });
+      console.log(signInResult);
+      setOneTapAuthResult(`signIn success. \nemail: ${signInResult.email}\nSee browser console for full result.`);
     }
     catch (ex) {
       setOneTapAuthResult(formatError(ex));
-      const user = await GoogleOneTapAuth.renderButton('appleid-signin', { locale: 'en-us' });
-      setOneTapAuthResult(`signIn success.\nSee browser console for full result.`);
-      console.log('login success' + JSON.stringify(user));
+      const signInResult: any = await GoogleOneTapAuth.renderButton('appleid-signin', { clientId: clientId }, { locale: 'en-us' });
+      setOneTapAuthResult(`signIn success. \nemail: ${signInResult.email}\nSee browser console for full result.`);
+      console.log('login success' + JSON.stringify(signInResult));
     }
   }
 
