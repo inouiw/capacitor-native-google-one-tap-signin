@@ -1,5 +1,5 @@
 import { WebPlugin } from '@capacitor/core';
-import { SignInResult, GoogleOneTapAuthPlugin, SignInOptions } from './definitions';
+import { SignInResult, SignOutResult, GoogleOneTapAuthPlugin, SignInOptions } from './definitions';
 import * as scriptjs from 'scriptjs';
 import jwt_decode from 'jwt-decode';
 import { PromptMomentNotification } from 'google-one-tap';
@@ -131,8 +131,8 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
     this.signInPromise = null;
   }
 
-  signOut(): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
+  signOut(): Promise<SignOutResult> {
+    return new Promise<SignOutResult>((resolve) => {
       google.accounts.id.cancel();
 
       // When the user signs out of your website, you need to call the method disableAutoSelect to record the status in cookies. This prevents a UX dead loop. 
@@ -142,15 +142,15 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
         // Calling revoke method revokes all OAuth2 scopes previously granted by the Sign In With Google client library.
         google.accounts.id.revoke(this.authenticatedUserId, response => {
           if (response.successful) {
-            resolve();
+            resolve({ isSuccess: true });
           }
           else {
-            reject(response.error);
+            resolve({ isSuccess: false, error: response.error });
           }
         });
         this.authenticatedUserId = null;
       } else {
-        resolve();
+        resolve({ isSuccess: true });
       }
     });
   }

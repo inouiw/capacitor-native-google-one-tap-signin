@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { IonPage, IonButton, IonTextarea } from '@ionic/react';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonButton, IonCol, IonGrid, IonRow, IonContent, IonLabel } from '@ionic/react';
 import './Page1.css';
-import { GoogleOneTapAuth } from 'capacitor-native-google-one-tap-signin';
-import SignInWithGoogleButton from 'reactsigninwithgooglebutton';
+import { GoogleOneTapAuth, SignInResult, SignOutResult } from 'capacitor-native-google-one-tap-signin';
 
 const clientId = '333448133894-oo2gapskrr4j7p7gg5kn6b0sims22mcu.apps.googleusercontent.com';
 
@@ -10,85 +9,72 @@ const Page1: React.FC = () => {
   const [oneTapAuthResult, setOneTapAuthResult] = useState('');
 
   useEffect(() => {
-    //GoogleOneTapAuth.initialize();
-  }, []);
-
-  function initGapi() {
     GoogleOneTapAuth.initialize();
-  }
-
-  async function renderButton() {
-    const signInResult = await GoogleOneTapAuth.renderButton('appleid-signin', { clientId: clientId }, { locale: 'en-us' });
-    setOneTapAuthResult(`signIn success. \nemail: ${signInResult.decodedIdToken.email}\nSee browser console for full result.`);
-    console.log('login success' + JSON.stringify(signInResult));
-  }
-
-  async function autoSignInGoogle() {
-    try {
-      const signInResult = await GoogleOneTapAuth.tryAutoSignIn({ clientId: clientId });
-      console.log(signInResult);
-      setOneTapAuthResult(`signIn success. \nemail: ${signInResult.decodedIdToken.email}\nSee browser console for full result.`);
-    }
-    catch (ex) {
-      setOneTapAuthResult(formatError(ex));
-    }
-  }
+  }, []);
 
   async function signInGoogle() {
     setOneTapAuthResult('');
-    try {
-      const signInResult = await GoogleOneTapAuth.tryAutoSignInThenTrySignInWithPrompt({ clientId: clientId });
-      console.log(signInResult);
-      setOneTapAuthResult(`signIn success. \nemail: ${signInResult.decodedIdToken.email}\nSee browser console for full result.`);
+    let signInResult = await GoogleOneTapAuth.tryAutoSignInThenTrySignInWithPrompt({ clientId: clientId });
+    if (!signInResult.isSuccess) {
+      signInResult = await GoogleOneTapAuth.renderButton('appleid-signin', { clientId: clientId }, { locale: 'en-us' });
     }
-    catch (ex) {
-      setOneTapAuthResult(formatError(ex));
-      const signInResult = await GoogleOneTapAuth.renderButton('appleid-signin', { clientId: clientId }, { locale: 'en-us' });
-      setOneTapAuthResult(`signIn success. \nemail: ${signInResult.decodedIdToken.email}\nSee browser console for full result.`);
-      console.log('login success' + JSON.stringify(signInResult));
-    }
+    reportSignInResult(signInResult);
   }
 
-  function formatError(error: unknown) {
-    let result = `error: ${error}`;
-    // if ((error as string).startsWith('{')) {
-    //   result += `, additionalData: ${JSON.stringify(error)}`
-    // }
-    return result;
+  function reportSignInResult(signInResult: SignInResult) {
+    if (signInResult.isSuccess) {
+      setOneTapAuthResult(`SignIn success! email: '${signInResult.decodedIdToken.email}', selectBy: '${signInResult.selectBy}'. See browser console for idToken and full result.`);
+      console.log('Success! ' + JSON.stringify(signInResult));
+    } else {
+      setOneTapAuthResult(`SignIn not successful. Reason: ${signInResult.noSuccessReasonCode}`);
+      console.log('No success! ' + JSON.stringify(signInResult));
+    }
   }
 
   async function signOutGoogle() {
     setOneTapAuthResult('');
-    try {
-      await GoogleOneTapAuth.signOut();
-      setOneTapAuthResult('signOut without error');
-    }
-    catch (ex) {
-      setOneTapAuthResult(`error: ${ex}, additionalData: ${JSON.stringify(ex)}`);
+    const signOutResult = await GoogleOneTapAuth.signOut();
+
+    if (signOutResult.isSuccess) {
+      setOneTapAuthResult('SignOut success');
+    } else {
+      setOneTapAuthResult(`SignOut error: ${signOutResult.error}`);
     }
   }
 
   return (
     <IonPage>
-      <div className="container">
-        <IonButton onClick={() => initGapi()}>
-          init
-        </IonButton>
-        <IonButton onClick={() => renderButton()}>
-          Render button
-        </IonButton>
-        <IonButton onClick={() => autoSignInGoogle()}>
-          Trigger auto-sign-in
-        </IonButton>
-        <SignInWithGoogleButton onClick={() => signInGoogle()} />
-        <IonButton onClick={() => signOutGoogle()}>
-          Sign-out
-        </IonButton>
-        <br />
-        <div id="appleid-signin" data-color="black" data-border="true" data-type="continue" data-width="210" data-height="40"></div>
-        <br />
-        <IonTextarea value={oneTapAuthResult} readonly={false} autoGrow={true} inputMode='none'></IonTextarea>
-      </div>
+      <IonHeader>
+        <IonToolbar>
+          <IonTitle>capacitor-native-google-one-tap-signin Demo App</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent class="ion-padding">
+        <IonGrid fixed={true}>
+          <IonRow>
+            <IonCol size='auto'>
+              <IonButton onClick={() => signInGoogle()}>
+                Trigger auto-sign-in
+              </IonButton>
+              <div id="appleid-signin" data-color="black" data-border="true" data-type="continue" data-width="210" data-height="40"></div>
+            </IonCol>
+            <IonCol>Trigger one-tap auto-sign-in and show Sign-in-with-google button if auto-sign-in is not possible.</IonCol>
+          </IonRow>
+          <IonRow>
+            <IonCol size='auto'>
+              <IonButton onClick={() => signOutGoogle()}>
+                Sign-out
+              </IonButton>
+            </IonCol>
+            <IonCol></IonCol>
+          </IonRow>
+          <IonRow>
+            <IonCol size='12'>
+              <IonLabel class="ion-text-wrap" color='secondary'>{oneTapAuthResult}</IonLabel>
+            </IonCol>
+          </IonRow>
+        </IonGrid>
+      </IonContent>
     </IonPage>
   );
 };

@@ -72,6 +72,11 @@ export interface SignInResult {
   decodedIdToken?: any;
 }
 
+export interface SignOutResult {
+  isSuccess: boolean;
+  error?: string;
+}
+
 export interface GoogleOneTapAuthPlugin {
   /**
    * For the web platform, starts pre-loading the google one tap JavaScript library. Calling initialize is optional.
@@ -95,6 +100,6 @@ export interface GoogleOneTapAuthPlugin {
    * @param options 
    */
   tryAutoSignInThenTrySignInWithPrompt(options: SignInOptions): Promise<SignInResult>;
-  signOut(): Promise<void>;
+  signOut(): Promise<SignOutResult>;
   renderButton(parentElementId: string, options: SignInOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SignInResult>;
 }
