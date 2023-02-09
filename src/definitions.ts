@@ -58,9 +58,7 @@ export interface SignInWebOptions {
 
 export interface SignInResult {
   isSuccess: boolean;
-  errorCode?: string;
-  errorMessage?: string;
-  idToken?: string;
+  noSuccessReasonCode?: string; // See google.PromptMomentNotification
   selectBy?: 
     | 'auto'
     | 'user'
@@ -70,6 +68,7 @@ export interface SignInResult {
     | 'btn_confirm'
     | 'btn_add_session'
     | 'btn_confirm_add_session' // see google.CredentialResponse.select_by
+  idToken?: string;
   decodedIdToken?: any;
 }
 

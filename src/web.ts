@@ -1,9 +1,8 @@
-///<reference types="google-one-tap" />
-
 import { WebPlugin } from '@capacitor/core';
 import { SignInResult, GoogleOneTapAuthPlugin, SignInOptions } from './definitions';
 import * as scriptjs from 'scriptjs';
-import jwt_decode from "jwt-decode";
+import jwt_decode from 'jwt-decode';
+import { PromptMomentNotification } from 'google-one-tap';
 
 // Workaround for 'error TS2686: 'google' refers to a UMD global, but the current file is a module. Consider adding an import instead.'
 declare var google: {
@@ -17,7 +16,6 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
   resolveGapiLoaded: () => void;
   signInPromise: Promise<SignInResult>;
   resolveSignInPromise: (user: SignInResult) => void;
-  rejectSignInPromise: (reason?: any) => void;
   authenticatedUserId: string = null;
 
   initialize(): Promise<void> {
@@ -37,36 +35,26 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
   }
 
   async tryAutoSignIn(options: SignInOptions): Promise<SignInResult> {
-    await this.initialize();
-    this.createSignInPromise();
-    await this.doSignIn(options, true);
-    return this.signInPromise;
+    return await this.doSignIn(options, true);
   }
 
   async trySignInWithPrompt(options: SignInOptions): Promise<SignInResult> {
-    await this.initialize();
-    this.createSignInPromise();
-    await this.doSignIn(options, false);
-    return this.signInPromise;
+    return await this.doSignIn(options, false);
   }
 
   async tryAutoSignInThenTrySignInWithPrompt(options: SignInOptions): Promise<SignInResult> {
-    await this.initialize();
-    this.createSignInPromise();
-    try {
-      await this.doSignIn(options, true);
+    let signInResult = await this.doSignIn(options, true);
+
+    if (!signInResult.isSuccess) {
+      signInResult = await this.doSignIn(options, false);
     }
-    catch {
-      await this.doSignIn(options, false);
-    }
-    return this.signInPromise;
+    return signInResult;
   }
 
   async renderButton(parentElementId: string, options: SignInOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SignInResult> {
     const parentElem = document.getElementById(parentElementId);
-    if (!parentElem) {
-      return Promise.reject(`Element with id ${parentElementId} was not found.`);
-    }
+    assert(() => !!parentElem)
+
     await this.initialize();
     this.createSignInPromise();
     this.oneTapInitialize(options, false);
@@ -75,35 +63,47 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
       parentElem!,
       gsiButtonConfiguration || {}
     );
+    return this.signInPromise;
+  }
 
+  private async doSignIn(options: SignInOptions, autoSelect: boolean) {
+    assert(() => !!options.clientId);
+
+    await this.initialize();
+    this.createSignInPromise();
+    this.oneTapInitialize(options, autoSelect);
+
+    google.accounts.id.prompt((notification) => {
+      if (notification.isNotDisplayed()
+        || notification.isSkippedMoment()
+        || notification.isDismissedMoment()) {
+        this.resolveSignInPromise({
+          isSuccess: false,
+          noSuccessReasonCode: this.getMomentReason(notification)
+        });
+        this.signInPromise = null;
+      }
+    });
     return this.signInPromise;
   }
 
   private createSignInPromise() {
-    this.signInPromise = new Promise<SignInResult>((resolve, reject) => {
+    this.signInPromise = new Promise<SignInResult>((resolve) => {
       this.resolveSignInPromise = resolve;
-      this.rejectSignInPromise = reject;
     });
   }
 
-  private async doSignIn(options: SignInOptions, autoSelect: boolean) {
-    if (!options.clientId) {
-      this.rejectSignInPromise('GoogleOneTapAuthPlugin(web).doSignIn - options.clientId is empty');
-      return;
+  private getMomentReason(notification: PromptMomentNotification) {
+    if (notification.isNotDisplayed()) {
+      return notification.getNotDisplayedReason();
     }
-    this.oneTapInitialize(options, autoSelect);
-
-    google.accounts.id.prompt((notification) => {
-      if (notification.isNotDisplayed()) {
-        this.rejectSignInPromise('GoogleOneTapAuthPlugin(web).doSignIn - login not displayed. Reason: ' + notification.getNotDisplayedReason());
-      }
-      else if (notification.isSkippedMoment()) {
-        this.rejectSignInPromise('GoogleOneTapAuthPlugin(web).doSignIn - login was skipped. Reason: ' + notification.getSkippedReason());
-      }
-      else if (notification.isDismissedMoment()) {
-        this.rejectSignInPromise('GoogleOneTapAuthPlugin(web).doSignIn - login was dismissed. Reason: ' + notification.getDismissedReason());
-      }
-    });
+    if (notification.isSkippedMoment()) {
+      return notification.getSkippedReason();
+    }
+    if (notification.isDismissedMoment()) {
+      return notification.getDismissedReason();
+    }
+    return null;
   }
 
   private oneTapInitialize(options: SignInOptions, autoSelect: boolean) {
@@ -126,8 +126,9 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
       decodedIdToken: decodedIdToken
     };
     this.authenticatedUserId = decodedIdToken['sub'] as string;
-    console.log(decodedIdToken);
+    // console.log(decodedIdToken);
     this.resolveSignInPromise(signInResult);
+    this.signInPromise = null;
   }
 
   signOut(): Promise<void> {
@@ -153,25 +154,10 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
       }
     });
   }
+}
 
-  // private getUserFrom(googleUser: gapi.auth2.GoogleUser) {
-  //   const user = {} as User;
-  //   const profile = googleUser.getBasicProfile();
-
-  //   // user.email = profile.getEmail();
-  //   // user.familyName = profile.getFamilyName();
-  //   // user.givenName = profile.getGivenName();
-  //   user.id = profile.getId();
-  //   // user.imageUrl = profile.getImageUrl();
-  //   // user.name = profile.getName();
-
-  //   //const authResponse = googleUser.getAuthResponse(true);
-  //   // user.authentication = {
-  //   //   accessToken: authResponse.access_token,
-  //   //   idToken: authResponse.id_token,
-  //   //   refreshToken: '',
-  //   // };
-
-  //   return user;
-  // }
+function assert(predicate: () => boolean) {
+  if (!predicate()) {
+    throw Error(`Assert error, expected '${predicate}' to be true.`);
+  }
 }
