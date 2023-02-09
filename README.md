@@ -22,8 +22,10 @@ You need to provide the plug-in a client ID of type "Web application". However y
 
 To test it using an emulator, you need to create an emulator with android play services and API version 29 or higher. See [my stackoverflow answer](https://stackoverflow.com/questions/71325279/missing-featurename-auth-api-credentials-begin-sign-in-version-6/75285717#75285717).
 
-## Contributions
+# Design decisions
+Promises will not be rejected for anticipated unsuccessful control flow. For example, if the one tap auto-login does not succeed with the reason `opt_out_or_no_session` then this is not exceptional but expected in many cases. Rejecting the promise would mean the caller would have to catch an exception when calling `await xy` and then run follow-up code in the catch block. Instead of rejecting promises the resolved promise contains a `isSuccess` property.
 
+## Contributions
 Welcome
 
 ## Install

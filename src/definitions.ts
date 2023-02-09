@@ -6,15 +6,6 @@ declare module '@capacitor/cli' {
   }
 }
 
-// export interface User {
-//   id: string;
-//   idToken: string;
-//   displayName: string;
-//   givenName: string;
-//   familyName: string;
-//   profilePictureUri: string;
-// }
-
 /**
  * Options that can be defined in capacitor.config.ts.
  */
@@ -58,7 +49,22 @@ export interface SignInWebOptions {
 
 export interface SignInResult {
   isSuccess: boolean;
-  noSuccessReasonCode?: string; // See google.PromptMomentNotification
+  /**
+   * A reason code as 'opt_out_or_no_session'.
+   * Currently not available for android, only if the js library is used.
+   * For possible values see google.PromptMomentNotification.
+   */
+  noSuccessReasonCode?: string;
+  /**
+   * A error message.
+   * Set in case of error if the native android code is used.
+   */
+  noSuccessAdditionalInfo?: string;
+  /**
+   * How the credential was retrieved.
+   * Currently not available for android, only if the js library is used.
+   * For possible values see google.PromptMomentNotification.
+   */
   selectBy?: 
     | 'auto'
     | 'user'
@@ -68,7 +74,20 @@ export interface SignInResult {
     | 'btn_confirm'
     | 'btn_add_session'
     | 'btn_confirm_add_session' // see google.CredentialResponse.select_by
+  /**
+   * The JWT token base64 encoded.
+   * Will be set if successful.
+   */
   idToken?: string;
+  /**
+   * The email address.
+   */
+  email?: string;
+  /**
+   * The decoded JWT token.
+   * Will be set if successful.
+   * The signature is not verified when decoding the token.
+   */
   decodedIdToken?: any;
 }
 

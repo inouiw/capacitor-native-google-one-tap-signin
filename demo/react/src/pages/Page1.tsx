@@ -23,7 +23,7 @@ const Page1: React.FC = () => {
 
   function reportSignInResult(signInResult: SignInResult) {
     if (signInResult.isSuccess) {
-      setOneTapAuthResult(`SignIn success! email: '${signInResult.decodedIdToken.email}', selectBy: '${signInResult.selectBy}'. See browser console for idToken and full result.`);
+      setOneTapAuthResult(`SignIn success! email: '${signInResult.email}', selectBy: '${signInResult.selectBy}'. See browser console for idToken and full result.`);
       console.log('Success! ' + JSON.stringify(signInResult));
     } else {
       setOneTapAuthResult(`SignIn not successful. Reason: ${signInResult.noSuccessReasonCode}`);
