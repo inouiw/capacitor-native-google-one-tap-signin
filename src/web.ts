@@ -2,6 +2,7 @@ import { WebPlugin } from '@capacitor/core';
 import { SignInResult, SignOutResult, GoogleOneTapAuthPlugin, SignInOptions } from './definitions';
 import * as scriptjs from 'scriptjs';
 import jwt_decode from 'jwt-decode';
+import { assert } from './helpers';
 
 // Workaround for 'error TS2686: 'google' refers to a UMD global, but the current file is a module. Consider adding an import instead.'
 declare var google: {
@@ -153,11 +154,5 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
         resolve({ isSuccess: true });
       }
     });
-  }
-}
-
-function assert(predicate: () => boolean) {
-  if (!predicate()) {
-    throw Error(`Assert error, expected '${predicate}' to be true.`);
   }
 }

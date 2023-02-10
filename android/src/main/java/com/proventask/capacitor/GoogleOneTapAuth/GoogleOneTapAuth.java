@@ -14,10 +14,15 @@ import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.google.android.gms.auth.api.identity.BeginSignInRequest;
 import com.google.android.gms.auth.api.identity.Identity;
 import com.google.android.gms.auth.api.identity.SignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.ApiException;
@@ -32,8 +37,10 @@ public class GoogleOneTapAuth extends Plugin {
     private static final String TAG = "GoogleOneTapAuth Plugin";
     private String clientId;
     private SignInClient oneTapClient;
+    private GoogleSignInClient googleSignInClient;
     private ActivityResultLauncher<IntentSenderRequest> googleOneTapSignInActivityResultHandlerIntentSenderRequest;
-    private CompletableFuture<JSObject> signInFuture;
+    private CompletableFuture<JSObject> oneTypSignInFuture;
+    private CompletableFuture<JSObject> googleSignInFuture;
 
     @Override
     public void load() {
@@ -44,6 +51,12 @@ public class GoogleOneTapAuth extends Plugin {
         }
         oneTapClient = Identity.getSignInClient(this.getActivity());
         RegisterSignInResultHandler();
+
+        var gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .requestIdToken(clientId)
+                .build();
+        googleSignInClient = GoogleSignIn.getClient(this.getActivity(), gso);
     }
 
     private void RegisterSignInResultHandler() {
@@ -57,13 +70,13 @@ public class GoogleOneTapAuth extends Plugin {
                             Intent data = result.getData();
                             var credential = oneTapClient.getSignInCredentialFromIntent(data);
                             var email = credential.getId();
-                            signInFuture.complete(createSuccessResponse(credential.getGoogleIdToken(), email));
+                            oneTypSignInFuture.complete(createSuccessResponse(credential.getGoogleIdToken(), email));
                         } catch (ApiException e) {
-                            signInFuture.complete(createErrorResponse(e.toString()));
+                            oneTypSignInFuture.complete(createErrorResponse(e.toString()));
                         }
                     } else {
                         var resultCodeString = ActivityResult.resultCodeToString(resultCode);
-                        signInFuture.complete(createErrorResponse(resultCodeString));
+                        oneTypSignInFuture.complete(createErrorResponse(resultCodeString));
                     }
                 });
     }
@@ -105,6 +118,9 @@ public class GoogleOneTapAuth extends Plugin {
             if (!signInResult.getBool("isSuccess")) {
                 signInResult = beginSignIn(false).get();
             }
+            if (!signInResult.getBool("isSuccess")) {
+                signInResult = googleSignIn(call).get();
+            }
             call.resolve(signInResult);
         } catch (ExecutionException e) {
             call.reject(e.toString());
@@ -116,7 +132,7 @@ public class GoogleOneTapAuth extends Plugin {
     private Future<JSObject> beginSignIn(boolean filterByAuthorizedAccounts) {
         var context = this.getContext();
         var beginSignInRequest = createBeginSignInRequest(filterByAuthorizedAccounts);
-        signInFuture = new CompletableFuture<>();
+        oneTypSignInFuture = new CompletableFuture<>();
 
         oneTapClient.beginSignIn(beginSignInRequest)
                 .addOnCompleteListener(task -> {
@@ -126,11 +142,7 @@ public class GoogleOneTapAuth extends Plugin {
                         var intentSenderRequest = new IntentSenderRequest.Builder(intentSender).build();
                         googleOneTapSignInActivityResultHandlerIntentSenderRequest.launch(intentSenderRequest);
                     } else {
-                        if (filterByAuthorizedAccounts) {
-                            Log.i(TAG, "beginSignIn with FilterByAuthorizedAccounts=true failed", task.getException());
-                        } else {
-                            Log.e(TAG, "beginSignIn with FilterByAuthorizedAccounts=false failed", task.getException());
-                        }
+                        Log.i(TAG, "beginSignIn with FilterByAuthorizedAccounts=" + filterByAuthorizedAccounts + " did not succeed.", task.getException());
                         var errorMessage = task.getException().toString();
 
                         if (!isGooglePlayServicesAvailable(context)) {
@@ -146,10 +158,10 @@ public class GoogleOneTapAuth extends Plugin {
                         // com.google.android.gms.common.api.ApiException: 10: Caller not whitelisted to call this API.
                         // --> Try if restarting the phone fixes the problem.
                         // --> Test to sign in several times to ensure it works repeatedly.
-                        signInFuture.complete(createErrorResponse(errorMessage));
+                        oneTypSignInFuture.complete(createErrorResponse(errorMessage));
                     }
                 });
-        return signInFuture;
+        return oneTypSignInFuture;
     }
 
     private BeginSignInRequest createBeginSignInRequest(boolean filterByAuthorizedAccounts) {
@@ -210,5 +222,29 @@ public class GoogleOneTapAuth extends Plugin {
                     }
                     call.resolve(signOutResult);
                 });
+    }
+
+    private Future<JSObject> googleSignIn(final PluginCall call) {
+        googleSignInFuture = new CompletableFuture<>();
+        var intent = googleSignInClient.getSignInIntent();
+        startActivityForResult(call, intent, "googleSignInResult");
+        return googleSignInFuture;
+    }
+
+    @ActivityCallback
+    private void googleSignInResult(PluginCall call, ActivityResult result) {
+        if (call == null) {
+            return;
+        }
+        Intent data = result.getData();
+        var task = GoogleSignIn.getSignedInAccountFromIntent(data);
+
+        try {
+            var account = task.getResult(ApiException.class);
+            Log.i(TAG, "googleSignInResult" + account.toString());
+            googleSignInFuture.complete(createSuccessResponse(account.getIdToken(), account.getEmail()));
+        } catch (ApiException e) {
+            call.reject(e.toString());
+        }
     }
 }

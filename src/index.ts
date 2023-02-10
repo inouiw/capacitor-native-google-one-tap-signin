@@ -1,9 +1,4 @@
-import { registerPlugin } from '@capacitor/core';
-import type { GoogleOneTapAuthPlugin } from './definitions';
-
-const GoogleOneTapAuth = registerPlugin<GoogleOneTapAuthPlugin>('GoogleOneTapAuth', {
-  web: () => import('./web').then((m) => new m.GoogleOneTapAuthWeb()),
-});
+import { GoogleOneTapAuth } from './GoogleOneTapAuth';
 
 export * from './definitions';
 export { GoogleOneTapAuth };

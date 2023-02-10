@@ -115,7 +115,7 @@ export interface GoogleOneTapAuthPlugin {
   trySignInWithPrompt(options: SignInOptions): Promise<SignInResult>;
   /**
    * Tries to auto-sign in the user and if not possible tries to shows the one-tab user selection.
-   * If there is no authorized session in the browser it will fail and the login button must be shown.
+   * If there is no authorized session in the browser it will use Google Sign in.
    * @param options 
    */
   tryAutoSignInThenTrySignInWithPrompt(options: SignInOptions): Promise<SignInResult>;
