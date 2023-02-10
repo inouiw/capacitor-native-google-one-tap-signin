@@ -13,7 +13,7 @@ Currently the idToken, id (e-mail), displayName, givenName, familyName, profileP
 
 The user is automatically signed-in, without a prompt after the first sign-in.
 
-API version 29 or higher seems to be required for one-tap sign-in to work.
+The andorid minSdkVersion is 22, however the one-tap library seems to require API version 29. For lower API versions GoogleSignIn is used.
 
 # Supported platforms
 Android, iOS, Web.
