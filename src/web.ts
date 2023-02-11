@@ -1,5 +1,5 @@
 import { WebPlugin } from '@capacitor/core';
-import { SignInResult, SignOutResult, GoogleOneTapAuthPlugin, SignInOptions } from './definitions';
+import { SignInResult, /*SignOutResult,*/ GoogleOneTapAuthPlugin, SignInOptions } from './definitions';
 import * as scriptjs from 'scriptjs';
 import jwt_decode from 'jwt-decode';
 import { assert } from './helpers';

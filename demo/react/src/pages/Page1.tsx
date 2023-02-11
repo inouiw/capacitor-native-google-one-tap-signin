@@ -17,7 +17,7 @@ const Page1: React.FC = () => {
     let signInResult = await GoogleOneTapAuth.tryAutoSignInThenTrySignInWithPrompt({ clientId: clientId });
     reportSignInResult(signInResult);
     if (!signInResult.isSuccess) {
-      signInResult = await GoogleOneTapAuth.renderButton('appleid-signin', { clientId: clientId }, { locale: 'en-us' });
+      signInResult = await GoogleOneTapAuth.renderButton('appleid-signin', { clientId: clientId }, { locale: 'en-us', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
     }
     reportSignInResult(signInResult);
   }

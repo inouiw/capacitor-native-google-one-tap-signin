@@ -96,9 +96,7 @@ public class GoogleOneTapAuth extends Plugin {
         try {
             var signInResult = beginSignIn(true).get();
             call.resolve(signInResult);
-        } catch (ExecutionException e) {
-            call.reject(e.toString());
-        } catch (InterruptedException e) {
+        } catch (ExecutionException | InterruptedException e) {
             call.reject(e.toString());
         }
     }
@@ -108,9 +106,7 @@ public class GoogleOneTapAuth extends Plugin {
         try {
             var signInResult = beginSignIn(false).get();
             call.resolve(signInResult);
-        } catch (ExecutionException e) {
-            call.reject(e.toString());
-        } catch (InterruptedException e) {
+        } catch (ExecutionException | InterruptedException e) {
             call.reject(e.toString());
         }
     }
@@ -126,9 +122,7 @@ public class GoogleOneTapAuth extends Plugin {
                 signInResult = googleSignIn(call).get();
             }
             call.resolve(signInResult);
-        } catch (ExecutionException e) {
-            call.reject(e.toString());
-        } catch (InterruptedException e) {
+        } catch (ExecutionException | InterruptedException e) {
             call.reject(e.toString());
         }
     }
@@ -156,7 +150,7 @@ public class GoogleOneTapAuth extends Plugin {
                             errorMessage += "\nGooglePlay is not installed or must be logged in to setup.";
                         }
                         if (errorMessage.contains("ApiException: 8")) {
-                            errorMessage += "\nOne reason for the exception is when the device has no internet.";
+                            errorMessage += "\nOne reason for the exception is when the device has no internet, or one-tap is not possible.";
                         }
                         // Other errors:
                         // com.google.android.gms.common.api.ApiException: 10: Caller not whitelisted to call this API.
@@ -192,7 +186,7 @@ public class GoogleOneTapAuth extends Plugin {
 
     private JSObject createSuccessResponse(String idToken) {
         var decodedIdToken = decodeJwtBody(idToken);
-        JSONObject decodedIdTokenJson = null;
+        JSONObject decodedIdTokenJson;
         String userId = null;
         String email = null;
         try {
@@ -213,8 +207,7 @@ public class GoogleOneTapAuth extends Plugin {
 
     private String decodeJwtBody(String jwtToken) {
         var parts = jwtToken.split("\\.");
-        var payloadJson = new String(android.util.Base64.decode(parts[1], android.util.Base64.DEFAULT));
-        return payloadJson;
+        return new String(android.util.Base64.decode(parts[1], android.util.Base64.DEFAULT));
     }
 
     private boolean isGooglePlayServicesAvailable(Context context) {
@@ -227,27 +220,23 @@ public class GoogleOneTapAuth extends Plugin {
     public void signOut(final PluginCall call) {
         if (signInMethod == SignInMethod.OneTap) {
             oneTapClient.signOut()
-                    .addOnCompleteListener(task -> {
-                        call.resolve(signOutResultTaskToJSObject(task));
-                    });
+                    .addOnCompleteListener(task -> call.resolve(signOutResultTaskToJSObject(task)));
         } else if (signInMethod == SignInMethod.GoogleSignIn) {
-            googleSignInClient.revokeAccess()
-                    .addOnCompleteListener(task -> {
-                        call.resolve(signOutResultTaskToJSObject(task));
-                    });
+            googleSignInClient.signOut()
+                    .addOnCompleteListener(task -> call.resolve(signOutResultTaskToJSObject(task)));
         } else {
             call.resolve(createSuccessResult());
         }
     }
 
-    private JSObject signOutResultTaskToJSObject(Task<Void> task) {
+    private JSObject signOutResultTaskToJSObject(Task<Void> completedTask) {
         var signOutResult = new JSObject();
-        if (task.isSuccessful()) {
+        if (completedTask.isSuccessful()) {
             signOutResult.put("isSuccess", true);
         } else {
-            Log.e(TAG, "signOut failed", task.getException());
+            Log.e(TAG, "signOut failed", completedTask.getException());
             signOutResult.put("isSuccess", false);
-            signOutResult.put("error", task.getException().toString());
+            signOutResult.put("error", completedTask.getException().toString());
         }
         return signOutResult;
     }
