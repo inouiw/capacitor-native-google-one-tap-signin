@@ -11,7 +11,7 @@
     "noUnusedParameters": true,
     "outDir": "dist/esm",
     "sourceMap": true,
-    "target": "es2017",
+    "target": "ES2017",
     "skipLibCheck": true
   },
   "files": ["src/index.ts"]

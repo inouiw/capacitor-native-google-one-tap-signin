@@ -13,7 +13,7 @@ Currently the idToken, id (e-mail), displayName, givenName, familyName, profileP
 
 The user is automatically signed-in, without a prompt after the first sign-in.
 
-The andorid minSdkVersion is 22, however the one-tap library seems to require API version 29. For lower API versions GoogleSignIn is used.
+The andorid minSdkVersion is 24, however the one-tap library seems to require API version 29. For lower API versions GoogleSignIn is used.
 
 # Supported platforms
 Android, iOS, Web.
@@ -24,7 +24,7 @@ See the `demo` folder.
 # Setup
 You need to provide the plug-in a client ID of type "Web application". However you will also need to create a client ID of type "Android" as stated in the [One Tap Get started docu](https://developers.google.cn/identity/one-tap/android/get-started) in the [Google Cloud Console](https://console.cloud.google.com/apis/dashboard).
 
-To test it using an emulator, you need to create an emulator with android play services and API version 29 or higher. See [my stackoverflow answer](https://stackoverflow.com/questions/71325279/missing-featurename-auth-api-credentials-begin-sign-in-version-6/75285717#75285717).
+To test it using an emulator, you need to create an emulator with android play services and API version 24 or higher. See [my stackoverflow answer](https://stackoverflow.com/questions/71325279/missing-featurename-auth-api-credentials-begin-sign-in-version-6/75285717#75285717). For older API levels like 24, you may need to update Chrome after creating the emulator because the plugin targets JavaScript es2017.
 
 # Usage recommendation
 

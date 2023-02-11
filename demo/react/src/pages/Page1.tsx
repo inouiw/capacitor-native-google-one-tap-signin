@@ -15,6 +15,7 @@ const Page1: React.FC = () => {
   async function signInGoogle() {
     setOneTapAuthResult('');
     let signInResult = await GoogleOneTapAuth.tryAutoSignInThenTrySignInWithPrompt({ clientId: clientId });
+    reportSignInResult(signInResult);
     if (!signInResult.isSuccess) {
       signInResult = await GoogleOneTapAuth.renderButton('appleid-signin', { clientId: clientId }, { locale: 'en-us' });
     }
@@ -23,7 +24,7 @@ const Page1: React.FC = () => {
 
   function reportSignInResult(signInResult: SignInResult) {
     if (signInResult.isSuccess) {
-      setOneTapAuthResult(`SignIn success! email: '${signInResult.email}', selectBy: '${signInResult.selectBy}'. See browser console for idToken and full result.`);
+      setOneTapAuthResult(`SignIn success! email: '${signInResult.email}', userId: '${signInResult.userId}' selectBy: '${signInResult.selectBy}'. See browser console for idToken and full result.`);
       console.log('Success! ' + JSON.stringify(signInResult));
     } else {
       setOneTapAuthResult(`SignIn not successful. Reason: ${signInResult.noSuccessReasonCode}`);

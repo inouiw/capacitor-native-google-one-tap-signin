@@ -80,6 +80,10 @@ export interface SignInResult {
    */
   idToken?: string;
   /**
+   * A permanent id for the user.
+   */
+  userId?: string;
+  /**
    * The email address.
    */
   email?: string;

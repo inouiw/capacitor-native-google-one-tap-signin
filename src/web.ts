@@ -122,6 +122,7 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
     let signInResult: SignInResult = {
       isSuccess: true,
       idToken: credentialResponse.credential,
+      userId: decodedIdToken.sub,
       email: decodedIdToken.email,
       selectBy: credentialResponse.select_by,
       decodedIdToken: decodedIdToken
