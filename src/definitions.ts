@@ -51,8 +51,8 @@ export interface SignInResult {
   isSuccess: boolean;
   /**
    * A reason code as 'opt_out_or_no_session'.
-   * Currently not available for android, only if the js library is used.
-   * For possible values see google.PromptMomentNotification.
+   * For the js library see google.PromptMomentNotification for possible values.
+   * For android 'SIGN_IN_REQUIRED' and 'SIGN_IN_CANCELLED' are currently set.
    */
   noSuccessReasonCode?: string;
   /**
@@ -102,18 +102,21 @@ export interface SignOutResult {
 
 export interface GoogleOneTapAuthPlugin {
   /**
-   * For the web platform, starts pre-loading the google one tap JavaScript library. Calling initialize is optional.
+   * For the web platform, starts pre-loading the google one tap JavaScript library. Calling initialize is optional but makes further calls faster.
    */
   initialize(): Promise<void>;
   /**
    * Tries to auto-sign in the user.
-   * If there is no single user session that logged in previously in the app, the sign-in will fail.
+   * If there is a single google account and that account has previously signed into the app, then that user is auto signed in. A short popover is displayed during sign-in.
+   * If there are multiple google accounts and more than one have previously signed into the app then a user selection screen is shown.
+   * If there is no active google session or if no user session has logged in previously in the app, the sign-in will fail.
    * @param options 
    */
   tryAutoSignIn(options: SignInOptions): Promise<SignInResult>;
   /**
    * Tries to shows the one-tab user selection popup.
-   * If there is no authorized session in the browser it will fail and the login button must be shown.
+   * If there is no active google session or if no user session has logged in previously in the app, the sign-in will fail.
+   * This method may be used if the user wants to sign-in with a different account.
    * @param options 
    */
   trySignInWithPrompt(options: SignInOptions): Promise<SignInResult>;

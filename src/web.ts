@@ -29,20 +29,20 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
   }
 
   async tryAutoSignIn(options: SignInOptions): Promise<SignInResult> {
-    return await this.doSignIn(options, true);
-  }
-
-  async trySignInWithPrompt(options: SignInOptions): Promise<SignInResult> {
-    return await this.doSignIn(options, false);
-  }
-
-  async tryAutoSignInThenTrySignInWithPrompt(options: SignInOptions): Promise<SignInResult> {
     let signInResult = await this.doSignIn(options, true);
 
     if (!signInResult.isSuccess) {
       signInResult = await this.doSignIn(options, false);
     }
     return signInResult;
+  }
+
+  async trySignInWithPrompt(options: SignInOptions): Promise<SignInResult> {
+    return await this.doSignIn(options, false);
+  }
+
+  async tryAutoSignInThenTrySignInWithPrompt(_options: SignInOptions): Promise<SignInResult> {
+    throw new Error('not implemented');
   }
 
   async renderButton(parentElementId: string, options: SignInOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SignInResult> {
@@ -96,6 +96,7 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
   }
 
   private oneTapInitialize(options: SignInOptions, autoSelect: boolean, resolveSignInFunc: ResolveSignInFunc) {
+    console.log("clientId: " + options.clientId);
     google.accounts.id.initialize({
       client_id: options.clientId!,
       callback: (credentialResponse) => this.handleCredentialResponse(credentialResponse, resolveSignInFunc),

@@ -28,6 +28,43 @@ To test it using an emulator, you need to create an emulator with android play s
 
 # Usage recommendation
 
+For web, it will auto-sign in even if the user signs out.
+For android, after sign-out sill be able to add another google account.
+
+# Detailed description of different use cases
+
+1. User is not logged-in with a google account in the browser or on the phone.
+    - Android  
+One-tap is not possible in that case so GoogleSignIn is used to sign-in.
+Note this will usually only happen in a test environment when you wipe all user data, as there is normally a google account on a android device.
+
+    - Web  
+The google login button must be displayed. When clicked a pop-up will open where the user can enter her google account.
+This will only happen if there is no open google session in any browser tab.
+
+    - iOS  
+todo
+
+2. User is logged-in with a google account but first time to authenticate with the app.
+    - Android  
+A pop-up with the users google account is shown and the user is asked to sign-in. One-tap is used if supported, with fallback to GoogleSignIn
+
+    - Web  
+One-tap will show a pop-up with the users google account and ask to sign-into the app.
+
+    - iOS  
+todo
+
+3. User is logged-in with a google account and did authenticate before with the app.
+    - Android  
+The user will be silently signed-in. A popover indicates to the user that sign-in is in progress. One-tap is used if supported, with fallback to GoogleSignIn
+
+    - Web  
+One-tap will silently signed-in the user. A popover indicates to the user that sign-in is in progress.
+
+    - iOS  
+todo
+
 
 # Exposed api
 See `src/definitions.ts` for a complete definition.
