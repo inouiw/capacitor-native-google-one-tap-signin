@@ -1,5 +1,5 @@
 import { WebPlugin } from '@capacitor/core';
-import { SignInResult, /*SignOutResult,*/ GoogleOneTapAuthPlugin, SignInOptions } from './definitions';
+import { SignInResult, SignOutResult, GoogleOneTapAuthPlugin, SignInOptions } from './definitions';
 import * as scriptjs from 'scriptjs';
 import jwt_decode from 'jwt-decode';
 import { assert } from './helpers';
@@ -9,29 +9,23 @@ declare var google: {
   accounts: google.accounts
 };
 
+type ResolveSignInFunc = (user: SignInResult) => void;
+
 // See https://developers.google.com/identity/gsi/web/guides/use-one-tap-js-api
 export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPlugin {
   gsiScriptUrl = 'https://accounts.google.com/gsi/client';
-  gapiLoadedPromise: Promise<void> = null;
-  resolveGapiLoaded: () => void;
-  signInPromise: Promise<SignInResult>;
-  resolveSignInPromise: (user: SignInResult) => void;
-  authenticatedUserId: string = null;
+  gapiLoadedPromise?: Promise<void> = undefined;
+  authenticatedUserId?: string = undefined;
 
   initialize(): Promise<void> {
-    if (this.gapiLoadedPromise == null) {
+    if (!this.gapiLoadedPromise) {
       this.gapiLoadedPromise = new Promise<void>((resolve) => {
-        this.resolveGapiLoaded = resolve;
+        scriptjs.get(this.gsiScriptUrl, () => {
+          resolve();
+        });
       });
-      this.loadScript();
     }
     return this.gapiLoadedPromise;
-  }
-
-  private loadScript() {
-    scriptjs.get(this.gsiScriptUrl, () => {
-      this.resolveGapiLoaded();
-    });
   }
 
   async tryAutoSignIn(options: SignInOptions): Promise<SignInResult> {
@@ -56,41 +50,36 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
     assert(() => !!parentElem)
 
     await this.initialize();
-    this.createSignInPromise();
-    this.oneTapInitialize(options, false);
+    var signInPromise = new Promise<SignInResult>((resolve) => {
+      this.oneTapInitialize(options, false, resolve);
 
-    google.accounts.id.renderButton(
-      parentElem!,
-      gsiButtonConfiguration || {}
-    );
-    return this.signInPromise;
+      google.accounts.id.renderButton(
+        parentElem!,
+        gsiButtonConfiguration || {}
+      );
+    });
+    return signInPromise;
   }
 
   private async doSignIn(options: SignInOptions, autoSelect: boolean) {
     assert(() => !!options.clientId);
 
     await this.initialize();
-    this.createSignInPromise();
-    this.oneTapInitialize(options, autoSelect);
+    var signInPromise = new Promise<SignInResult>((resolve) => {
+      this.oneTapInitialize(options, autoSelect, resolve);
 
-    google.accounts.id.prompt((notification) => {
-      if (notification.isNotDisplayed()
-        || notification.isSkippedMoment()
-        || notification.isDismissedMoment()) {
-        this.resolveSignInPromise({
-          isSuccess: false,
-          noSuccessReasonCode: this.getMomentReason(notification)
-        });
-        this.signInPromise = null;
-      }
+      google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed()
+          || notification.isSkippedMoment()
+          || notification.isDismissedMoment()) {
+          resolve({
+            isSuccess: false,
+            noSuccessReasonCode: this.getMomentReason(notification)
+          });
+        }
+      });
     });
-    return this.signInPromise;
-  }
-
-  private createSignInPromise() {
-    this.signInPromise = new Promise<SignInResult>((resolve) => {
-      this.resolveSignInPromise = resolve;
-    });
+    return signInPromise;
   }
 
   private getMomentReason(notification: google.PromptMomentNotification) {
@@ -103,13 +92,13 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
     if (notification.isDismissedMoment()) {
       return notification.getDismissedReason();
     }
-    return null;
+    return undefined;
   }
 
-  private oneTapInitialize(options: SignInOptions, autoSelect: boolean) {
+  private oneTapInitialize(options: SignInOptions, autoSelect: boolean, resolveSignInFunc: ResolveSignInFunc) {
     google.accounts.id.initialize({
-      client_id: options.clientId,
-      callback: this.handleCredentialResponse.bind(this),
+      client_id: options.clientId!,
+      callback: (credentialResponse) => this.handleCredentialResponse(credentialResponse, resolveSignInFunc),
       auto_select: autoSelect,
       itp_support: options.webOptions?.itpSupport || false,
       cancel_on_tap_outside: false,
@@ -117,7 +106,7 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
     });
   }
 
-  private handleCredentialResponse(credentialResponse: google.CredentialResponse) {
+  private handleCredentialResponse(credentialResponse: google.CredentialResponse, resolveSignInFunc: ResolveSignInFunc) {
     const decodedIdToken = jwt_decode(credentialResponse.credential) as any;
     let signInResult: SignInResult = {
       isSuccess: true,
@@ -129,16 +118,12 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
     };
     this.authenticatedUserId = decodedIdToken['sub'] as string;
     // console.log(decodedIdToken);
-    this.resolveSignInPromise(signInResult);
-    this.signInPromise = null;
+    resolveSignInFunc(signInResult);
   }
 
   signOut(): Promise<SignOutResult> {
     return new Promise<SignOutResult>((resolve) => {
       google.accounts.id.cancel();
-
-      // When the user signs out of your website, you need to call the method disableAutoSelect to record the status in cookies. This prevents a UX dead loop. 
-      google.accounts.id.disableAutoSelect();
 
       if (this.authenticatedUserId) {
         // Calling revoke method revokes all OAuth2 scopes previously granted by the Sign In With Google client library.
@@ -150,7 +135,7 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
             resolve({ isSuccess: false, error: response.error });
           }
         });
-        this.authenticatedUserId = null;
+        this.authenticatedUserId = undefined;
       } else {
         resolve({ isSuccess: true });
       }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonButton, IonCol, IonGrid, IonRow, IonContent, IonLabel } from '@ionic/react';
 import './Page1.css';
-import { GoogleOneTapAuth, SignInResult, SignOutResult } from 'capacitor-native-google-one-tap-signin';
+import { GoogleOneTapAuth, SignInResult } from 'capacitor-native-google-one-tap-signin';
 
 const clientId = '333448133894-oo2gapskrr4j7p7gg5kn6b0sims22mcu.apps.googleusercontent.com';
 
