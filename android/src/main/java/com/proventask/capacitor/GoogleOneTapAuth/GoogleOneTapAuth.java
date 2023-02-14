@@ -41,6 +41,7 @@ public class GoogleOneTapAuth extends Plugin {
     private enum SignInMethod {NotSignedIn, OneTap, GoogleSignIn}
     private static final String TAG = "GoogleOneTapAuth Plugin";
     private String clientId;
+    private String nonce;
     private SignInClient oneTapClient;
     private GoogleSignInClient googleSignInClient;
     private ActivityResultLauncher<IntentSenderRequest> googleOneTapSignInActivityResultHandlerIntentSenderRequest;
@@ -50,18 +51,28 @@ public class GoogleOneTapAuth extends Plugin {
 
     @Override
     public void load() {
-        clientId = getConfig().getString("clientId");
+        registerSignInResultHandler();
+    }
+
+    @PluginMethod()
+    public void initialize(PluginCall call) {
+        initializeOptionsFromCall(call);
         oneTapClient = Identity.getSignInClient(this.getActivity());
-        RegisterSignInResultHandler();
 
         var gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .requestIdToken(clientId)
                 .build();
         googleSignInClient = GoogleSignIn.getClient(this.getActivity(), gso);
+        call.resolve();
     }
 
-    private void RegisterSignInResultHandler() {
+    private void initializeOptionsFromCall(PluginCall call) {
+        clientId = call.getString("clientId");
+        nonce = call.getString("nonce");
+    }
+
+    private void registerSignInResultHandler() {
         googleOneTapSignInActivityResultHandlerIntentSenderRequest = bridge.registerForActivityResult(
                 new ActivityResultContracts.StartIntentSenderForResult(),
                 result -> {
@@ -84,42 +95,14 @@ public class GoogleOneTapAuth extends Plugin {
     }
 
     @PluginMethod()
-    public void initialize(PluginCall call) {
-        // Currently no code to run here.
-        call.resolve();
-    }
-
-    @PluginMethod()
     public void tryAutoSignIn(PluginCall call) {
         try {
-            var signInResult = beginSignIn(true, signInOptionsFromCall(call)).get();
+            var signInResult = beginSignIn(true).get();
             if (!signInResult.getBool("isSuccess")) {
-                signInResult = beginSignIn(false, signInOptionsFromCall(call)).get();
-            }
-        } catch (ExecutionException | InterruptedException e) {
-            call.reject(e.toString());
-        }
-    }
-
-    @PluginMethod()
-    public void trySignInWithPrompt(PluginCall call) {
-        try {
-            var signInResult = beginSignIn(false, signInOptionsFromCall(call)).get();
-            call.resolve(signInResult);
-        } catch (ExecutionException | InterruptedException e) {
-            call.reject(e.toString());
-        }
-    }
-
-    @PluginMethod()
-    public void tryAutoSignInThenTrySignInWithPrompt(PluginCall call) {
-        try {
-            var signInResult = beginSignIn(true, signInOptionsFromCall(call)).get();
-            if (!signInResult.getBool("isSuccess")) {
-                signInResult = beginSignIn(false, signInOptionsFromCall(call)).get();
+                signInResult = beginSignIn(false).get();
             }
             if (!signInResult.getBool("isSuccess")) {
-                signInResult = googleSignIn(call).get();
+                signInResult = googleSilentSignIn(call).get();
             }
             call.resolve(signInResult);
         } catch (ExecutionException | InterruptedException e) {
@@ -127,9 +110,20 @@ public class GoogleOneTapAuth extends Plugin {
         }
     }
 
-    private Future<JSObject> beginSignIn(boolean filterByAuthorizedAccounts, SignInOptions signInOptions) {
+    // This method is not part of the api but only called from GoogleOneTapAuth.ts.
+    @PluginMethod()
+    public void triggerGoogleSignIn(PluginCall call) {
+        try {
+            var signInResult = googleSignIn(call).get();
+            call.resolve(signInResult);
+        } catch (ExecutionException | InterruptedException e) {
+            call.reject(e.toString());
+        }
+    }
+
+    private Future<JSObject> beginSignIn(boolean filterByAuthorizedAccounts) {
         var context = this.getContext();
-        var beginSignInRequest = createBeginSignInRequest(filterByAuthorizedAccounts, signInOptions);
+        var beginSignInRequest = createBeginSignInRequest(filterByAuthorizedAccounts);
         oneTapSignInFuture = new CompletableFuture<>();
 
         oneTapClient.beginSignIn(beginSignInRequest)
@@ -162,13 +156,13 @@ public class GoogleOneTapAuth extends Plugin {
         return oneTapSignInFuture;
     }
 
-    private BeginSignInRequest createBeginSignInRequest(boolean filterByAuthorizedAccounts, SignInOptions signInOptions) {
+    private BeginSignInRequest createBeginSignInRequest(boolean filterByAuthorizedAccounts) {
         return BeginSignInRequest.builder()
                 .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                         .setSupported(true)
-                        .setNonce(signInOptions.nonce)
+                        .setNonce(nonce)
                         // A OAuth client ID with application type "Web application".
-                        .setServerClientId(signInOptions.clientId)
+                        .setServerClientId(clientId)
                         // If true, only the Google accounts that the user has authorized before will show up in the credential list. This can
                         // help prevent a new account being created when the user has an existing account registered with the application.
                         .setFilterByAuthorizedAccounts(filterByAuthorizedAccounts)
@@ -188,7 +182,7 @@ public class GoogleOneTapAuth extends Plugin {
 
     private JSObject createSuccessResponse(String idToken) {
         var decodedIdToken = decodeJwtBody(idToken);
-        JSONObject decodedIdTokenJson;
+        JSONObject decodedIdTokenJson = null;
         String userId = null;
         String email = null;
         try {
@@ -203,7 +197,7 @@ public class GoogleOneTapAuth extends Plugin {
         result.put("idToken", idToken);
         result.put("userId", userId);
         result.put("email", email);
-        result.put("decodedIdToken", decodedIdToken);
+        result.put("decodedIdToken", decodedIdTokenJson);
         return result;
     }
 
@@ -216,17 +210,6 @@ public class GoogleOneTapAuth extends Plugin {
         var googleApiAvailability = GoogleApiAvailability.getInstance();
         int resultCode = googleApiAvailability.isGooglePlayServicesAvailable(context);
         return resultCode == ConnectionResult.SUCCESS;
-    }
-
-    private SignInOptions signInOptionsFromCall(PluginCall call) {
-        var clientId = call.getString("clientId", this.clientId);
-        var nonce = call.getString("nonce", null);
-
-        if (clientId == null || clientId.endsWith("apps.googleusercontent.com") == false) {
-            throw new RuntimeException("clientId must end with 'apps.googleusercontent.com' but is: " + clientId + ". Check capacitor.config.ts.");
-        }
-
-        return new SignInOptions(clientId, nonce);
     }
 
     @PluginMethod()
@@ -255,10 +238,15 @@ public class GoogleOneTapAuth extends Plugin {
         return jsObject;
     }
 
+    private Future<JSObject> googleSilentSignIn(final PluginCall call) {
+        googleSignInFuture = new CompletableFuture<>();
+        googleSignInClient.silentSignIn()
+                .addOnCompleteListener(task -> handleGoogleSignInResult(call, task, "silentSignIn"));
+        return googleSignInFuture;
+    }
+
     private Future<JSObject> googleSignIn(final PluginCall call) {
         googleSignInFuture = new CompletableFuture<>();
-//        googleSignInClient.silentSignIn()
-//                .addOnCompleteListener(task -> handleGoogleSignInResult(call, task, "silentSignIn"));
         var intent = googleSignInClient.getSignInIntent();
         startActivityForResult(call, intent, "googleSignInResultIntentCallback");
         return googleSignInFuture;

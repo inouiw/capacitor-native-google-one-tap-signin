@@ -1,5 +1,5 @@
 import { WebPlugin } from '@capacitor/core';
-import { SignInResult, SignOutResult, GoogleOneTapAuthPlugin, SignInOptions } from './definitions';
+import { InitializeOptions, SignInResult, SignOutResult, GoogleOneTapAuthPlugin, RenderSignInButtonOptions, RenderSignInButtonWebOptions } from './definitions';
 import * as scriptjs from 'scriptjs';
 import jwt_decode from 'jwt-decode';
 import { assert } from './helpers';
@@ -16,8 +16,12 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
   gsiScriptUrl = 'https://accounts.google.com/gsi/client';
   gapiLoadedPromise?: Promise<void> = undefined;
   authenticatedUserId?: string = undefined;
+  clientId?: string = undefined;
+  nonce?: string = undefined;
 
-  initialize(): Promise<void> {
+  async initialize(options: InitializeOptions): Promise<void> {
+    this.clientId = options.clientId;
+    this.nonce = options.nonce;
     if (!this.gapiLoadedPromise) {
       this.gapiLoadedPromise = new Promise<void>((resolve) => {
         scriptjs.get(this.gsiScriptUrl, () => {
@@ -28,30 +32,20 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
     return this.gapiLoadedPromise;
   }
 
-  async tryAutoSignIn(options: SignInOptions): Promise<SignInResult> {
-    let signInResult = await this.doSignIn(options, true);
+  async tryAutoSignIn(): Promise<SignInResult> {
+    let signInResult = await this.doSignIn(true);
 
     if (!signInResult.isSuccess) {
-      signInResult = await this.doSignIn(options, false);
+      signInResult = await this.doSignIn(false);
     }
     return signInResult;
   }
 
-  async trySignInWithPrompt(options: SignInOptions): Promise<SignInResult> {
-    return await this.doSignIn(options, false);
-  }
-
-  async tryAutoSignInThenTrySignInWithPrompt(_options: SignInOptions): Promise<SignInResult> {
-    throw new Error('not implemented');
-  }
-
-  async renderButton(parentElementId: string, options: SignInOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SignInResult> {
+  async renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SignInResult> {
     const parentElem = document.getElementById(parentElementId);
     assert(() => !!parentElem)
-
-    await this.initialize();
     var signInPromise = new Promise<SignInResult>((resolve) => {
-      this.oneTapInitialize(options, false, resolve);
+      this.oneTapInitialize(false, resolve, options.webOptions);
 
       google.accounts.id.renderButton(
         parentElem!,
@@ -61,12 +55,9 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
     return signInPromise;
   }
 
-  private async doSignIn(options: SignInOptions, autoSelect: boolean) {
-    assert(() => !!options.clientId);
-
-    await this.initialize();
+  private async doSignIn(autoSelect: boolean) {
     var signInPromise = new Promise<SignInResult>((resolve) => {
-      this.oneTapInitialize(options, autoSelect, resolve);
+      this.oneTapInitialize(autoSelect, resolve);
 
       google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed()
@@ -95,15 +86,15 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
     return undefined;
   }
 
-  private oneTapInitialize(options: SignInOptions, autoSelect: boolean, resolveSignInFunc: ResolveSignInFunc) {
-    console.log("clientId: " + options.clientId);
+  private oneTapInitialize(autoSelect: boolean, resolveSignInFunc: ResolveSignInFunc, webOptions?: RenderSignInButtonWebOptions) {
     google.accounts.id.initialize({
-      client_id: options.clientId!,
+      client_id: this.clientId!,
       callback: (credentialResponse) => this.handleCredentialResponse(credentialResponse, resolveSignInFunc),
       auto_select: autoSelect,
-      itp_support: options.webOptions?.itpSupport || false,
+      itp_support: webOptions?.itpSupport || false,
       cancel_on_tap_outside: false,
-      ux_mode: options.webOptions?.uxMode || 'popup',
+      ux_mode: webOptions?.uxMode || 'popup',
+      nonce: this.nonce,
     });
   }
 
@@ -141,5 +132,9 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
         resolve({ isSuccess: true });
       }
     });
+  }
+
+  getNonce(): string {
+    throw new Error('Should never be called because handled wrapper class.');
   }
 }

@@ -1,53 +1,20 @@
 /// <reference types="@capacitor/cli" />
 
-declare module '@capacitor/cli' {
-  export interface PluginsConfig {
-    GoogleOneTapAuth: GoogleOneTapAuthPluginOptions;
-  }
-}
-
-/**
- * Options that can be defined in capacitor.config.ts.
- */
-export interface GoogleOneTapAuthPluginOptions {
+export interface InitializeOptions {
   /**
-   * Your client ID of type Web application. Can also be set in capacitor.config.ts.
+   * Your client ID of type Web application.
    */
-  clientId?: string;
-}
-
-export interface SignInOptions extends GoogleOneTapAuthPluginOptions {
+  clientId: string;
   /**
-   * A random string for ID tokens.
+   * A string that is included in the ID token. It is auto-generated if not provided.
    */
   nonce?: string;
-
-  // /**
-  //  * If true and there is one account from which the user logged in previously then auto-login is iniated.
-  //  * If false then the user must always confirm to log in with the displayed account.
-  //  * The default value is true.
-  //  */
-  // autoSignIn?: boolean;
-
-  /**
-   * Additional options for the web platform.
-   */
-  webOptions?: SignInWebOptions;
-}
-
-export interface SignInWebOptions {
-  /**
-   * 	Enables upgraded One Tap UX on ITP browsers. The default value is false.
-   */
-  itpSupport?: boolean;
-
-  /**
-   * 	The Sign In With Google button UX flow. The default value is 'popup'.
-   */
-  uxMode?: 'popup' | 'redirect';
 }
 
 export interface SignInResult {
+  /**
+   * If the user could be authenticated.
+   */
   isSuccess: boolean;
   /**
    * A reason code as 'opt_out_or_no_session'.
@@ -95,6 +62,24 @@ export interface SignInResult {
   decodedIdToken?: any;
 }
 
+export interface RenderSignInButtonOptions {
+  /**
+   * 	Web platform specific options..
+   */
+  webOptions?: RenderSignInButtonWebOptions;
+}
+
+export interface RenderSignInButtonWebOptions {
+  /**
+   * 	Enables upgraded One Tap UX on ITP browsers. The default value is false.
+   */
+  itpSupport?: boolean;
+  /**
+   * 	The Sign In With Google button UX flow. The default value is 'popup'.
+   */
+  uxMode?: 'popup' | 'redirect';
+}
+
 export interface SignOutResult {
   isSuccess: boolean;
   error?: string;
@@ -102,30 +87,31 @@ export interface SignOutResult {
 
 export interface GoogleOneTapAuthPlugin {
   /**
-   * For the web platform, starts pre-loading the google one tap JavaScript library. Calling initialize is optional but makes further calls faster.
+   * For the web platform, starts pre-loading the google one tap JavaScript library.
+   * @param options 
    */
-  initialize(): Promise<void>;
+  initialize(options: InitializeOptions): Promise<void>;
   /**
    * Tries to auto-sign in the user.
    * If there is a single google account and that account has previously signed into the app, then that user is auto signed in. A short popover is displayed during sign-in.
    * If there are multiple google accounts and more than one have previously signed into the app then a user selection screen is shown.
-   * If there is no active google session or if no user session has logged in previously in the app, the sign-in will fail.
-   * @param options 
+   * If there is no active google session or if no user session has logged in previously in the app or if the user has opt out of One Tap, the auto sign-in will fail.
+   * See https://developers.google.com/identity/gsi/web/guides/features
    */
-  tryAutoSignIn(options: SignInOptions): Promise<SignInResult>;
+  tryAutoSignIn(): Promise<SignInResult>;
   /**
-   * Tries to shows the one-tab user selection popup.
-   * If there is no active google session or if no user session has logged in previously in the app, the sign-in will fail.
-   * This method may be used if the user wants to sign-in with a different account.
+   * 
+   * @param parentElementId 
    * @param options 
+   * @param gsiButtonConfiguration Not all button configuration options are supported on android.
    */
-  trySignInWithPrompt(options: SignInOptions): Promise<SignInResult>;
+  renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SignInResult>;
   /**
-   * Tries to auto-sign in the user and if not possible tries to shows the one-tab user selection.
-   * If there is no authorized session in the browser it will use Google Sign in.
-   * @param options 
+   * Ends the session.
    */
-  tryAutoSignInThenTrySignInWithPrompt(options: SignInOptions): Promise<SignInResult>;
   signOut(): Promise<SignOutResult>;
-  renderButton(parentElementId: string, options: SignInOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SignInResult>;
+  /**
+   * Gets the last user defined or auto-created nonce.
+   */
+  getNonce(): string;
 }

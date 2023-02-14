@@ -9,22 +9,27 @@ const Page1: React.FC = () => {
   const [oneTapAuthResult, setOneTapAuthResult] = useState('');
 
   useEffect(() => {
-    GoogleOneTapAuth.initialize();
+    GoogleOneTapAuth.initialize({ clientId: clientId });
   }, []);
 
   async function signInGoogle() {
     setOneTapAuthResult('');
-    let signInResult = await GoogleOneTapAuth.tryAutoSignIn({ clientId: clientId });
+    let signInResult = await GoogleOneTapAuth.tryAutoSignIn();
     reportSignInResult(signInResult);
-    // if (!signInResult.isSuccess) {
-    //   signInResult = await GoogleOneTapAuth.renderButton('appleid-signin', { clientId: clientId }, { locale: 'en-us', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
-    // }
-    // reportSignInResult(signInResult);
+    if (!signInResult.isSuccess) {
+      signInResult = await GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-us', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
+      reportSignInResult(signInResult);
+    }
+  }
+
+  async function renderButton() {
+    let signInResult = await GoogleOneTapAuth.renderSignInButton('appleid-signin', {  }, { locale: 'en-us', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
+    reportSignInResult(signInResult);
   }
 
   function reportSignInResult(signInResult: SignInResult) {
     if (signInResult.isSuccess) {
-      setOneTapAuthResult(`SignIn success! email: '${signInResult.email}', userId: '${signInResult.userId}' selectBy: '${signInResult.selectBy}'. See browser console for idToken and full result.`);
+      setOneTapAuthResult(`SignIn success! email: '${signInResult.email}', userId: '${signInResult.userId}', selectBy: '${signInResult.selectBy}', nonce: '${signInResult.decodedIdToken.nonce}'. See browser console for idToken and full result.`);
       console.log('Success! ' + JSON.stringify(signInResult));
     } else {
       setOneTapAuthResult(`SignIn not successful. noSuccessReasonCode: '${signInResult.noSuccessReasonCode}', noSuccessAdditionalInfo: '${signInResult.noSuccessAdditionalInfo}'`);
@@ -57,9 +62,22 @@ const Page1: React.FC = () => {
               <IonButton onClick={() => signInGoogle()}>
                 Trigger auto-sign-in
               </IonButton>
-              <div id="appleid-signin" data-color="black" data-border="true" data-type="continue" data-width="210" data-height="40"></div>
             </IonCol>
             <IonCol>Trigger one-tap auto-sign-in and show Sign-in-with-google button if auto-sign-in is not possible.</IonCol>
+          </IonRow>
+          <IonRow>
+            <IonCol size='auto'>
+              <IonButton onClick={() => renderButton()}>
+                Render sign-in button
+              </IonButton>
+            </IonCol>
+            <IonCol></IonCol>
+          </IonRow>
+          <IonRow>
+            <IonCol size='auto'>
+              <div id="appleid-signin" data-color="black" data-border="true" data-type="continue" data-width="210" data-height="40"></div>
+            </IonCol>
+            <IonCol></IonCol>
           </IonRow>
           <IonRow>
             <IonCol size='auto'>

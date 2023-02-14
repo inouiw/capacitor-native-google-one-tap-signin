@@ -9,7 +9,7 @@ This library intends to provide the best google authentication experience for ea
 <img src="screenshots/one-tap-sign-in-demo-without-filter-by-authorized-acounts.jpg" alt="One tap signin screenshot without filter by authorized accounts" width=250/>
 
 
-Currently the idToken, id (e-mail), displayName, givenName, familyName, profilePictureUri are returned. You may check the idToken contents on https://jwt.io/.
+After a successful authentication, the idToken is returned as base64 and as object.
 
 The user is automatically signed-in, without a prompt after the first sign-in.
 
@@ -33,67 +33,40 @@ For android, after sign-out sill be able to add another google account.
 
 # Detailed description of different use cases
 
-1. User is not logged-in with a google account in the browser or on the phone.
-    - Android  
-One-tap is not possible in that case so GoogleSignIn is used to sign-in.
-Note this will usually only happen in a test environment when you wipe all user data, as there is normally a google account on a android device.
-
-    - Web  
-The google login button must be displayed. When clicked a pop-up will open where the user can enter her google account.
-This will only happen if there is no open google session in any browser tab.
-
-    - iOS  
-todo
-
-2. User is logged-in with a google account but first time to authenticate with the app.
-    - Android  
-A pop-up with the users google account is shown and the user is asked to sign-in. One-tap is used if supported, with fallback to GoogleSignIn
-
-    - Web  
-One-tap will show a pop-up with the users google account and ask to sign-into the app.
-
-    - iOS  
-todo
-
-3. User is logged-in with a google account and did authenticate before with the app.
-    - Android  
-The user will be silently signed-in. A popover indicates to the user that sign-in is in progress. One-tap is used if supported, with fallback to GoogleSignIn
-
-    - Web  
-One-tap will silently signed-in the user. A popover indicates to the user that sign-in is in progress.
-
-    - iOS  
-todo
-
+See https://developers.google.com/identity/gsi/web/guides/features
 
 # Exposed api
 See `src/definitions.ts` for a complete definition.
 
 ```JavaScript
 /**
- * For the web platform, starts pre-loading the google one tap JavaScript library. Calling initialize is optional.
+ * For the web platform, starts pre-loading the google one tap JavaScript library.
+ * @param options 
  */
-initialize(): Promise<void>;
+initialize(options: InitializeOptions): Promise<void>;
 /**
  * Tries to auto-sign in the user.
- * If there is no single user session that logged in previously in the app, the sign-in will fail.
- * @param options 
+ * If there is a single google account and that account has previously signed into the app, then that user is auto signed in. A short popover is displayed during sign-in.
+ * If there are multiple google accounts and more than one have previously signed into the app then a user selection screen is shown.
+ * If there is no active google session or if no user session has logged in previously in the app or if the user has opt out of One Tap, the auto sign-in will fail.
+ * See https://developers.google.com/identity/gsi/web/guides/features
  */
-tryAutoSignIn(options: SignInOptions): Promise<SignInResult>;
+tryAutoSignIn(): Promise<SignInResult>;
 /**
- * Tries to shows the one-tab user selection popup.
- * If there is no authorized session in the browser it will fail and the login button must be shown.
+ * 
+ * @param parentElementId 
  * @param options 
+ * @param gsiButtonConfiguration Not all button configuration options are supported on android.
  */
-trySignInWithPrompt(options: SignInOptions): Promise<SignInResult>;
+renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SignInResult>;
 /**
- * Tries to auto-sign in the user and if not possible tries to shows the one-tab user selection.
- * If there is no authorized session in the browser it will use Google Sign in.
- * @param options 
+ * Ends the session.
  */
-tryAutoSignInThenTrySignInWithPrompt(options: SignInOptions): Promise<SignInResult>;
 signOut(): Promise<SignOutResult>;
-renderButton(parentElementId: string, options: SignInOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SignInResult>;
+/**
+ * Gets the last user defined or auto-created nonce.
+ */
+getNonce(): string;
 ```
 
 # Design decisions

@@ -6,12 +6,7 @@ const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
   appName: 'Google One Tap Signin React Demo',
   webDir: 'build',
-  bundledWebRuntime: false,
-  plugins: {
-    GoogleOneTapAuth: {
-      clientId: '333448133894-oo2gapskrr4j7p7gg5kn6b0sims22mcu.apps.googleusercontent.com',
-    },
-  },
+  bundledWebRuntime: false
 };
 
 export default config;
