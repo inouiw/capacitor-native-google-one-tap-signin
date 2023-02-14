@@ -6,7 +6,9 @@ export interface InitializeOptions {
    */
   clientId: string;
   /**
-   * A string that is included in the ID token. It is auto-generated if not provided.
+   * A string that is included in the ID token if supported. It is auto-generated if not provided.
+   * The com.google.android.gms.auth.api.identity api supports nonce, however the com.google.android.gms.auth.api.signin does currently not.
+   * See https://github.com/google/GoogleSignIn-iOS/issues/135
    */
   nonce?: string;
 }

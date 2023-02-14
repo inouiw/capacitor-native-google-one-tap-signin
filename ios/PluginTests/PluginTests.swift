@@ -19,17 +19,18 @@ class PluginTests: XCTestCase {
         // Use XCTAssert and related functions to verify your tests produce the correct results.
         
         let value = "Hello, World!"
-        let plugin = MyPlugin()
-        
+        let plugin = GoogleOneTapAuth()
+   
         let call = CAPPluginCall(callbackId: "test", options: [
             "value": value
         ], success: { (result, call) in
-            let resultValue = result!.data["value"] as? String
+            let resultValue = result!.data?["value"] as? String
             XCTAssertEqual(value, resultValue)
         }, error: { (err) in
             XCTFail("Error shouldn't have been called")
         })
-        
-        plugin.echo(call!)
+   
+        plugin.load()
+        //plugin.signIn(call!)
     }
 }

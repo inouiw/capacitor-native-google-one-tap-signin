@@ -1,15 +1,14 @@
-require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
+require_relative '../node_modules/@capacitor/ios/scripts/pods_helpers'
 
 platform :ios, '13.0'
 
 target 'Plugin' do
-  # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
+  # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
+
   pod 'Capacitor', :path => '../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../node_modules/@capacitor/ios'
-
-  pod 'GoogleSignIn', '~> 6.0.1'
-
+  pod 'GoogleSignIn', '~> 6.2.4'
 end
 
 target 'PluginTests' do
