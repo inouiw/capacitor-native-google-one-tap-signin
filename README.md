@@ -91,9 +91,18 @@ npx cap update
 
 ## Usage
 
-### Android
+```TypeScript
+import { GoogleOneTapAuth, SignInResult } from 'capacitor-native-google-one-tap-signin';
 
-todo
+await GoogleOneTapAuth.initialize({ clientId: clientId });
+let signInResult = await GoogleOneTapAuth.tryAutoSignIn();
+if (!signInResult.isSuccess) {
+  signInResult = await GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-us', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
+}
+console.log(`${signInResult.decodedIdToken}`);
+
+// See the demo folder for a an example application.
+```
 
 ## License
 
