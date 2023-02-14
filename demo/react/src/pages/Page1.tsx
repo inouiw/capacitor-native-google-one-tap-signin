@@ -23,7 +23,7 @@ const Page1: React.FC = () => {
   }
 
   async function renderButton() {
-    let signInResult = await GoogleOneTapAuth.renderSignInButton('appleid-signin', {  }, { locale: 'en-us', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
+    let signInResult = await GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-us', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
     reportSignInResult(signInResult);
   }
 

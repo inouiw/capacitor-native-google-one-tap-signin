@@ -38,7 +38,7 @@ See https://developers.google.com/identity/gsi/web/guides/features
 # Exposed api
 See `src/definitions.ts` for a complete definition.
 
-```JavaScript
+```TypeScript
 /**
  * For the web platform, starts pre-loading the google one tap JavaScript library.
  * @param options 
