@@ -99,9 +99,9 @@ let signInResult = await GoogleOneTapAuth.tryAutoSignIn();
 if (!signInResult.isSuccess) {
   signInResult = await GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-us', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
 }
-console.log(`${signInResult.decodedIdToken}`);
+console.log(signInResult);
 
-// See the demo folder for a an example application.
+// See the demo folder for an example application.
 ```
 
 ## License
