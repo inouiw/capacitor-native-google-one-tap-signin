@@ -15,21 +15,51 @@ The user is automatically signed-in, without a prompt after the first sign-in.
 
 The andorid minSdkVersion is 24, however the one-tap library seems to require API version 29. For lower API versions GoogleSignIn is used.
 
+# Install and Configure
+
+#### 1. Install package
+
+```sh
+npm i --save capacitor-native-google-one-tap-signin
+```
+
+#### 2. Update capacitor dependencies
+
+```sh
+npx cap update
+```
+
+#### 3. Configure
+You need to provide the plug-in a client ID of type "Web application". This client ID is used for the web and android platforms. The client ID is passed in the `initialize` call.
+
+For the android platform, you need to create a client ID of type "Android" in the [Google Cloud Console](https://console.cloud.google.com/apis/dashboard), as stated in [One Tap Get started docu](https://developers.google.cn/identity/one-tap/android/get-started). You just need to create that client ID, you do not need to include it in any config.
+
+For the ios platform, you need to create a client ID of type iOS in the [Google Cloud Console](https://console.cloud.google.com/apis/dashboard). Add the client ID to the  `{your-app}/ios/App/App/Info.plist` file with the key `GIDClientID` (see the demo app for reference). When creating the client ID, you will see the "iOS URL scheme" value in the Google Cloud Console. Add this also to the `Info.plist` file.
+
+# Usage
+
+```TypeScript
+import { GoogleOneTapAuth, SignInResult } from 'capacitor-native-google-one-tap-signin';
+
+await GoogleOneTapAuth.initialize({ clientId: clientId });
+let signInResult = await GoogleOneTapAuth.tryAutoSignIn();
+if (!signInResult.isSuccess) {
+  signInResult = await GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-us', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
+}
+console.log(signInResult);
+
+// See the demo folder for an example application.
+```
+
+# Notes about testing with an emulator
+
+To test it using an emulator, you need to create an emulator with android play services and API version 24 or higher. See [my stackoverflow answer](https://stackoverflow.com/questions/71325279/missing-featurename-auth-api-credentials-begin-sign-in-version-6/75285717#75285717). For older API levels like 24, you may need to update Chrome after creating the emulator because the plugin targets JavaScript es2017.
+
 # Supported platforms
 Android, iOS, Web.
 
 # Demos
 See the `demo` folder.
-
-# Setup
-You need to provide the plug-in a client ID of type "Web application". However you will also need to create a client ID of type "Android" as stated in the [One Tap Get started docu](https://developers.google.cn/identity/one-tap/android/get-started) in the [Google Cloud Console](https://console.cloud.google.com/apis/dashboard).
-
-To test it using an emulator, you need to create an emulator with android play services and API version 24 or higher. See [my stackoverflow answer](https://stackoverflow.com/questions/71325279/missing-featurename-auth-api-credentials-begin-sign-in-version-6/75285717#75285717). For older API levels like 24, you may need to update Chrome after creating the emulator because the plugin targets JavaScript es2017.
-
-# Usage recommendation
-
-For web, it will auto-sign in even if the user signs out.
-For android, after sign-out sill be able to add another google account.
 
 # Detailed description of different use cases
 
@@ -74,35 +104,6 @@ Promises will not be rejected for anticipated unsuccessful control flow. For exa
 
 ## Contributions
 Welcome
-
-## Install
-
-#### 1. Install package
-
-```sh
-npm i --save capacitor-native-google-one-tap-signin
-```
-
-#### 2. Update capacitor deps
-
-```sh
-npx cap update
-```
-
-## Usage
-
-```TypeScript
-import { GoogleOneTapAuth, SignInResult } from 'capacitor-native-google-one-tap-signin';
-
-await GoogleOneTapAuth.initialize({ clientId: clientId });
-let signInResult = await GoogleOneTapAuth.tryAutoSignIn();
-if (!signInResult.isSuccess) {
-  signInResult = await GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-us', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
-}
-console.log(signInResult);
-
-// See the demo folder for an example application.
-```
 
 ## License
 

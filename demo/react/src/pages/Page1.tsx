@@ -14,11 +14,15 @@ const Page1: React.FC = () => {
 
   async function signInGoogle() {
     setOneTapAuthResult('');
-    let signInResult = await GoogleOneTapAuth.tryAutoSignIn();
-    reportSignInResult(signInResult);
-    if (!signInResult.isSuccess) {
-      signInResult = await GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-us', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
+    try {
+      let signInResult = await GoogleOneTapAuth.tryAutoSignIn();
       reportSignInResult(signInResult);
+      if (!signInResult.isSuccess) { 
+        signInResult = await GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-us', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
+        reportSignInResult(signInResult);
+      }
+    } catch(e) {
+      setOneTapAuthResult(`Something unexpected happened. Message: '${e}', Stack: ${new Error().stack}`);
     }
   }
 
