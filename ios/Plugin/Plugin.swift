@@ -5,9 +5,6 @@ import GoogleSignIn
 @objc(GoogleOneTapAuth)
 public class GoogleOneTapAuth: CAPPlugin {
     var googleSignIn: GIDSignIn!;
-    var additionalScopes: [String]!;
-    var clientId: String!;
-    //var nonce: String!; // Currently the GoogleSignIn library does not support passing a nonce.
     
     public override func load() {
         googleSignIn = GIDSignIn.sharedInstance;
@@ -15,28 +12,11 @@ public class GoogleOneTapAuth: CAPPlugin {
     
     @objc
     func initialize(_ call: CAPPluginCall) {
-        
-        //        NotificationCenter.default.addObserver(self, selector: #selector(handleOpenUrl(_ :)), name: Notification.Name(Notification.Name.capacitorOpenURL.rawValue), object: nil);
-        
         call.resolve();
     }
     
-    //    @objc
-    //    func handleOpenUrl(_ notification: Notification) {
-    //        guard let object = notification.object as? [String: Any] else {
-    //            print("There is no object on handleOpenUrl");
-    //            return;
-    //        }
-    //        guard let url = object["url"] as? URL else {
-    //            print("There is no url on handleOpenUrl");
-    //            return;
-    //        }
-    //        googleSignIn.handle(url);
-    //    }
-    
     @objc
     func tryAutoSignIn(_ call: CAPPluginCall) {
-        //DispatchQueue.main.async {
         if googleSignIn.hasPreviousSignIn() {
             googleSignIn.restorePreviousSignIn() { user, error in
                 if let error = error {
@@ -56,7 +36,6 @@ public class GoogleOneTapAuth: CAPPlugin {
                 self.resolveSignInCallWith(call: call, user: signInResult?.user);
             };
         }
-        //}
     }
     
     @objc
@@ -64,34 +43,9 @@ public class GoogleOneTapAuth: CAPPlugin {
         call.resolve();
     }
     
-    //
-    //    @objc
-    //    func refresh(_ call: CAPPluginCall) {
-    //        DispatchQueue.main.async {
-    //            if self.googleSignIn.currentUser == nil {
-    //                call.reject("User not logged in.");
-    //                return
-    //            }
-    //            self.googleSignIn.currentUser!.authentication.do { (authentication, error) in
-    //                guard let authentication = authentication else {
-    //                    call.reject(error?.localizedDescription ?? "Something went wrong.");
-    //                    return;
-    //                }
-    //                let authenticationData: [String: Any] = [
-    //                    "accessToken": authentication.accessToken,
-    //                    "idToken": authentication.idToken ?? NSNull(),
-    //                    "refreshToken": authentication.refreshToken
-    //                ]
-    //                call.resolve(authenticationData);
-    //            }
-    //        }
-    //    }
-    
     @objc
     func signOut(_ call: CAPPluginCall) {
-        //DispatchQueue.main.async {
         googleSignIn.signOut();
-        //}
         call.resolve(createSuccessResult());
     }
     
@@ -115,14 +69,6 @@ public class GoogleOneTapAuth: CAPPlugin {
         ];
         return successResultJson;
     }
-    
-    //    func createErrorResult(error: String?) {
-    //        var errorResultJson: [String: Any] = [
-    //            "isSuccess": false,
-    //            "error": error ?? NSNull(),
-    //        ];
-    //        return errorResultJson;
-    //    }
     
     func decodeJwtBody(jwtToken: String?) -> Any? {
         if let jwtToken = jwtToken {
