@@ -95,7 +95,7 @@ public class GoogleOneTapAuth extends Plugin {
     }
 
     @PluginMethod()
-    public void tryAutoSignIn(PluginCall call) {
+    public void tryAutoOrOneTapSignIn(PluginCall call) {
         try {
             var signInResult = beginSignIn(true).get();
             if (!signInResult.getBool("isSuccess")) {

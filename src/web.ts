@@ -1,5 +1,5 @@
 import { WebPlugin } from '@capacitor/core';
-import { InitializeOptions, SignInResult, SignOutResult, GoogleOneTapAuthPlugin, RenderSignInButtonOptions, RenderSignInButtonWebOptions } from './definitions';
+import { InitializeOptions, SignInResultOption, SuccessSignInResult, NoSuccessSignInResult, SignOutResult, RenderSignInButtonOptions, RenderSignInButtonWebOptions } from './definitions';
 import * as scriptjs from 'scriptjs';
 import jwt_decode from 'jwt-decode';
 import { assert } from './helpers';
@@ -9,10 +9,10 @@ declare var google: {
   accounts: google.accounts
 };
 
-type ResolveSignInFunc = (user: SignInResult) => void;
+type ResolveSignInFunc = (result: SuccessSignInResult) => void;
 
 // See https://developers.google.com/identity/gsi/web/guides/use-one-tap-js-api
-export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPlugin {
+export class GoogleOneTapAuthWeb extends WebPlugin {
   gsiScriptUrl = 'https://accounts.google.com/gsi/client';
   gapiLoadedPromise?: Promise<void> = undefined;
   authenticatedUserId?: string = undefined;
@@ -32,19 +32,30 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
     return this.gapiLoadedPromise;
   }
 
-  async tryAutoSignIn(): Promise<SignInResult> {
+  async tryAutoOrOneTapSignIn(): Promise<SignInResultOption> {
     let signInResult = await this.doSignIn(true);
 
-    if (!signInResult.isSuccess) {
+    if (!(signInResult as SuccessSignInResult).idToken) {
       signInResult = await this.doSignIn(false);
     }
-    return signInResult;
+
+    if ((signInResult as SuccessSignInResult).idToken) {
+      return {
+        isSuccess: true,
+        success: signInResult as SuccessSignInResult
+      }
+    } else {
+      return {
+        isSuccess: false,
+        noSuccess: signInResult as NoSuccessSignInResult
+      }
+    }
   }
 
-  async renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SignInResult> {
+  async renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SuccessSignInResult> {
     const parentElem = document.getElementById(parentElementId);
     assert(() => !!parentElem)
-    var signInPromise = new Promise<SignInResult>((resolve) => {
+    var signInPromise = new Promise<SuccessSignInResult>((resolve) => {
       this.oneTapInitialize(false, resolve, options.webOptions);
 
       google.accounts.id.renderButton(
@@ -56,7 +67,7 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
   }
 
   private async doSignIn(autoSelect: boolean) {
-    var signInPromise = new Promise<SignInResult>((resolve) => {
+    var signInPromise = new Promise<SuccessSignInResult | NoSuccessSignInResult>((resolve) => {
       this.oneTapInitialize(autoSelect, resolve);
 
       google.accounts.id.prompt((notification) => {
@@ -64,7 +75,6 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
           || notification.isSkippedMoment()
           || notification.isDismissedMoment()) {
           resolve({
-            isSuccess: false,
             noSuccessReasonCode: this.getMomentReason(notification)
           });
         }
@@ -100,8 +110,7 @@ export class GoogleOneTapAuthWeb extends WebPlugin implements GoogleOneTapAuthPl
 
   private handleCredentialResponse(credentialResponse: google.CredentialResponse, resolveSignInFunc: ResolveSignInFunc) {
     const decodedIdToken = jwt_decode(credentialResponse.credential) as any;
-    let signInResult: SignInResult = {
-      isSuccess: true,
+    let signInResult: SuccessSignInResult = {
       idToken: credentialResponse.credential,
       userId: decodedIdToken.sub,
       email: decodedIdToken.email,

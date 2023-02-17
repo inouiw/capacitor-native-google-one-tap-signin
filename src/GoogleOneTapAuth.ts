@@ -1,9 +1,9 @@
 import { Capacitor, registerPlugin } from '@capacitor/core';
-import type { InitializeOptions, GoogleOneTapAuthPlugin, SignInResult, SignOutResult, RenderSignInButtonOptions } from './definitions';
+import type { InitializeOptions, GoogleOneTapAuthPlugin, SignInResultPromises, SuccessSignInResult, SignOutResult, RenderSignInButtonOptions, NoSuccessSignInResult } from './definitions';
 import { assert, randomHexString } from './helpers';
 import { GoogleOneTapAuthWeb } from './web';
 
-const GoogleOneTapAuthPlatform = registerPlugin<GoogleOneTapAuthPlugin>('GoogleOneTapAuth', {
+const GoogleOneTapAuthPlatform = registerPlugin<GoogleOneTapAuthWeb>('GoogleOneTapAuth', {
   web: () => new GoogleOneTapAuthWeb(),
 });
 
@@ -21,16 +21,31 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
     this.isInitialized = true;
   }
 
-  tryAutoSignIn(): Promise<SignInResult> {
+  async tryAutoOrOneTapSignIn(): Promise<SignInResultPromises> {
     assert(() => this.isInitialized, 'Must call and await initialize first.');
-    return GoogleOneTapAuthPlatform.tryAutoSignIn();
+    const signInResultOptionPromise = GoogleOneTapAuthPlatform.tryAutoOrOneTapSignIn();
+    let signInResultOption = await signInResultOptionPromise;
+
+    if (signInResultOption.isSuccess) {
+      return {
+        successPromise: Promise.resolve(signInResultOption.success!),
+        noSuccess: new Promise<NoSuccessSignInResult>(() => {}),
+        signInResultOptionPromise: signInResultOptionPromise
+      };
+    } else {
+      return {
+        successPromise: new Promise<SuccessSignInResult>(() => {}),
+        noSuccess: Promise.resolve(signInResultOption.noSuccess!),
+        signInResultOptionPromise: signInResultOptionPromise
+      };
+    }
   }
 
   signOut(): Promise<SignOutResult> {
     return GoogleOneTapAuthPlatform.signOut();
   }
   
-  renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SignInResult> {
+  renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SuccessSignInResult> {
     assert(() => this.isInitialized, 'Must call and await initialize first.');
     options.webOptions = options.webOptions || {};
     if (Capacitor.getPlatform() === 'web') {
@@ -38,7 +53,7 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
     }
     const parentElem = document.getElementById(parentElementId);
     assert(() => !!parentElem);
-    return new Promise<SignInResult>((resolve) => {
+    return new Promise<SuccessSignInResult>((resolve) => {
       const onClickAction = async () => {
         const signInResult = await (GoogleOneTapAuthPlatform as any).triggerGoogleSignIn(options);
         resolve(signInResult);

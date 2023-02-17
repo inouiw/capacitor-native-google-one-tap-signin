@@ -1,54 +1,74 @@
 import React, { useState, useEffect } from 'react';
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonButton, IonCol, IonGrid, IonRow, IonContent, IonLabel } from '@ionic/react';
 import './Page1.css';
-import { GoogleOneTapAuth, SignInResult } from 'capacitor-native-google-one-tap-signin';
+import { GoogleOneTapAuth, SignInResultOption, SuccessSignInResult, NoSuccessSignInResult } from 'capacitor-native-google-one-tap-signin';
 
 const clientId = '333448133894-m88bqcrq93ao7vi2j4o475fnlbsnhc9g.apps.googleusercontent.com';
 
 const Page1: React.FC = () => {
-  const [oneTapAuthResult, setOneTapAuthResult] = useState('');
+  const [oneTapAuthResult, setAuthResult] = useState('');
 
   useEffect(() => {
     GoogleOneTapAuth.initialize({ clientId: clientId });
   }, []);
 
-  async function signInGoogle() {
-    setOneTapAuthResult('');
+  async function triggerGoogleAutoOrOneTapSignInShowSignInButtonIfNotSuccessful() {
+    setAuthResult('');
     try {
-      let signInResult = await GoogleOneTapAuth.tryAutoSignIn();
+      const signInResult = await GoogleOneTapAuth.tryAutoOrOneTapSignIn().then(res => res.signInResultOptionPromise);
       reportSignInResult(signInResult);
       if (!signInResult.isSuccess) { 
-        signInResult = await GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-us', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
-        reportSignInResult(signInResult);
+        const successResult = await GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-US', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
+        reportSignInResultSuccess(successResult);
       }
     } catch(e) {
-      setOneTapAuthResult(`Something unexpected happened. Message: '${e}', Stack: ${new Error().stack}`);
+      setAuthResult(`Something unexpected happened. Message: '${e}', Stack: ${new Error().stack}`);
+    }
+  }
+
+  async function triggerGoogleAutoOrOneTapSignInAndShowSignInButton() {
+    setAuthResult('');
+    try {
+      const autoOrOneTapSuccessPromise = GoogleOneTapAuth.tryAutoOrOneTapSignIn().then(res => res.successPromise);
+      const renderButtonPromise = GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-US', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
+      const signInResultSuccess = await Promise.race([autoOrOneTapSuccessPromise, renderButtonPromise]);
+      reportSignInResultSuccess(signInResultSuccess);
+    } catch(e) {
+      setAuthResult(`Something unexpected happened. Message: '${e}', Stack: ${new Error().stack}`);
     }
   }
 
   async function renderButton() {
-    let signInResult = await GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-us', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
-    reportSignInResult(signInResult);
+    const successResult = await GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-us', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
+    reportSignInResultSuccess(successResult);
   }
 
-  function reportSignInResult(signInResult: SignInResult) {
-    if (signInResult.isSuccess) {
-      setOneTapAuthResult(`SignIn success! email: '${signInResult.email}', userId: '${signInResult.userId}', selectBy: '${signInResult.selectBy}', nonce: '${signInResult.decodedIdToken.nonce}'. See browser console for idToken and full result.`);
-      console.log('Success! ' + JSON.stringify(signInResult));
+  function reportSignInResult(signInResultOption: SignInResultOption) {
+    if (signInResultOption.isSuccess) {
+      reportSignInResultSuccess(signInResultOption.success!);
     } else {
-      setOneTapAuthResult(`SignIn not successful. noSuccessReasonCode: '${signInResult.noSuccessReasonCode}', noSuccessAdditionalInfo: '${signInResult.noSuccessAdditionalInfo}'`);
-      console.log('No success! ' + JSON.stringify(signInResult));
+      reportSignInResultError(signInResultOption.noSuccess!);
     }
   }
 
+  function reportSignInResultSuccess(successResult: SuccessSignInResult) {
+    setAuthResult(`SignIn success! email: '${successResult.email}', userId: '${successResult.userId}', selectBy: '${successResult.selectBy}', nonce: '${successResult.decodedIdToken.nonce}'. See browser console for idToken and full result.`);
+    console.log('Success! ' + JSON.stringify(successResult));
+  }
+
+  function reportSignInResultError(noSuccessResult: NoSuccessSignInResult) {
+    setAuthResult(`SignIn not successful. noSuccessReasonCode: '${noSuccessResult.noSuccessReasonCode}', noSuccessAdditionalInfo: '${noSuccessResult.noSuccessAdditionalInfo}'`);
+    console.log('No success! ' + JSON.stringify(noSuccessResult));
+  }
+
   async function signOutGoogle() {
-    setOneTapAuthResult('');
+    setAuthResult('');
     const signOutResult = await GoogleOneTapAuth.signOut();
 
     if (signOutResult.isSuccess) {
-      setOneTapAuthResult('SignOut success');
+      setAuthResult('SignOut success');
     } else {
-      setOneTapAuthResult(`SignOut error: ${signOutResult.error}`);
+      setAuthResult(`SignOut error: ${signOutResult.error}`);
     }
   }
 
@@ -63,11 +83,19 @@ const Page1: React.FC = () => {
         <IonGrid fixed={true}>
           <IonRow>
             <IonCol size='auto'>
-              <IonButton onClick={() => signInGoogle()}>
-                Trigger auto-sign-in
+              <IonButton onClick={() => triggerGoogleAutoOrOneTapSignInShowSignInButtonIfNotSuccessful()}>
+                Sign-in then show button
               </IonButton>
             </IonCol>
-            <IonCol>Trigger one-tap auto-sign-in and show Sign-in-with-google button if auto-sign-in is not possible.</IonCol>
+            <IonCol>Trigger one-tap sign-in either automatic or with one-tap and, if not successful, show Sign-in-with-google button.</IonCol>
+          </IonRow>
+          <IonRow>
+            <IonCol size='auto'>
+              <IonButton onClick={() => triggerGoogleAutoOrOneTapSignInAndShowSignInButton()}>
+                Sign-in and show button
+              </IonButton>
+            </IonCol>
+            <IonCol>Trigger one-tap sign-in either automatic or with one-tap and, at the same time, show Sign-in-with-google button.</IonCol>
           </IonRow>
           <IonRow>
             <IonCol size='auto'>

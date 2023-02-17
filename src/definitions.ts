@@ -7,28 +7,34 @@ export interface InitializeOptions {
   clientId: string;
   /**
    * A string that is included in the ID token if supported. It is auto-generated if not provided.
-   * The com.google.android.gms.auth.api.identity api supports nonce, however the com.google.android.gms.auth.api.signin does currently not.
+   * The com.google.android.gms.auth.api.identity api supports nonce, however the com.google.android.gms.auth.api.signin does currently not, and for ios there is an open issue.
    * See https://github.com/google/GoogleSignIn-iOS/issues/135
    */
   nonce?: string;
 }
 
-export interface SignInResult {
+export interface SignInResultPromises {
+  successPromise: Promise<SuccessSignInResult>;
+  noSuccess: Promise<NoSuccessSignInResult>;
+  signInResultOptionPromise: Promise<SignInResultOption>;
+}
+
+export interface SignInResultOption {
   /**
-   * If the user could be authenticated.
+   * Indicates if the success or noSuccess property is set.
    */
   isSuccess: boolean;
   /**
-   * A reason code as 'opt_out_or_no_session'.
-   * For the js library see google.PromptMomentNotification for possible values.
-   * For android 'SIGN_IN_REQUIRED' and 'SIGN_IN_CANCELLED' are currently set.
+   * Success result.
    */
-  noSuccessReasonCode?: string;
+  success?: SuccessSignInResult;
   /**
-   * A error message.
-   * Set in case of error if the native android code is used.
+   * NoSuccess result.
    */
-  noSuccessAdditionalInfo?: string;
+  noSuccess?: NoSuccessSignInResult;
+}
+
+export interface SuccessSignInResult {
   /**
    * How the credential was retrieved.
    * Currently not available for android, only if the js library is used.
@@ -45,23 +51,35 @@ export interface SignInResult {
     | 'btn_confirm_add_session' // see google.CredentialResponse.select_by
   /**
    * The JWT token base64 encoded.
-   * Will be set if successful.
    */
-  idToken?: string;
+  idToken: string;
   /**
    * A permanent id for the user.
    */
-  userId?: string;
+  userId: string;
   /**
    * The email address.
    */
-  email?: string;
+  email: string;
   /**
    * The decoded JWT token.
-   * Will be set if successful.
    * The signature is not verified when decoding the token.
    */
-  decodedIdToken?: any;
+  decodedIdToken: any;
+}
+
+export interface NoSuccessSignInResult {
+  /**
+   * A reason code as 'opt_out_or_no_session'.
+   * For the js library see google.PromptMomentNotification for possible values.
+   * For android 'SIGN_IN_REQUIRED' and 'SIGN_IN_CANCELLED' are currently set.
+   */
+  noSuccessReasonCode?: string;
+  /**
+   * A error message.
+   * Set in case of error if the native android code is used.
+   */
+  noSuccessAdditionalInfo?: string;
 }
 
 export interface RenderSignInButtonOptions {
@@ -94,26 +112,29 @@ export interface GoogleOneTapAuthPlugin {
    */
   initialize(options: InitializeOptions): Promise<void>;
   /**
-   * Tries to auto-sign in the user.
+   * Tries to either auto-sign in the user or sign-in the user with just one tap/click.
    * If there is a single google account and that account has previously signed into the app, then that user is auto signed in. A short popover is displayed during sign-in.
    * If there are multiple google accounts and more than one have previously signed into the app then a user selection screen is shown.
-   * If there is no active google session or if no user session has logged in previously in the app or if the user has opt out of One Tap, the auto sign-in will fail.
+   * If there is no active google session or if no user session has logged in previously in the app or if the user has opt out of One Tap, then the response will indicate that the auto sign-in did not succeed.
    * See https://developers.google.com/identity/gsi/web/guides/features
+   * @returns A Promise object that contains 3 properties with promises. One resolves only when authentication succeeds, the second on error and the third on success or error.
    */
-  tryAutoSignIn(): Promise<SignInResult>;
+  tryAutoOrOneTapSignIn(): Promise<SignInResultPromises>;
   /**
-   * 
+   * Renders the sign-in button.
+   * The returned promise will only resolve if successful.
    * @param parentElementId 
    * @param options 
    * @param gsiButtonConfiguration Not all button configuration options are supported on android.
    */
-  renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SignInResult>;
+  renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SuccessSignInResult>;
   /**
    * Ends the session.
    */
   signOut(): Promise<SignOutResult>;
   /**
    * Gets the last user defined or auto-created nonce.
+   * Unfortunately not all google libraries support setting a nonce, so this is currently not universally useful.
    */
   getNonce(): string;
 }

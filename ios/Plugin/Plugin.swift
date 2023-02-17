@@ -16,7 +16,7 @@ public class GoogleOneTapAuth: CAPPlugin {
     }
     
     @objc
-    func tryAutoSignIn(_ call: CAPPluginCall) {
+    func tryAutoOrOneTapSignIn(_ call: CAPPluginCall) {
         if googleSignIn.hasPreviousSignIn() {
             googleSignIn.restorePreviousSignIn() { user, error in
                 if let error = error {
