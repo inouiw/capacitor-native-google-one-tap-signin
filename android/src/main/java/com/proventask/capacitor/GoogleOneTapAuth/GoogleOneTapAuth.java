@@ -98,27 +98,35 @@ public class GoogleOneTapAuth extends Plugin {
     public void tryAutoOrOneTapSignIn(PluginCall call) {
         try {
             var signInResult = beginSignIn(true).get();
-            if (!signInResult.getBool("isSuccess")) {
+            if (!signInResult.has("idToken")) {
                 signInResult = beginSignIn(false).get();
             }
-            if (!signInResult.getBool("isSuccess")) {
+            if (!signInResult.has("idToken")) {
                 signInResult = googleSilentSignIn(call).get();
             }
+            call.resolve(wrapInSignInResultInOption(signInResult));
+        } catch (ExecutionException | InterruptedException e) {
+            call.reject(e.toString());
+        }
+    }
+
+    // This method is not part of the api but only called from GoogleOneTapAuth.ts in method renderSignInButton.
+    @PluginMethod()
+    public void triggerGoogleSignIn(PluginCall call) {
+        try {
+            var signInResult = googleSignIn(call).get();
+            assert(signInResult.has("idToken") && signInResult.getString("idToken").length() > 0);
             call.resolve(signInResult);
         } catch (ExecutionException | InterruptedException e) {
             call.reject(e.toString());
         }
     }
 
-    // This method is not part of the api but only called from GoogleOneTapAuth.ts.
-    @PluginMethod()
-    public void triggerGoogleSignIn(PluginCall call) {
-        try {
-            var signInResult = googleSignIn(call).get();
-            call.resolve(signInResult);
-        } catch (ExecutionException | InterruptedException e) {
-            call.reject(e.toString());
-        }
+    private JSObject wrapInSignInResultInOption(JSObject successSignInResult) {
+        var result = new JSObject();
+        result.put("isSuccess", true);
+        result.put("success", successSignInResult);
+        return result;
     }
 
     private Future<JSObject> beginSignIn(boolean filterByAuthorizedAccounts) {
@@ -174,7 +182,6 @@ public class GoogleOneTapAuth extends Plugin {
 
     private JSObject createErrorResponse(String reasonCode, String noSuccessAdditionalInfo) {
         var result = new JSObject();
-        result.put("isSuccess", false);
         result.put("noSuccessReasonCode", reasonCode);
         result.put("noSuccessAdditionalInfo", noSuccessAdditionalInfo);
         return result;
@@ -193,7 +200,6 @@ public class GoogleOneTapAuth extends Plugin {
             // Do nothing.
         }
         var result = new JSObject();
-        result.put("isSuccess", true);
         result.put("idToken", idToken);
         result.put("userId", userId);
         result.put("email", email);
@@ -241,7 +247,7 @@ public class GoogleOneTapAuth extends Plugin {
     private Future<JSObject> googleSilentSignIn(final PluginCall call) {
         googleSignInFuture = new CompletableFuture<>();
         googleSignInClient.silentSignIn()
-                .addOnCompleteListener(task -> handleGoogleSignInResult(call, task, "silentSignIn"));
+                .addOnCompleteListener(task -> handleGoogleSignInResult(call, task, false,"silentSignIn"));
         return googleSignInFuture;
     }
 
@@ -259,10 +265,11 @@ public class GoogleOneTapAuth extends Plugin {
         }
         Intent data = result.getData();
         var task = GoogleSignIn.getSignedInAccountFromIntent(data);
-        handleGoogleSignInResult(call, task, "GoogleSignInClient.getSignInIntent");
+        handleGoogleSignInResult(call, task, true, "GoogleSignInClient.getSignInIntent");
     }
 
-    private void handleGoogleSignInResult(PluginCall call, Task<GoogleSignInAccount> completedTask, String triggerMethodName) {
+    private void handleGoogleSignInResult(PluginCall call, Task<GoogleSignInAccount> completedTask,
+                                          boolean completeFutureOnlyOnSuccess, String triggerMethodName) {
         try {
             var account = completedTask.getResult(ApiException.class);
             signInMethod = SignInMethod.GoogleSignIn;
@@ -272,12 +279,13 @@ public class GoogleOneTapAuth extends Plugin {
             int statusCode = e.getStatusCode();
             var statusCodeString = GoogleSignInStatusCodes.getStatusCodeString(statusCode);
             Log.i(TAG, triggerMethodName + " not successful, statusCodeString " + statusCodeString, e);
-            if (statusCode == GoogleSignInStatusCodes.SIGN_IN_REQUIRED
-                || statusCode == GoogleSignInStatusCodes.SIGN_IN_CANCELLED) {
-                googleSignInFuture.complete(createErrorResponse(statusCodeString, null));
-            }
-            else {
-                googleSignInFuture.completeExceptionally(e);
+            if (!completeFutureOnlyOnSuccess) {
+                if (statusCode == GoogleSignInStatusCodes.SIGN_IN_REQUIRED
+                        || statusCode == GoogleSignInStatusCodes.SIGN_IN_CANCELLED) {
+                    googleSignInFuture.complete(createErrorResponse(statusCodeString, null));
+                } else {
+                    googleSignInFuture.completeExceptionally(e);
+                }
             }
         }
     }

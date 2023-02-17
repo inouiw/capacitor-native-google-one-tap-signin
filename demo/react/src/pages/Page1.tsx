@@ -12,13 +12,13 @@ const Page1: React.FC = () => {
     GoogleOneTapAuth.initialize({ clientId: clientId });
   }, []);
 
-  async function triggerGoogleAutoOrOneTapSignInShowSignInButtonIfNotSuccessful() {
+  async function triggerGoogleAutoOrOneTapSignInShowSignInButtonIfNotSuccessfulHandler() {
     setAuthResult('');
     try {
       const signInResult = await GoogleOneTapAuth.tryAutoOrOneTapSignIn().then(res => res.signInResultOptionPromise);
       reportSignInResult(signInResult);
       if (!signInResult.isSuccess) { 
-        const successResult = await GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-US', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
+        const successResult = await renderSignInButton();
         reportSignInResultSuccess(successResult);
       }
     } catch(e) {
@@ -26,11 +26,11 @@ const Page1: React.FC = () => {
     }
   }
 
-  async function triggerGoogleAutoOrOneTapSignInAndShowSignInButton() {
+  async function triggerGoogleAutoOrOneTapSignInAndShowSignInButtonHandler() {
     setAuthResult('');
     try {
       const autoOrOneTapSuccessPromise = GoogleOneTapAuth.tryAutoOrOneTapSignIn().then(res => res.successPromise);
-      const renderButtonPromise = GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-US', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
+      const renderButtonPromise = renderSignInButton();
       const signInResultSuccess = await Promise.race([autoOrOneTapSuccessPromise, renderButtonPromise]);
       reportSignInResultSuccess(signInResultSuccess);
     } catch(e) {
@@ -38,9 +38,13 @@ const Page1: React.FC = () => {
     }
   }
 
-  async function renderButton() {
-    const successResult = await GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-us', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
+  async function renderButtonHandler() {
+    const successResult = await renderSignInButton();
     reportSignInResultSuccess(successResult);
+  }
+
+  function renderSignInButton() {
+    return GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-GB', theme: 'outline', text: 'continue_with', shape: 'rectangular', size: 'large' });
   }
 
   function reportSignInResult(signInResultOption: SignInResultOption) {
@@ -61,7 +65,7 @@ const Page1: React.FC = () => {
     console.log('No success! ' + JSON.stringify(noSuccessResult));
   }
 
-  async function signOutGoogle() {
+  async function signOutGoogleHandler() {
     setAuthResult('');
     const signOutResult = await GoogleOneTapAuth.signOut();
 
@@ -83,7 +87,7 @@ const Page1: React.FC = () => {
         <IonGrid fixed={true}>
           <IonRow>
             <IonCol size='auto'>
-              <IonButton onClick={() => triggerGoogleAutoOrOneTapSignInShowSignInButtonIfNotSuccessful()}>
+              <IonButton onClick={() => triggerGoogleAutoOrOneTapSignInShowSignInButtonIfNotSuccessfulHandler()}>
                 Sign-in then show button
               </IonButton>
             </IonCol>
@@ -91,7 +95,7 @@ const Page1: React.FC = () => {
           </IonRow>
           <IonRow>
             <IonCol size='auto'>
-              <IonButton onClick={() => triggerGoogleAutoOrOneTapSignInAndShowSignInButton()}>
+              <IonButton onClick={() => triggerGoogleAutoOrOneTapSignInAndShowSignInButtonHandler()}>
                 Sign-in and show button
               </IonButton>
             </IonCol>
@@ -99,7 +103,7 @@ const Page1: React.FC = () => {
           </IonRow>
           <IonRow>
             <IonCol size='auto'>
-              <IonButton onClick={() => renderButton()}>
+              <IonButton onClick={() => renderButtonHandler()}>
                 Render sign-in button
               </IonButton>
             </IonCol>
@@ -107,13 +111,13 @@ const Page1: React.FC = () => {
           </IonRow>
           <IonRow>
             <IonCol size='auto'>
-              <div id="appleid-signin" data-color="black" data-border="true" data-type="continue" data-width="210" data-height="40"></div>
+              <div id="appleid-signin"></div>
             </IonCol>
             <IonCol></IonCol>
           </IonRow>
           <IonRow>
             <IonCol size='auto'>
-              <IonButton onClick={() => signOutGoogle()}>
+              <IonButton onClick={() => signOutGoogleHandler()}>
                 Sign-out
               </IonButton>
             </IonCol>

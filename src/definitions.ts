@@ -112,7 +112,7 @@ export interface GoogleOneTapAuthPlugin {
    */
   initialize(options: InitializeOptions): Promise<void>;
   /**
-   * Tries to either auto-sign in the user or sign-in the user with just one tap/click.
+   * Tries to either auto-sign-in the user or sign-in the user with just one tap/click.
    * If there is a single google account and that account has previously signed into the app, then that user is auto signed in. A short popover is displayed during sign-in.
    * If there are multiple google accounts and more than one have previously signed into the app then a user selection screen is shown.
    * If there is no active google session or if no user session has logged in previously in the app or if the user has opt out of One Tap, then the response will indicate that the auto sign-in did not succeed.

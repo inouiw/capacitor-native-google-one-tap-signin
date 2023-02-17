@@ -23,19 +23,25 @@ public class GoogleOneTapAuth: CAPPlugin {
                     call.reject(error.localizedDescription, "\(error._code)");
                     return;
                 }
-                self.resolveSignInCallWith(call: call, user: user!)
+                call.resolve(self.wrapInSignInResultInOption(self.createSuccessSignInResult(user: user!)))
             }
         } else {
-            let presentingVc = bridge!.viewController!;
-            
-            self.googleSignIn.signIn(withPresenting: presentingVc) { signInResult, error in
-                if let error = error {
-                    call.reject(error.localizedDescription, "\(error._code)");
-                    return;
-                }
-                self.resolveSignInCallWith(call: call, user: signInResult?.user);
-            };
+            call.resolve(createNoSuccessSignInResultOption())
         }
+    }
+    
+    // This method is not part of the api but only called from GoogleOneTapAuth.ts in method renderSignInButton.
+    @objc
+    func triggerGoogleSignIn(_ call: CAPPluginCall) {
+        let presentingVc = bridge!.viewController!
+        
+        self.googleSignIn.signIn(withPresenting: presentingVc) { signInResult, error in
+            if let error = error {
+                call.reject(error.localizedDescription, "\(error._code)")
+                return;
+            }
+            call.resolve(self.createSuccessSignInResult(user: signInResult?.user))
+        };
     }
     
     @objc
@@ -46,24 +52,39 @@ public class GoogleOneTapAuth: CAPPlugin {
     @objc
     func signOut(_ call: CAPPluginCall) {
         googleSignIn.signOut();
-        call.resolve(createSuccessResult());
+        call.resolve(createSuccessSignOutResult());
     }
     
-    func resolveSignInCallWith(call: CAPPluginCall, user: GIDGoogleUser?) {
-        var userData: [String: Any] = [
-            "isSuccess": true,
+    func createSuccessSignInResult(user: GIDGoogleUser?) -> [String: Any] {
+        var successSignInResult: [String: Any] = [
             "idToken": user?.idToken?.tokenString ?? NSNull(),
             "userId": user?.userID ?? NSNull(),
             "email": user?.profile?.email ?? NSNull(),
             "decodedIdToken": decodeJwtBody(jwtToken: user?.idToken?.tokenString) ?? NSNull(),
         ];
         if let imageUrl = user?.profile?.imageURL(withDimension: 100)?.absoluteString {
-            userData["imageUrl"] = imageUrl;
+            successSignInResult["imageUrl"] = imageUrl;
         }
-        call.resolve(userData);
+        return successSignInResult;
     }
     
-    func createSuccessResult() -> [String: Any] {
+    func wrapInSignInResultInOption(_ successSignInResult: [String: Any]) -> [String: Any] {
+        var signInResultOption: [String: Any] = [
+            "isSuccess": true,
+            "success": successSignInResult,
+        ];
+        return signInResultOption;
+    }
+    
+    func createNoSuccessSignInResultOption() -> [String: Any] {
+        let noSuccessResultJson: [String: Any] = [
+            "isSuccess": false,
+            "noSuccess": [:],
+        ];
+        return noSuccessResultJson;
+    }
+    
+    func createSuccessSignOutResult() -> [String: Any] {
         let successResultJson: [String: Any] = [
             "isSuccess": true,
         ];
