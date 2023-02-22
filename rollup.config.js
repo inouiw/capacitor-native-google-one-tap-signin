@@ -7,6 +7,8 @@ export default {
       name: 'capacitorNativeGoogleOneTapSignin',
       globals: {
         '@capacitor/core': 'capacitorExports',
+        'scriptjs': 'scriptjs',
+        'jwt-decode': 'jwt_decode',
       },
       sourcemap: true,
       inlineDynamicImports: true,
@@ -18,5 +20,5 @@ export default {
       inlineDynamicImports: true,
     },
   ],
-  external: ['@capacitor/core'],
+  external: ['@capacitor/core', 'scriptjs', 'jwt-decode'],
 };
