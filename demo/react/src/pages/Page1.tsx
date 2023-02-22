@@ -44,7 +44,7 @@ const Page1: React.FC = () => {
   }
 
   function renderSignInButton() {
-    return GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-GB', theme: 'outline', text: 'continue_with', shape: 'rectangular', size: 'large' });
+    return GoogleOneTapAuth.renderSignInButton('google-signin', {}, { locale: 'en-GB', theme: 'outline', text: 'continue_with', shape: 'rectangular', size: 'large' });
   }
 
   function reportSignInResult(signInResultOption: SignInResultOption) {
@@ -111,7 +111,7 @@ const Page1: React.FC = () => {
           </IonRow>
           <IonRow>
             <IonCol size='auto'>
-              <div id="appleid-signin"></div>
+              <div id="google-signin"></div>
             </IonCol>
             <IonCol></IonCol>
           </IonRow>

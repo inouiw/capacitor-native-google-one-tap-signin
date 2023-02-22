@@ -117,9 +117,14 @@ export interface GoogleOneTapAuthPlugin {
    * If there are multiple google accounts and more than one have previously signed into the app then a user selection screen is shown.
    * If there is no active google session or if no user session has logged in previously in the app or if the user has opt out of One Tap, then the response will indicate that the auto sign-in did not succeed.
    * See https://developers.google.com/identity/gsi/web/guides/features
-   * @returns A Promise object that contains 3 properties with promises. One resolves only when authentication succeeds, the second on error and the third on success or error.
+   * @returns An object that contains 3 properties with promises. One resolves only when authentication succeeds, the second on error and the third on success or error.
    */
-  tryAutoOrOneTapSignIn(): Promise<SignInResultPromises>;
+  tryAutoOrOneTapSignIn()
+  : Promise<{
+    successPromise: Promise<SuccessSignInResult>;
+    noSuccess: Promise<NoSuccessSignInResult>;
+    signInResultOptionPromise: Promise<SignInResultOption>;
+  }>;
   /**
    * Renders the sign-in button.
    * The returned promise will only resolve if successful.
@@ -127,7 +132,11 @@ export interface GoogleOneTapAuthPlugin {
    * @param options 
    * @param gsiButtonConfiguration Not all button configuration options are supported on android.
    */
-  renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SuccessSignInResult>;
+  renderSignInButton(
+    parentElementId: string,
+    options: RenderSignInButtonOptions,
+    gsiButtonConfiguration?: google.GsiButtonConfiguration)
+    : Promise<SuccessSignInResult>;
   /**
    * Ends the session.
    */

@@ -100,7 +100,12 @@ initialize(options: InitializeOptions): Promise<void>;
  * See https://developers.google.com/identity/gsi/web/guides/features
  * @returns A Promise object that contains 3 properties with promises. One resolves only when authentication succeeds, the second on error and the third on success or error.
  */
-tryAutoOrOneTapSignIn(): Promise<SignInResultPromises>;
+tryAutoOrOneTapSignIn()
+: Promise<{
+  successPromise: Promise<SuccessSignInResult>;
+  noSuccess: Promise<NoSuccessSignInResult>;
+  signInResultOptionPromise: Promise<SignInResultOption>;
+}>;
 /**
  * Renders the sign-in button.
  * The returned promise will only resolve if successful.
@@ -108,7 +113,10 @@ tryAutoOrOneTapSignIn(): Promise<SignInResultPromises>;
  * @param options 
  * @param gsiButtonConfiguration Not all button configuration options are supported on android.
  */
-renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SuccessSignInResult>;
+renderSignInButton(
+  parentElementId: string,
+  options: RenderSignInButtonOptions,
+  gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SuccessSignInResult>;
 /**
  * Ends the session.
  */
