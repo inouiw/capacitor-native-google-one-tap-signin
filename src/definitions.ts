@@ -7,7 +7,8 @@ export interface InitializeOptions {
   clientId: string;
   /**
    * A string that is included in the ID token if supported. It is auto-generated if not provided.
-   * The com.google.android.gms.auth.api.identity api supports nonce, however the com.google.android.gms.auth.api.signin does currently not, and for ios there is an open issue.
+   * The com.google.android.gms.auth.api.identity api supports nonce, however the 
+   * com.google.android.gms.auth.api.signin does currently not, and for ios there is an open issue.
    * See https://github.com/google/GoogleSignIn-iOS/issues/135
    */
   nonce?: string;
@@ -113,11 +114,16 @@ export interface GoogleOneTapAuthPlugin {
   initialize(options: InitializeOptions): Promise<void>;
   /**
    * Tries to either auto-sign-in the user or sign-in the user with just one tap/click.
-   * If there is a single google account and that account has previously signed into the app, then that user is auto signed in. A short popover is displayed during sign-in.
-   * If there are multiple google accounts and more than one have previously signed into the app then a user selection screen is shown.
-   * If there is no active google session or if no user session has logged in previously in the app or if the user has opt out of One Tap, then the response will indicate that the auto sign-in did not succeed.
+   * If there is a single google account and that account has previously signed into the app, 
+   * then that user is auto signed in. A short popover is displayed during sign-in.
+   * If there are multiple google accounts and more than one have previously signed into the 
+   * app then a user selection screen is shown.
+   * If there is no active google session or if no user session has logged in previously in 
+   * the app or if the user has opt out of One Tap, then the response will indicate that 
+   * the auto sign-in did not succeed.
    * See https://developers.google.com/identity/gsi/web/guides/features
-   * @returns An object that contains 3 properties with promises. One resolves only when authentication succeeds, the second on error and the third on success or error.
+   * @returns A Promise object that contains 3 properties with promises. One resolves only 
+   * when authentication succeeds, the second on error and the third on success or error.
    */
   tryAutoOrOneTapSignIn()
   : Promise<{
@@ -143,7 +149,8 @@ export interface GoogleOneTapAuthPlugin {
   signOut(): Promise<SignOutResult>;
   /**
    * Gets the last user defined or auto-created nonce.
-   * Unfortunately not all google libraries support setting a nonce, so this is currently not universally useful.
+   * Unfortunately not all google libraries support setting a nonce, so this is currently 
+   * not universally useful.
    */
   getNonce(): string;
 }

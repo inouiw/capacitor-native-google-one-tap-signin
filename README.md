@@ -44,11 +44,13 @@ import { GoogleOneTapAuth, SignInResult } from 'capacitor-native-google-one-tap-
 await GoogleOneTapAuth.initialize({ clientId: clientId });
 
 // Example 1: Showing the button only if auto-sign-in or one-tap sign in fail.
-const signInResult = await GoogleOneTapAuth.tryAutoOrOneTapSignIn().then(res => res.signInResultOptionPromise);
+const signInResult = await GoogleOneTapAuth.tryAutoOrOneTapSignIn()
+  .then(res => res.signInResultOptionPromise);
 if (signInResult.isSuccess) {
   console.log(signInResult);
 } else { 
-  const successResult = await GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-US', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
+  const successResult = await GoogleOneTapAuth
+    .renderSignInButton('appleid-signin', {}, { text: 'continue_with' });
   console.log(successResult);
 }
 
@@ -61,8 +63,10 @@ import { GoogleOneTapAuth, SignInResult } from 'capacitor-native-google-one-tap-
 await GoogleOneTapAuth.initialize({ clientId: clientId });
 
 // Example 2: Trigger auto-sign-in or one-tap sign and show the button in parallel.
-const autoOrOneTapSuccessPromise = GoogleOneTapAuth.tryAutoOrOneTapSignIn().then(res => res.successPromise);
-const renderButtonPromise = GoogleOneTapAuth.renderSignInButton('appleid-signin', {}, { locale: 'en-US', theme: 'outline', text: 'continue_with', shape: 'rectangular' });
+const autoOrOneTapSuccessPromise = GoogleOneTapAuth.tryAutoOrOneTapSignIn()
+  .then(res => res.successPromise);
+const renderButtonPromise = GoogleOneTapAuth
+  .renderSignInButton('appleid-signin', {}, { text: 'continue_with' });
 const signInResultSuccess = await Promise.race([autoOrOneTapSuccessPromise, renderButtonPromise]);
 console.log(signInResultSuccess);
 
@@ -94,11 +98,16 @@ See `src/definitions.ts` for a complete definition.
 initialize(options: InitializeOptions): Promise<void>;
 /**
  * Tries to either auto-sign-in the user or sign-in the user with just one tap/click.
- * If there is a single google account and that account has previously signed into the app, then that user is auto signed in. A short popover is displayed during sign-in.
- * If there are multiple google accounts and more than one have previously signed into the app then a user selection screen is shown.
- * If there is no active google session or if no user session has logged in previously in the app or if the user has opt out of One Tap, then the response will indicate that the auto sign-in did not succeed.
+ * If there is a single google account and that account has previously signed into the app, 
+ * then that user is auto signed in. A short popover is displayed during sign-in.
+ * If there are multiple google accounts and more than one have previously signed into the 
+ * app then a user selection screen is shown.
+ * If there is no active google session or if no user session has logged in previously in 
+ * the app or if the user has opt out of One Tap, then the response will indicate that 
+ * the auto sign-in did not succeed.
  * See https://developers.google.com/identity/gsi/web/guides/features
- * @returns A Promise object that contains 3 properties with promises. One resolves only when authentication succeeds, the second on error and the third on success or error.
+ * @returns A Promise object that contains 3 properties with promises. One resolves only 
+ * when authentication succeeds, the second on error and the third on success or error.
  */
 tryAutoOrOneTapSignIn()
 : Promise<{
@@ -123,7 +132,8 @@ renderSignInButton(
 signOut(): Promise<SignOutResult>;
 /**
  * Gets the last user defined or auto-created nonce.
- * Unfortunately not all google libraries support setting a nonce, so this is currently not universally useful.
+ * Unfortunately not all google libraries support setting a nonce, so this is currently 
+ * not universally useful.
  */
 getNonce(): string;
 
