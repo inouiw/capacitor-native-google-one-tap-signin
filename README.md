@@ -50,7 +50,7 @@ if (signInResult.isSuccess) {
   console.log(signInResult);
 } else { 
   const successResult = await GoogleOneTapAuth
-    .renderSignInButton('appleid-signin', {}, { text: 'continue_with' });
+    .renderSignInButton('google-signin', {}, { text: 'continue_with' });
   console.log(successResult);
 }
 
@@ -66,7 +66,7 @@ await GoogleOneTapAuth.initialize({ clientId: clientId });
 const autoOrOneTapSuccessPromise = GoogleOneTapAuth.tryAutoOrOneTapSignIn()
   .then(res => res.successPromise);
 const renderButtonPromise = GoogleOneTapAuth
-  .renderSignInButton('appleid-signin', {}, { text: 'continue_with' });
+  .renderSignInButton('google-signin', {}, { text: 'continue_with' });
 const signInResultSuccess = await Promise.race([autoOrOneTapSuccessPromise, renderButtonPromise]);
 console.log(signInResultSuccess);
 
