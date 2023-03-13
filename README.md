@@ -13,7 +13,7 @@ After a successful authentication, the idToken is returned as base64 and as obje
 
 The user is automatically signed-in, without a prompt after the first sign-in.
 
-The andorid minSdkVersion is 24, however the one-tap library seems to require API version 29. For lower API versions GoogleSignIn is used.
+The android minSdkVersion is 24, however the one-tap library seems to require API version 29. For lower API versions GoogleSignIn is used.
 
 # Install and Configure
 
@@ -30,9 +30,11 @@ npx cap update
 ```
 
 #### 3. Configure
-You need to provide the plug-in a client ID of type "Web application". This client ID is used for the web and android platforms. The client ID is passed in the `initialize` call.
+Authentication is based on cryptographic keys, so you need to create a client ID for each platform in [Google Cloud Console](https://console.cloud.google.com/apis/dashboard).
 
-For the android platform, you need to create a client ID of type "Android" in the [Google Cloud Console](https://console.cloud.google.com/apis/dashboard), as stated in [One Tap Get started docu](https://developers.google.cn/identity/one-tap/android/get-started). You just need to create that client ID, you do not need to include it in any config.
+For the web platform, you need to create a client ID of type "Web application". When creating the client ID add two "Authorized JavaScript origins". One with URI "http://localhost:3000" and one with URI "http://localhost". "Authorized redirect URIs" is not needed. Copy the generated client ID and pass it in the `initialize` call. Note that if you host the app not on localhost or on a different port, you will either need to add more origins or add another client ID.
+
+For the android platform, you need to create a client ID of type "Android", as stated in [One Tap Get started docu](https://developers.google.cn/identity/one-tap/android/get-started). You just need to create that client ID, you do not need to include it in any config. It is linked to your app via the package name and SHA-1 signing certificate fingerprint of your app. Note that usually the signing certificate for developments builds is different than for app store builds so you will need to create a client ID for development builds and one for app store builds.
 
 For the ios platform, you need to create a client ID of type iOS in the [Google Cloud Console](https://console.cloud.google.com/apis/dashboard). Add the client ID to the  `{your-app}/ios/App/App/Info.plist` file with the key `GIDClientID` (see the demo app for reference). When creating the client ID, you will see the "iOS URL scheme" value in the Google Cloud Console. Add this also to the `Info.plist` file.
 
