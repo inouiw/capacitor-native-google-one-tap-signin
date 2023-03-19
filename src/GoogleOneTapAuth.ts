@@ -55,8 +55,10 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
     assert(() => !!parentElem);
     return new Promise<SuccessSignInResult>((resolve) => {
       const onClickAction = async () => {
-        const signInResult = await (GoogleOneTapAuthPlatform as any).triggerGoogleSignIn(options);
-        resolve(signInResult);
+        let signInResult = await (GoogleOneTapAuthPlatform as any).triggerGoogleSignIn(options);
+        if (Boolean(signInResult.idToken)) {
+          resolve(signInResult);
+        }
       };
       parentElem!.appendChild(this._getSignInButtonHtml(onClickAction));
     });

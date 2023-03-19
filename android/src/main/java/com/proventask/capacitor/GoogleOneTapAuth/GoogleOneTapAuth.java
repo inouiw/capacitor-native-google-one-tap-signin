@@ -115,7 +115,6 @@ public class GoogleOneTapAuth extends Plugin {
     public void triggerGoogleSignIn(PluginCall call) {
         try {
             var signInResult = googleSignIn(call).get();
-            assert(signInResult.has("idToken") && signInResult.getString("idToken").length() > 0);
             call.resolve(signInResult);
         } catch (ExecutionException | InterruptedException e) {
             call.reject(e.toString());
@@ -247,7 +246,7 @@ public class GoogleOneTapAuth extends Plugin {
     private Future<JSObject> googleSilentSignIn(final PluginCall call) {
         googleSignInFuture = new CompletableFuture<>();
         googleSignInClient.silentSignIn()
-                .addOnCompleteListener(task -> handleGoogleSignInResult(call, task, false,"silentSignIn"));
+                .addOnCompleteListener(task -> handleGoogleSignInResult(call, task, "silentSignIn"));
         return googleSignInFuture;
     }
 
@@ -265,11 +264,11 @@ public class GoogleOneTapAuth extends Plugin {
         }
         Intent data = result.getData();
         var task = GoogleSignIn.getSignedInAccountFromIntent(data);
-        handleGoogleSignInResult(call, task, true, "GoogleSignInClient.getSignInIntent");
+        handleGoogleSignInResult(call, task, "GoogleSignInClient.getSignInIntent");
     }
 
     private void handleGoogleSignInResult(PluginCall call, Task<GoogleSignInAccount> completedTask,
-                                          boolean completeFutureOnlyOnSuccess, String triggerMethodName) {
+                                          String triggerMethodName) {
         try {
             var account = completedTask.getResult(ApiException.class);
             signInMethod = SignInMethod.GoogleSignIn;
@@ -279,13 +278,11 @@ public class GoogleOneTapAuth extends Plugin {
             int statusCode = e.getStatusCode();
             var statusCodeString = GoogleSignInStatusCodes.getStatusCodeString(statusCode);
             Log.i(TAG, triggerMethodName + " not successful, statusCodeString " + statusCodeString, e);
-            if (!completeFutureOnlyOnSuccess) {
-                if (statusCode == GoogleSignInStatusCodes.SIGN_IN_REQUIRED
-                        || statusCode == GoogleSignInStatusCodes.SIGN_IN_CANCELLED) {
-                    googleSignInFuture.complete(createErrorResponse(statusCodeString, null));
-                } else {
-                    googleSignInFuture.completeExceptionally(e);
-                }
+            if (statusCode == GoogleSignInStatusCodes.SIGN_IN_REQUIRED
+                    || statusCode == GoogleSignInStatusCodes.SIGN_IN_CANCELLED) {
+                googleSignInFuture.complete(createErrorResponse(statusCodeString, null));
+            } else {
+                googleSignInFuture.completeExceptionally(e);
             }
         }
     }
