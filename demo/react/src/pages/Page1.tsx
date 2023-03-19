@@ -91,7 +91,7 @@ const Page1: React.FC = () => {
                 Sign-in then show button
               </IonButton>
             </IonCol>
-            <IonCol>Trigger one-tap sign-in either automatic or with one-tap and, if not successful, show Sign-in-with-google button.</IonCol>
+            <IonCol style={{minWidth: '200px'}}>Trigger one-tap sign-in either automatic or with one-tap and, if not successful, show Sign-in-with-google button.</IonCol>
           </IonRow>
           <IonRow>
             <IonCol size='auto'>
@@ -99,7 +99,7 @@ const Page1: React.FC = () => {
                 Sign-in and show button
               </IonButton>
             </IonCol>
-            <IonCol>Trigger one-tap sign-in either automatic or with one-tap and, at the same time, show Sign-in-with-google button.</IonCol>
+            <IonCol style={{minWidth: '200px'}}>Trigger one-tap sign-in either automatic or with one-tap and, at the same time, show Sign-in-with-google button.</IonCol>
           </IonRow>
           <IonRow>
             <IonCol size='auto'>
