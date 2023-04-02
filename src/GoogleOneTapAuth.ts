@@ -72,7 +72,7 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
   _getSignInButtonHtml(onClickAction: () => any) {
     // HTML from https://github.com/inouiw/ReactSignInWithGoogleButton
     const button = document.createElement('button');
-    button.setAttribute("style", "border-radius: 4px; background-color: rgb(255, 255, 255); border: 1px solid rgb(218, 220, 224); color: rgb(60, 64, 67); cursor: pointer; font-family: Roboto; font-weight: 500; font-size: 14px; height: 40px; letter-spacing: 0.25px; padding: 0px 12px; position: relative; text-align: center; vertical-align: middle; width: auto;");
+    button.setAttribute("style", "border-radius: 4px; background-color: rgb(255, 255, 255); border: 1px solid rgb(218, 220, 224); color: rgb(60, 64, 67); cursor: pointer; font-family: Roboto, Verdana; font-weight: 500; font-size: 14px; height: 40px; letter-spacing: 0.25px; padding: 0px 12px; position: relative; text-align: center; vertical-align: middle; width: auto;");
     button.onclick = onClickAction;
     button.innerHTML = `
       <div style="display: flex; align-items: center; flex-flow: row nowrap; justify-content: space-between; height: 100%; position: relative; width: 100%;">
