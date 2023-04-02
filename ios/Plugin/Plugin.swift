@@ -33,15 +33,16 @@ public class GoogleOneTapAuth: CAPPlugin {
     // This method is not part of the api but only called from GoogleOneTapAuth.ts in method renderSignInButton.
     @objc
     func triggerGoogleSignIn(_ call: CAPPluginCall) {
-        let presentingVc = bridge!.viewController!
-        
-        self.googleSignIn.signIn(withPresenting: presentingVc) { signInResult, error in
-            if let error = error {
-                call.reject(error.localizedDescription, "\(error._code)")
-                return;
-            }
-            call.resolve(self.createSuccessSignInResult(user: signInResult?.user))
-        };
+        DispatchQueue.main.async {
+            let presentingVc = self.bridge!.viewController!
+            self.googleSignIn.signIn(withPresenting: presentingVc) { signInResult, error in
+                if let error = error {
+                    call.reject(error.localizedDescription, "\(error._code)")
+                    return;
+                }
+                call.resolve(self.createSuccessSignInResult(user: signInResult?.user))
+            };
+        }
     }
     
     @objc
