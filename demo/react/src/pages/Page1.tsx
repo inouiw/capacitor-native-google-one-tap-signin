@@ -9,6 +9,7 @@ const Page1: React.FC = () => {
   const [oneTapAuthResult, setAuthResult] = useState('');
 
   useEffect(() => {
+    // It is allowed but not needed to await initialize.
     GoogleOneTapAuth.initialize({ clientId: clientId });
   }, []);
 
@@ -39,8 +40,13 @@ const Page1: React.FC = () => {
   }
 
   async function renderButtonHandler() {
-    const successResult = await renderSignInButton();
-    reportSignInResultSuccess(successResult);
+    setAuthResult('');
+    try {
+      const successResult = await renderSignInButton();
+      reportSignInResultSuccess(successResult);
+    } catch(e) {
+      setAuthResult(`Something unexpected happened. Message: '${e}', Stack: ${new Error().stack}`);
+    }
   }
 
   function renderSignInButton() {

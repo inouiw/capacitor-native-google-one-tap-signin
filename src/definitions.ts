@@ -73,7 +73,7 @@ export interface NoSuccessSignInResult {
   /**
    * A reason code as 'opt_out_or_no_session'.
    * For the js library see google.PromptMomentNotification for possible values.
-   * For android 'SIGN_IN_REQUIRED' and 'SIGN_IN_CANCELLED' are currently set.
+   * For android 'SIGN_IN_CANCELLED' are currently set.
    */
   noSuccessReasonCode?: string;
   /**
@@ -108,7 +108,11 @@ export interface SignOutResult {
 
 export interface GoogleOneTapAuthPlugin {
   /**
+   * Performs common or one-time initializations.
    * For the web platform, starts pre-loading the google one tap JavaScript library.
+   * initialize must be called before any other method.
+   * initialize remembers if it was called so it is safe to be called multiple times.
+   * Other methods wait till initialize is finished so you must not await initialize.
    * @param options 
    */
   initialize(options: InitializeOptions): Promise<void>;
@@ -134,6 +138,8 @@ export interface GoogleOneTapAuthPlugin {
   /**
    * Renders the sign-in button.
    * The returned promise will only resolve if successful.
+   * The returned promise is rejected for unrecoverable errors as 'unregistered_origin' 
+   * for the web platform.
    * @param parentElementId 
    * @param options 
    * @param gsiButtonConfiguration Not all button configuration options are supported on android.
