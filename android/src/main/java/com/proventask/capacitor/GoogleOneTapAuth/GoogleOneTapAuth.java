@@ -38,7 +38,6 @@ import java.util.concurrent.Future;
 
 @CapacitorPlugin()
 public class GoogleOneTapAuth extends Plugin {
-    private enum SignInMethod {NotSignedIn, OneTap, GoogleSignIn}
     private static final String TAG = "GoogleOneTapAuth Plugin";
     private String clientId;
     private String nonce;
@@ -47,7 +46,6 @@ public class GoogleOneTapAuth extends Plugin {
     private ActivityResultLauncher<IntentSenderRequest> googleOneTapSignInActivityResultHandlerIntentSenderRequest;
     private CompletableFuture<JSObject> oneTapSignInFuture;
     private CompletableFuture<JSObject> googleSignInFuture;
-    private SignInMethod signInMethod = SignInMethod.NotSignedIn;
 
     @Override
     public void load() {
@@ -82,7 +80,6 @@ public class GoogleOneTapAuth extends Plugin {
                         try {
                             Intent data = result.getData();
                             var credential = oneTapClient.getSignInCredentialFromIntent(data);
-                            signInMethod = SignInMethod.OneTap;
                             oneTapSignInFuture.complete(createSuccessResponse(credential.getGoogleIdToken()));
                         } catch (ApiException e) {
                             oneTapSignInFuture.complete(createErrorResponse(null, e.toString()));
@@ -187,28 +184,9 @@ public class GoogleOneTapAuth extends Plugin {
     }
 
     private JSObject createSuccessResponse(String idToken) {
-        var decodedIdToken = decodeJwtBody(idToken);
-        JSONObject decodedIdTokenJson = null;
-        String userId = null;
-        String email = null;
-        try {
-            decodedIdTokenJson = new JSONObject(decodedIdToken);
-            userId = decodedIdTokenJson.getString("sub");
-            email = decodedIdTokenJson.getString("email");
-        } catch (JSONException e) {
-            // Do nothing.
-        }
         var result = new JSObject();
         result.put("idToken", idToken);
-        result.put("userId", userId);
-        result.put("email", email);
-        result.put("decodedIdToken", decodedIdTokenJson);
         return result;
-    }
-
-    private String decodeJwtBody(String jwtToken) {
-        var parts = jwtToken.split("\\.");
-        return new String(android.util.Base64.decode(parts[1], android.util.Base64.DEFAULT));
     }
 
     private boolean isGooglePlayServicesAvailable(Context context) {
@@ -235,12 +213,6 @@ public class GoogleOneTapAuth extends Plugin {
             signOutResult.put("error", completedTask.getException().toString());
         }
         return signOutResult;
-    }
-
-    private JSObject createSuccessResult() {
-        var jsObject = new JSObject();
-        jsObject.put("isSuccess", true);
-        return jsObject;
     }
 
     private Future<JSObject> googleSilentSignIn(final PluginCall call) {
@@ -271,7 +243,6 @@ public class GoogleOneTapAuth extends Plugin {
                                           String triggerMethodName) {
         try {
             var account = completedTask.getResult(ApiException.class);
-            signInMethod = SignInMethod.GoogleSignIn;
             Log.i(TAG, triggerMethodName + " result " + account.toString());
             googleSignInFuture.complete(createSuccessResponse(account.getIdToken()));
         } catch (ApiException e) {

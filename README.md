@@ -96,7 +96,11 @@ See `src/definitions.ts` for a complete definition.
 
 ```TypeScript
 /**
+ * Performs common or one-time initializations.
  * For the web platform, starts pre-loading the google one tap JavaScript library.
+ * initialize must be called before any other method.
+ * initialize remembers if it was called so it is safe to be called multiple times.
+ * Other methods wait till initialize is finished so you must not await initialize.
  * @param options 
  */
 initialize(options: InitializeOptions): Promise<void>;
@@ -122,6 +126,8 @@ tryAutoOrOneTapSignIn()
 /**
  * Renders the sign-in button.
  * The returned promise will only resolve if successful.
+ * The returned promise is rejected for unrecoverable errors as 'unregistered_origin' 
+ * for the web platform.
  * @param parentElementId 
  * @param options 
  * @param gsiButtonConfiguration Not all button configuration options are supported on android.

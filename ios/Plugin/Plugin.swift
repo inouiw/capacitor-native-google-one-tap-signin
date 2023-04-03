@@ -5,6 +5,7 @@ import GoogleSignIn
 @objc(GoogleOneTapAuth)
 public class GoogleOneTapAuth: CAPPlugin {
     var googleSignIn: GIDSignIn!;
+    let gIDSignInErrorCodeCanceled = -5
     
     public override func load() {
         googleSignIn = GIDSignIn.sharedInstance;
@@ -33,15 +34,20 @@ public class GoogleOneTapAuth: CAPPlugin {
     // This method is not part of the api but only called from GoogleOneTapAuth.ts in method renderSignInButton.
     @objc
     func triggerGoogleSignIn(_ call: CAPPluginCall) {
-        let presentingVc = bridge!.viewController!
-        
-        self.googleSignIn.signIn(withPresenting: presentingVc) { signInResult, error in
-            if let error = error {
-                call.reject(error.localizedDescription, "\(error._code)")
-                return;
-            }
-            call.resolve(self.createSuccessSignInResult(user: signInResult?.user))
-        };
+        DispatchQueue.main.async {
+            let presentingVc = self.bridge!.viewController!
+            self.googleSignIn.signIn(withPresenting: presentingVc) { signInResult, error in
+                if let error = error {
+                    if (error._code == self.gIDSignInErrorCodeCanceled) {
+                        call.resolve(self.createErrorResponse(reasonCode: "SIGN_IN_CANCELLED"))
+                        return;
+                    }
+                    call.reject(error.localizedDescription, "\(error._code)")
+                    return;
+                }
+                call.resolve(self.createSuccessSignInResult(user: signInResult?.user))
+            };
+        }
     }
     
     @objc
@@ -54,22 +60,24 @@ public class GoogleOneTapAuth: CAPPlugin {
         googleSignIn.signOut();
         call.resolve(createSuccessSignOutResult());
     }
+
+    func createErrorResponse(reasonCode: String, noSuccessAdditionalInfo: String? = nil) -> [String: Any] {
+        let noSuccessSignInResult: [String: Any] = [
+            "noSuccessReasonCode": reasonCode,
+            "noSuccessAdditionalInfo": noSuccessAdditionalInfo ?? NSNull(),
+        ];
+        return noSuccessSignInResult;
+    }
     
     func createSuccessSignInResult(user: GIDGoogleUser?) -> [String: Any] {
-        var successSignInResult: [String: Any] = [
+        let successSignInResult: [String: Any] = [
             "idToken": user?.idToken?.tokenString ?? NSNull(),
-            "userId": user?.userID ?? NSNull(),
-            "email": user?.profile?.email ?? NSNull(),
-            "decodedIdToken": decodeJwtBody(jwtToken: user?.idToken?.tokenString) ?? NSNull(),
         ];
-        if let imageUrl = user?.profile?.imageURL(withDimension: 100)?.absoluteString {
-            successSignInResult["imageUrl"] = imageUrl;
-        }
         return successSignInResult;
     }
     
     func wrapInSignInResultInOption(_ successSignInResult: [String: Any]) -> [String: Any] {
-        var signInResultOption: [String: Any] = [
+        let signInResultOption: [String: Any] = [
             "isSuccess": true,
             "success": successSignInResult,
         ];
@@ -79,7 +87,7 @@ public class GoogleOneTapAuth: CAPPlugin {
     func createNoSuccessSignInResultOption() -> [String: Any] {
         let noSuccessResultJson: [String: Any] = [
             "isSuccess": false,
-            "noSuccess": [:],
+            "noSuccess": [:] as [String: Any],
         ];
         return noSuccessResultJson;
     }
@@ -89,26 +97,5 @@ public class GoogleOneTapAuth: CAPPlugin {
             "isSuccess": true,
         ];
         return successResultJson;
-    }
-    
-    func decodeJwtBody(jwtToken: String?) -> Any? {
-        if let jwtToken = jwtToken {
-            let parts = jwtToken.components(separatedBy: ".")
-            guard let data = Data(base64Encoded: parts[1]) else {
-                print("Invalid base64 string \(parts[1])")
-                return nil
-            }
-            return toJson(data: data);
-        }
-        return nil
-    }
-    
-    func toJson(data: Data) -> Any? {
-        do {
-            return try JSONSerialization.jsonObject(with: data, options: [])
-        } catch {
-            print("Error parsing JSON: \(error)")
-            return nil;
-        }
     }
 }

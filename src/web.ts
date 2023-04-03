@@ -1,21 +1,20 @@
 import { WebPlugin } from '@capacitor/core';
 import { InitializeOptions, SignInResultOption, SuccessSignInResult, NoSuccessSignInResult, SignOutResult, RenderSignInButtonOptions, RenderSignInButtonWebOptions } from './definitions';
 import * as scriptjs from 'scriptjs';
-import jwt_decode from 'jwt-decode';
 import { assert } from './helpers';
+import type { NotEnrichedSuccessSignInResult } from './definitionsInternal';
 
 // Workaround for 'error TS2686: 'google' refers to a UMD global, but the current file is a module. Consider adding an import instead.'
 declare var google: {
   accounts: google.accounts
 };
 
-type ResolveSignInFunc = (result: SuccessSignInResult) => void;
+type ResolveSignInFunc = (result: NotEnrichedSuccessSignInResult) => void;
 
 // See https://developers.google.com/identity/gsi/web/guides/use-one-tap-js-api
 export class GoogleOneTapAuthWeb extends WebPlugin {
   gsiScriptUrl = 'https://accounts.google.com/gsi/client';
   gapiLoadedPromise?: Promise<void> = undefined;
-  authenticatedUserId?: string = undefined;
   clientId?: string = undefined;
   nonce?: string = undefined;
 
@@ -52,30 +51,43 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
     }
   }
 
-  async renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SuccessSignInResult> {
+  async renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<NotEnrichedSuccessSignInResult> {
     const parentElem = document.getElementById(parentElementId);
     assert(() => !!parentElem)
-    var signInPromise = new Promise<SuccessSignInResult>((resolve) => {
+    var signInPromise = new Promise<NotEnrichedSuccessSignInResult>((resolve) => {
       this.oneTapInitialize(false, resolve, options.webOptions);
 
+      // // Adding a click_listener allows to detect when the popup is opened.
+      // (gsiButtonConfiguration as any).click_listener = () => {
+      //   console.log('click_listener');
+      // };
       google.accounts.id.renderButton(
         parentElem!,
-        gsiButtonConfiguration || {}
+        gsiButtonConfiguration!
       );
     });
     return signInPromise;
   }
 
   private async doSignIn(autoSelect: boolean) {
-    var signInPromise = new Promise<SuccessSignInResult | NoSuccessSignInResult>((resolve) => {
+    var signInPromise = new Promise<NotEnrichedSuccessSignInResult | NoSuccessSignInResult>((resolve, reject) => {
       this.oneTapInitialize(autoSelect, resolve);
 
       google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed()
+        const developerErrors = ['missing_client_id', 'unregistered_origin'];
+        const momentReason = this.getMomentReason(notification);
+
+        if (momentReason !== undefined && developerErrors.includes(momentReason)) {
+          reject({ errorCode: momentReason } as NoSuccessSignInResult);
+        }
+        else if(momentReason === 'credential_returned') {
+          // Do nothing, handled in handleCredentialResponse.
+        }
+        else if (notification.isNotDisplayed()
           || notification.isSkippedMoment()
           || notification.isDismissedMoment()) {
           resolve({
-            noSuccessReasonCode: this.getMomentReason(notification)
+            noSuccessReasonCode: momentReason
           });
         }
       });
@@ -102,33 +114,27 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
       callback: (credentialResponse) => this.handleCredentialResponse(credentialResponse, resolveSignInFunc),
       auto_select: autoSelect,
       itp_support: webOptions?.itpSupport || false,
-      cancel_on_tap_outside: false,
+      cancel_on_tap_outside: true,
       ux_mode: webOptions?.uxMode || 'popup',
       nonce: this.nonce,
     });
   }
 
   private handleCredentialResponse(credentialResponse: google.CredentialResponse, resolveSignInFunc: ResolveSignInFunc) {
-    const decodedIdToken = jwt_decode(credentialResponse.credential) as any;
-    let signInResult: SuccessSignInResult = {
+    let signInResult: NotEnrichedSuccessSignInResult = {
       idToken: credentialResponse.credential,
-      userId: decodedIdToken.sub,
-      email: decodedIdToken.email,
       selectBy: credentialResponse.select_by,
-      decodedIdToken: decodedIdToken
     };
-    this.authenticatedUserId = decodedIdToken['sub'] as string;
-    // console.log(decodedIdToken);
     resolveSignInFunc(signInResult);
   }
 
-  signOut(): Promise<SignOutResult> {
+  signOut(authenticatedUserId: string | undefined): Promise<SignOutResult> {
     return new Promise<SignOutResult>((resolve) => {
       google.accounts.id.cancel();
 
-      if (this.authenticatedUserId) {
+      if (authenticatedUserId) {
         // Calling revoke method revokes all OAuth2 scopes previously granted by the Sign In With Google client library.
-        google.accounts.id.revoke(this.authenticatedUserId, response => {
+        google.accounts.id.revoke(authenticatedUserId, response => {
           if (response.successful) {
             resolve({ isSuccess: true });
           }
@@ -136,14 +142,9 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
             resolve({ isSuccess: false, error: response.error });
           }
         });
-        this.authenticatedUserId = undefined;
       } else {
         resolve({ isSuccess: true });
       }
     });
-  }
-
-  getNonce(): string {
-    throw new Error('Should never be called because handled wrapper class.');
   }
 }
