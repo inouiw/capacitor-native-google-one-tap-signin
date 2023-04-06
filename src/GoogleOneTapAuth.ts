@@ -4,6 +4,7 @@ import { assert, randomHexString } from './helpers';
 import { GoogleOneTapAuthWeb } from './web';
 import jwt_decode from 'jwt-decode';
 import type { NotEnrichedSuccessSignInResult, NotEnrichtedSignInResultOption } from './definitionsInternal';
+export type * as google from 'google-one-tap';
 
 const GoogleOneTapAuthPlatform = registerPlugin<GoogleOneTapAuthWeb>('GoogleOneTapAuth', {
   web: () => new GoogleOneTapAuthWeb(),
