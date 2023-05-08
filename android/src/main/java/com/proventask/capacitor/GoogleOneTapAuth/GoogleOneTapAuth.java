@@ -66,6 +66,7 @@ public class GoogleOneTapAuth extends Plugin {
     }
 
     private void initializeOptionsFromCall(PluginCall call) {
+        // This must be the Client ID of type Web application NOT the Android Client ID.
         clientId = call.getString("clientId");
         nonce = call.getString("nonce");
     }

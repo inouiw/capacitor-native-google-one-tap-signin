@@ -1,6 +1,6 @@
 {
   "name": "capacitor-native-google-one-tap-signin",
-  "version": "0.5.4",
+  "version": "0.6.0",
   "description": "Google One Tap sign-in plugin for capacitor.",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -48,7 +48,7 @@
     "swiftlint": "node-swiftlint",
     "docgen": "docgen --api GoogleOneTapAuthPlugin --output-readme README.md --output-json dist/docs.json",
     "build": "npm run clean && npm run docgen && tsc && rollup -c rollup.config.js",
-    "buildall": "npm run clean && npm run docgen && tsc && rollup -c rollup.config.js && (cd ./demo/react && npm run build && npx cap sync --inline && cd -)",
+    "buildall": "npm run clean && npm run docgen && tsc && rollup -c rollup.config.js && (cd ./demo/react && npm install && npm run build && npx cap sync --inline && cd -)",
     "clean": "rimraf ./dist",
     "watch": "tsc --watch",
     "prepublishOnly": "npm run build"
