@@ -17,6 +17,8 @@ The android minSdkVersion is 24, however the one-tap library seems to require AP
 
 # Install and Configure
 
+The major version of this plugin indicates the capacitor version that it is compatible with.
+
 #### 1. Install package
 
 ```sh
