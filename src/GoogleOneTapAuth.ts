@@ -76,7 +76,45 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
     return result;
   }
 
+  async addSignInActionToExistingButton(buttonParentId: string, buttonId: string): Promise<SuccessSignInResult> {
+    await this.ensureInitialized();
+    const buttonParentElem = document.getElementById(buttonParentId);
+    const buttonElem = document.getElementById(buttonId);
+    assert(() => !!buttonParentElem);
+    assert(() => !!buttonElem);
+
+    if (Capacitor.getPlatform() === 'web') {
+      buttonParentElem!.style.position = 'relative';
+      buttonParentElem!.style.overflow = 'hidden';
+      // buttonParentElem!.style.border = '2px solid red';  // uncomment for debugging
+
+      // The visible button width should be the same as the google button width.
+      const buttonElemWidth = buttonElem!.offsetWidth;
+      assert(() => buttonElemWidth !== 0);
+
+      const invisibleGoogleButtonDiv = document.createElement('div');
+      const invisibleGoogleButtonDivId = 'invisibleGoogleButtonDiv';
+      invisibleGoogleButtonDiv.setAttribute('id', invisibleGoogleButtonDivId);
+      invisibleGoogleButtonDiv!.style.position = 'absolute';
+      invisibleGoogleButtonDiv!.style.top = '0px';
+      invisibleGoogleButtonDiv!.style.left = '0px';
+      invisibleGoogleButtonDiv!.style.width = `${buttonElemWidth}px`;
+      invisibleGoogleButtonDiv!.style.boxSizing = 'border-box';
+      invisibleGoogleButtonDiv!.style.opacity = '0.0001'; // change it for debugging
+      buttonElem!.appendChild(invisibleGoogleButtonDiv);
+
+      return await this._doRenderSignInButton(invisibleGoogleButtonDivId, {}, { width: buttonElemWidth }, buttonElem!);
+    } else {
+      return await this._doRenderSignInButton(buttonParentId, {}, {}, buttonElem!);
+    }
+  }
+
   async renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SuccessSignInResult> {
+    const androidAndIosButtonElem = this.getSignInButtonHtml(gsiButtonConfiguration)
+    return this._doRenderSignInButton(parentElementId, options, gsiButtonConfiguration, androidAndIosButtonElem);
+  }
+
+  async _doRenderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration: google.GsiButtonConfiguration | undefined, androidAndIosButtonElem: HTMLElement): Promise<SuccessSignInResult> {
     await this.ensureInitialized();
     const parentElem = document.getElementById(parentElementId);
     assert(() => !!parentElem);
@@ -104,7 +142,8 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
             reject(e);
           }
         };
-        parentElem!.appendChild(this.getSignInButtonHtml(onClickAction, gsiButtonConfiguration));
+        androidAndIosButtonElem.onclick = onClickAction;
+        parentElem!.appendChild(androidAndIosButtonElem);
       }
       catch (e) {
         reject(e);
@@ -137,7 +176,7 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
     } as SuccessSignInResult;
   }
 
-  private getSignInButtonHtml(onClickAction: () => any, gsiButtonConfiguration?: google.GsiButtonConfiguration) {
+  private getSignInButtonHtml(gsiButtonConfiguration?: google.GsiButtonConfiguration) {
     // Note: Replacing double quotes with single quotes will break some strings.
     const localizedStrings = {
       en: { signin: 'Sign in', continue_with: 'Continue with Google', signin_with: 'Sign in with Google', signup_with: 'Sign up with Google' },
@@ -179,7 +218,6 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
     // HTML from https://github.com/inouiw/ReactSignInWithGoogleButton
     const button = document.createElement('button');
     button.setAttribute("style", "border-radius: 4px; background-color: rgb(255, 255, 255); border: 1px solid rgb(218, 220, 224); color: rgb(60, 64, 67); cursor: pointer; font-family: Roboto, Verdana; font-weight: 500; font-size: 14px; height: 40px; letter-spacing: 0.25px; padding: 0px 12px; position: relative; text-align: center; vertical-align: middle; width: auto;");
-    button.onclick = onClickAction;
     button.innerHTML = `
       <div style="display: flex; align-items: center; flex-flow: row nowrap; justify-content: space-between; height: 100%; position: relative; width: 100%;">
         <div style="height: 18px; margin-right: 8px; min-width: 18px; width: 18px;">
