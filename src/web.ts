@@ -1,7 +1,6 @@
 import { WebPlugin } from '@capacitor/core';
 import { InitializeOptions, SignInResultOption, SuccessSignInResult, NoSuccessSignInResult, SignOutResult, RenderSignInButtonOptions, RenderSignInButtonWebOptions } from './definitions';
-import * as scriptjs from 'scriptjs';
-import { assert } from './helpers';
+import { assert, loadScript } from './helpers';
 import type { NotEnrichedSuccessSignInResult } from './definitionsInternal';
 
 // Workaround for 'error TS2686: 'google' refers to a UMD global, but the current file is a module. Consider adding an import instead.'
@@ -22,11 +21,7 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
     this.clientId = options.clientId;
     this.nonce = options.nonce;
     if (!this.gapiLoadedPromise) {
-      this.gapiLoadedPromise = new Promise<void>((resolve) => {
-        scriptjs.get(this.gsiScriptUrl, () => {
-          resolve();
-        });
-      });
+      this.gapiLoadedPromise = loadScript(this.gsiScriptUrl);
     }
     return this.gapiLoadedPromise;
   }

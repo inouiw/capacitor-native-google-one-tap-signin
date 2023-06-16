@@ -23,3 +23,14 @@ function callingFunctionName() {
     // ignore.
   }
 }
+
+export function loadScript(url: string): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    var scriptEl = document.createElement('script') as HTMLScriptElement;
+    scriptEl.async = true;
+    scriptEl.onerror = () => reject();
+    scriptEl.onload = () => resolve();
+    scriptEl.src = url;
+    document.getElementsByTagName('head')[0].appendChild(scriptEl);
+  });
+}

@@ -1,6 +1,6 @@
 {
   "name": "capacitor-native-google-one-tap-signin",
-  "version": "5.1.0",
+  "version": "5.1.1",
   "description": "Google One Tap sign-in plugin for capacitor.",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -90,8 +90,6 @@
     }
   },
   "dependencies": {
-    "@types/scriptjs": "^0.0.2",
-    "jwt-decode": "^3.1.2",
-    "scriptjs": "^2.5.9"
+    "jwt-decode": "^3.1.2"
   }
 }
