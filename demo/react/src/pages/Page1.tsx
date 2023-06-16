@@ -49,6 +49,16 @@ const Page1: React.FC = () => {
     }
   }
 
+  async function addSignInActionToExistingButton() {
+    setAuthResult('');
+    try {
+      const successResult = await GoogleOneTapAuth.addSignInActionToExistingButton('google-signin-existing-btn-parent', 'google-signin-existing-btn');
+      reportSignInResultSuccess(successResult);
+    } catch(e) {
+      setAuthResult(`Something unexpected happened. Message: '${e}', Stack: ${new Error().stack}`);
+    }
+  }
+
   function renderSignInButton() {
     return GoogleOneTapAuth.renderSignInButton('google-signin', {}, { locale: 'en-GB', theme: 'outline', text: 'continue_with', shape: 'rectangular', size: 'large' });
   }
@@ -120,6 +130,18 @@ const Page1: React.FC = () => {
               <div id="google-signin"></div>
             </IonCol>
             <IonCol></IonCol>
+          </IonRow>
+          <IonRow>
+            <IonCol size='auto'>
+              <IonButton onClick={() => addSignInActionToExistingButton()}>
+                Add to existing button
+              </IonButton>
+            </IonCol>
+            <IonCol>
+              <div id='google-signin-existing-btn-parent'>
+                Click the "Add to existing button" then this one. <IonButton id='google-signin-existing-btn' color='secondary'>User Created Sign-in Button</IonButton>
+              </div>
+            </IonCol>
           </IonRow>
           <IonRow>
             <IonCol size='auto'>
