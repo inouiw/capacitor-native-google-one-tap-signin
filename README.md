@@ -125,6 +125,20 @@ tryAutoOrOneTapSignIn()
   noSuccess: Promise<NoSuccessSignInResult>;
   signInResultOptionPromise: Promise<SignInResultOption>;
 }>;
+  /**
+ * Allows using a custom sign-in button.
+ * The element to which buttonParentId refers must have the style position: 'relative'.
+ * For the web platform, the implementation renders the google button invisible in front of the passed button.
+ * The returned promise will only resolve if successful.
+ * The returned promise is rejected for unrecoverable errors as 'unregistered_origin' 
+ * for the web platform.
+ * @param buttonParentId 
+ * @param buttonId
+ */
+addSignInActionToExistingButton(
+  buttonParentId: string,
+  buttonId: string)
+  : Promise<SuccessSignInResult>;
 /**
  * Renders the sign-in button.
  * The returned promise will only resolve if successful.
@@ -137,7 +151,8 @@ tryAutoOrOneTapSignIn()
 renderSignInButton(
   parentElementId: string,
   options: RenderSignInButtonOptions,
-  gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SuccessSignInResult>;
+  gsiButtonConfiguration?: google.GsiButtonConfiguration)
+  : Promise<SuccessSignInResult>;
 /**
  * Ends the session.
  */
@@ -148,7 +163,6 @@ signOut(): Promise<SignOutResult>;
  * not universally useful.
  */
 getNonce(): string;
-
 ```
 
 # Design decisions
