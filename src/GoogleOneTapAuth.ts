@@ -95,12 +95,12 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
       const invisibleGoogleButtonDiv = document.createElement('div');
       const invisibleGoogleButtonDivId = 'invisibleGoogleButtonDiv';
       invisibleGoogleButtonDiv.setAttribute('id', invisibleGoogleButtonDivId);
-      invisibleGoogleButtonDiv!.style.position = 'absolute';
-      invisibleGoogleButtonDiv!.style.top = '0px';
-      invisibleGoogleButtonDiv!.style.left = '0px';
-      invisibleGoogleButtonDiv!.style.width = `${buttonElemWidth}px`;
-      invisibleGoogleButtonDiv!.style.boxSizing = 'border-box';
-      invisibleGoogleButtonDiv!.style.opacity = '0.0001'; // change it for debugging
+      invisibleGoogleButtonDiv.style.position = 'absolute';
+      invisibleGoogleButtonDiv.style.top = '0px';
+      invisibleGoogleButtonDiv.style.left = '0px';
+      invisibleGoogleButtonDiv.style.width = `${buttonElemWidth}px`;
+      invisibleGoogleButtonDiv.style.boxSizing = 'border-box';
+      invisibleGoogleButtonDiv.style.opacity = '0.0001'; // change it for debugging
       buttonElem!.appendChild(invisibleGoogleButtonDiv);
 
       return await this._doRenderSignInButton(invisibleGoogleButtonDivId, {}, { width: buttonElemWidth }, buttonElem!);
@@ -132,11 +132,16 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
 
         const onClickAction = async () => {
           try {
-            let notEnrichedSuccessSignInResult = await (GoogleOneTapAuthPlatform as any).triggerGoogleSignIn(options);
-            if (Boolean(notEnrichedSuccessSignInResult.idToken)) {
-              const enrichtedSuccessSignInResult = this.enrichSuccessResultWithDecodedIdToken(notEnrichedSuccessSignInResult);
+            const notEnrichedSuccessSignInResult: SignInResultOption = await (GoogleOneTapAuthPlatform as any).triggerGoogleSignIn(options);
+            if (notEnrichedSuccessSignInResult.isSuccess) {
+              const enrichtedSuccessSignInResult = this.enrichSuccessResultWithDecodedIdToken(notEnrichedSuccessSignInResult.success!);
               this.authenticatedUserId = enrichtedSuccessSignInResult.userId;
               resolve(enrichtedSuccessSignInResult);
+            }
+            else {
+              if (notEnrichedSuccessSignInResult.noSuccess?.noSuccessReasonCode === 'SIGN_IN_CANCELLED') {
+                // console.log('User cancelled sign in. Waiting for next sign in attempt.');
+              }
             }
           } catch (e) {
             reject(e);

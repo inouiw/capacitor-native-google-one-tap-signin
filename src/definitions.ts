@@ -73,7 +73,7 @@ export interface NoSuccessSignInResult {
   /**
    * A reason code as 'opt_out_or_no_session'.
    * For the js library see google.PromptMomentNotification for possible values.
-   * For android 'SIGN_IN_CANCELLED' are currently set.
+   * For android and iOS 'SIGN_IN_CANCELLED' are currently set.
    */
   noSuccessReasonCode?: string;
   /**

@@ -39,13 +39,13 @@ public class GoogleOneTapAuth: CAPPlugin {
             self.googleSignIn.signIn(withPresenting: presentingVc) { signInResult, error in
                 if let error = error {
                     if (error._code == self.gIDSignInErrorCodeCanceled) {
-                        call.resolve(self.createErrorResponse(reasonCode: "SIGN_IN_CANCELLED"))
+                        call.resolve(self.wrapInSignInResultInOption(self.createErrorResponse(reasonCode: "SIGN_IN_CANCELLED")))
                         return;
                     }
                     call.reject(error.localizedDescription, "\(error._code)")
                     return;
                 }
-                call.resolve(self.createSuccessSignInResult(user: signInResult?.user))
+                call.resolve(self.wrapInSignInResultInOption(self.createSuccessSignInResult(user: signInResult?.user)))
             };
         }
     }

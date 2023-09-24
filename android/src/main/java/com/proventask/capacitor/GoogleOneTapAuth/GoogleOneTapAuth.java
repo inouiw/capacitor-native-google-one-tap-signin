@@ -29,9 +29,6 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -39,13 +36,14 @@ import java.util.concurrent.Future;
 @CapacitorPlugin()
 public class GoogleOneTapAuth extends Plugin {
     private static final String TAG = "GoogleOneTapAuth Plugin";
+    private static final String ReasonCodeSignInCancelled = "SIGN_IN_CANCELLED";
     private String clientId;
     private String nonce;
     private SignInClient oneTapClient;
     private GoogleSignInClient googleSignInClient;
     private ActivityResultLauncher<IntentSenderRequest> googleOneTapSignInActivityResultHandlerIntentSenderRequest;
-    private CompletableFuture<JSObject> oneTapSignInFuture;
-    private CompletableFuture<JSObject> googleSignInFuture;
+    private CompletableFuture<SignInResult> oneTapSignInFuture;
+    private CompletableFuture<SignInResult> googleSignInFuture;
 
     @Override
     public void load() {
@@ -86,8 +84,9 @@ public class GoogleOneTapAuth extends Plugin {
                             oneTapSignInFuture.complete(createErrorResponse(null, e.toString()));
                         }
                     } else {
+                        var reasonCode = resultCode == Activity.RESULT_CANCELED ? ReasonCodeSignInCancelled : null;
                         var resultCodeString = ActivityResult.resultCodeToString(resultCode);
-                        oneTapSignInFuture.complete(createErrorResponse(null, resultCodeString));
+                        oneTapSignInFuture.complete(createErrorResponse(reasonCode, resultCodeString));
                     }
                 });
     }
@@ -96,13 +95,13 @@ public class GoogleOneTapAuth extends Plugin {
     public void tryAutoOrOneTapSignIn(PluginCall call) {
         try {
             var signInResult = beginSignIn(true).get();
-            if (!signInResult.has("idToken")) {
+            if (signInResult.idToken == null && signInResult.noSuccessReasonCode != ReasonCodeSignInCancelled) {
                 signInResult = beginSignIn(false).get();
             }
-            if (!signInResult.has("idToken")) {
+            if (signInResult.idToken == null && signInResult.noSuccessReasonCode != ReasonCodeSignInCancelled) {
                 signInResult = googleSilentSignIn(call).get();
             }
-            call.resolve(wrapInSignInResultInOption(signInResult));
+            call.resolve(convertToJsonResult(signInResult));
         } catch (ExecutionException | InterruptedException e) {
             call.reject(e.toString());
         }
@@ -113,20 +112,32 @@ public class GoogleOneTapAuth extends Plugin {
     public void triggerGoogleSignIn(PluginCall call) {
         try {
             var signInResult = googleSignIn(call).get();
-            call.resolve(signInResult);
+            call.resolve(convertToJsonResult(signInResult));
         } catch (ExecutionException | InterruptedException e) {
             call.reject(e.toString());
         }
     }
 
-    private JSObject wrapInSignInResultInOption(JSObject successSignInResult) {
+    private JSObject convertToJsonResult(SignInResult signInResult) {
         var result = new JSObject();
-        result.put("isSuccess", true);
-        result.put("success", successSignInResult);
+        boolean isSuccess = signInResult.idToken != null;
+        result.put("isSuccess", isSuccess);
+
+        if (isSuccess) {
+            var successObj = new JSObject();
+            successObj.put("idToken", signInResult.idToken);
+            result.put("success", successObj);
+        }
+        else {
+            var errorObj = new JSObject();
+            errorObj.put("noSuccessReasonCode", signInResult.noSuccessReasonCode);
+            errorObj.put("noSuccessAdditionalInfo", signInResult.noSuccessAdditionalInfo);
+            result.put("error", errorObj);
+        }
         return result;
     }
 
-    private Future<JSObject> beginSignIn(boolean filterByAuthorizedAccounts) {
+    private Future<SignInResult> beginSignIn(boolean filterByAuthorizedAccounts) {
         var context = this.getContext();
         var beginSignInRequest = createBeginSignInRequest(filterByAuthorizedAccounts);
         oneTapSignInFuture = new CompletableFuture<>();
@@ -177,17 +188,12 @@ public class GoogleOneTapAuth extends Plugin {
                 .build();
     }
 
-    private JSObject createErrorResponse(String reasonCode, String noSuccessAdditionalInfo) {
-        var result = new JSObject();
-        result.put("noSuccessReasonCode", reasonCode);
-        result.put("noSuccessAdditionalInfo", noSuccessAdditionalInfo);
-        return result;
+    private SignInResult createErrorResponse(String reasonCode, String noSuccessAdditionalInfo) {
+        return new SignInResult(reasonCode, noSuccessAdditionalInfo);
     }
 
-    private JSObject createSuccessResponse(String idToken) {
-        var result = new JSObject();
-        result.put("idToken", idToken);
-        return result;
+    private SignInResult createSuccessResponse(String idToken) {
+        return new SignInResult(idToken);
     }
 
     private boolean isGooglePlayServicesAvailable(Context context) {
@@ -216,14 +222,14 @@ public class GoogleOneTapAuth extends Plugin {
         return signOutResult;
     }
 
-    private Future<JSObject> googleSilentSignIn(final PluginCall call) {
+    private Future<SignInResult> googleSilentSignIn(final PluginCall call) {
         googleSignInFuture = new CompletableFuture<>();
         googleSignInClient.silentSignIn()
                 .addOnCompleteListener(task -> handleGoogleSignInResult(call, task, "silentSignIn"));
         return googleSignInFuture;
     }
 
-    private Future<JSObject> googleSignIn(final PluginCall call) {
+    private Future<SignInResult> googleSignIn(final PluginCall call) {
         googleSignInFuture = new CompletableFuture<>();
         var intent = googleSignInClient.getSignInIntent();
         startActivityForResult(call, intent, "googleSignInResultIntentCallback");
@@ -248,7 +254,9 @@ public class GoogleOneTapAuth extends Plugin {
             googleSignInFuture.complete(createSuccessResponse(account.getIdToken()));
         } catch (ApiException e) {
             int statusCode = e.getStatusCode();
-            var statusCodeString = GoogleSignInStatusCodes.getStatusCodeString(statusCode);
+            var statusCodeString = statusCode == GoogleSignInStatusCodes.SIGN_IN_CANCELLED
+                    ? ReasonCodeSignInCancelled
+                    : GoogleSignInStatusCodes.getStatusCodeString(statusCode);
             Log.i(TAG, triggerMethodName + " not successful, statusCodeString " + statusCodeString, e);
             if (statusCode == GoogleSignInStatusCodes.SIGN_IN_REQUIRED
                     || statusCode == GoogleSignInStatusCodes.SIGN_IN_CANCELLED) {

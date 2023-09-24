@@ -2,7 +2,7 @@
 
 Install dependencies and build the plugin and then the demo app with
 `npm install`
-`npm build`
+`npm run build`
 
 Then open and edit the plugin and demo app in Android Stuido. `ionic capacitor open android`
 
