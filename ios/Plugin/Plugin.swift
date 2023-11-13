@@ -15,6 +15,11 @@ public class GoogleOneTapAuth: CAPPlugin {
     func initialize(_ call: CAPPluginCall) {
         call.resolve();
     }
+
+    @objc
+    func tryAutoSignIn(_ call: CAPPluginCall) {
+        tryAutoOrOneTapSignIn(call);
+    }
     
     @objc
     func tryAutoOrOneTapSignIn(_ call: CAPPluginCall) {

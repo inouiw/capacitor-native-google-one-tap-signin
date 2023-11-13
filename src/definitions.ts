@@ -41,15 +41,15 @@ export interface SuccessSignInResult {
    * Currently not available for android, only if the js library is used.
    * For possible values see google.PromptMomentNotification.
    */
-  selectBy?: 
-    | 'auto'
-    | 'user'
-    | 'user_1tap'
-    | 'user_2tap'
-    | 'btn'
-    | 'btn_confirm'
-    | 'btn_add_session'
-    | 'btn_confirm_add_session' // see google.CredentialResponse.select_by
+  selectBy?:
+  | 'auto'
+  | 'user'
+  | 'user_1tap'
+  | 'user_2tap'
+  | 'btn'
+  | 'btn_confirm'
+  | 'btn_add_session'
+  | 'btn_confirm_add_session' // see google.CredentialResponse.select_by
   /**
    * The JWT token base64 encoded.
    */
@@ -121,6 +121,7 @@ export interface GoogleOneTapAuthPlugin {
    * @param options 
    */
   initialize(options: InitializeOptions): Promise<void>;
+
   /**
    * Tries to either auto-sign-in the user or sign-in the user with just one tap/click.
    * If there is a single google account and that account has previously signed into the app, 
@@ -135,25 +136,41 @@ export interface GoogleOneTapAuthPlugin {
    * when authentication succeeds, the second on error and the third on success or error.
    */
   tryAutoOrOneTapSignIn()
-  : Promise<{
-    successPromise: Promise<SuccessSignInResult>;
-    noSuccess: Promise<NoSuccessSignInResult>;
-    signInResultOptionPromise: Promise<SignInResultOption>;
-  }>;
-    /**
-   * Allows using a custom sign-in button.
-   * The element to which buttonParentId refers must have the style position: 'relative'.
-   * For the web platform, the implementation renders the google button invisible in front of the passed button.
-   * The returned promise will only resolve if successful.
-   * The returned promise is rejected for unrecoverable errors as 'unregistered_origin' 
-   * for the web platform.
-   * @param buttonParentId 
-   * @param buttonId
+    : Promise<{
+      successPromise: Promise<SuccessSignInResult>;
+      noSuccess: Promise<NoSuccessSignInResult>;
+      signInResultOptionPromise: Promise<SignInResultOption>;
+    }>;
+
+  /**
+   * Tries to auto-sign-in the user without any user interaction needed.
+   * If there is a single google account and that account has previously signed into the app, 
+   * then that user is auto signed in. A short popover is displayed during sign-in.
+   * @returns A Promise object that contains 3 properties with promises. One resolves only 
+   * when authentication succeeds, the second on error and the third on success or error.
    */
+  tryAutoSignIn()
+    : Promise<{
+      successPromise: Promise<SuccessSignInResult>;
+      noSuccess: Promise<NoSuccessSignInResult>;
+      signInResultOptionPromise: Promise<SignInResultOption>;
+    }>;
+
+  /**
+ * Allows using a custom sign-in button.
+ * The element to which buttonParentId refers must have the style position: 'relative'.
+ * For the web platform, the implementation renders the google button invisible in front of the passed button.
+ * The returned promise will only resolve if successful.
+ * The returned promise is rejected for unrecoverable errors as 'unregistered_origin' 
+ * for the web platform.
+ * @param buttonParentId 
+ * @param buttonId
+ */
   addSignInActionToExistingButton(
     buttonParentId: string,
     buttonId: string)
     : Promise<SuccessSignInResult>;
+
   /**
    * Renders the sign-in button.
    * The returned promise will only resolve if successful.
@@ -168,10 +185,12 @@ export interface GoogleOneTapAuthPlugin {
     options: RenderSignInButtonOptions,
     gsiButtonConfiguration?: google.GsiButtonConfiguration)
     : Promise<SuccessSignInResult>;
+
   /**
    * Ends the session.
    */
   signOut(): Promise<SignOutResult>;
+
   /**
    * Gets the last user defined or auto-created nonce.
    * Unfortunately not all google libraries support setting a nonce, so this is currently 

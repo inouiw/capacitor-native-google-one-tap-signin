@@ -53,19 +53,30 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
     const signInResultOptionPromise = GoogleOneTapAuthPlatform.tryAutoOrOneTapSignIn();
     const notEnrichtedSignInResultOption = (await signInResultOptionPromise) as NotEnrichtedSignInResultOption;
     const enrichtedSignInResultOption = this.enrichOptionResultWithDecodedIdToken(notEnrichtedSignInResultOption);
+    return this.toPromisesResult(enrichtedSignInResultOption);
+  }
 
-    if (enrichtedSignInResultOption.isSuccess) {
-      this.authenticatedUserId = enrichtedSignInResultOption.success!.userId;
+  async tryAutoSignIn(): Promise<SignInResultPromises> {
+    await this.ensureInitialized();
+    const signInResultOptionPromise = GoogleOneTapAuthPlatform.tryAutoSignIn();
+    const notEnrichtedSignInResultOption = (await signInResultOptionPromise) as NotEnrichtedSignInResultOption;
+    const enrichtedSignInResultOption = this.enrichOptionResultWithDecodedIdToken(notEnrichtedSignInResultOption);
+    return this.toPromisesResult(enrichtedSignInResultOption);
+  }
+
+  private toPromisesResult(signInResultOption: SignInResultOption): SignInResultPromises {
+    if (signInResultOption.isSuccess) {
+      this.authenticatedUserId = signInResultOption.success!.userId;
       return {
-        successPromise: Promise.resolve(enrichtedSignInResultOption.success!),
+        successPromise: Promise.resolve(signInResultOption.success!),
         noSuccess: new Promise<NoSuccessSignInResult>(() => { }),
-        signInResultOptionPromise: Promise.resolve(enrichtedSignInResultOption)
+        signInResultOptionPromise: Promise.resolve(signInResultOption)
       };
     } else {
       return {
         successPromise: new Promise<SuccessSignInResult>(() => { }),
-        noSuccess: Promise.resolve(enrichtedSignInResultOption.noSuccess!),
-        signInResultOptionPromise: Promise.resolve(enrichtedSignInResultOption)
+        noSuccess: Promise.resolve(signInResultOption.noSuccess!),
+        signInResultOptionPromise: Promise.resolve(signInResultOption)
       };
     }
   }
