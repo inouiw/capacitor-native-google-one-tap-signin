@@ -64,7 +64,7 @@
     "@ionic/swiftlint-config": "^1.1.2",
     "@types/gapi": "^0.0.47",
     "@types/gapi.auth2": "^0.0.60",
-    "@types/google-one-tap": "^1.2.2",
+    "@types/google-one-tap": "^1.2.5",
     "eslint": "^7.0.0",
     "prettier": "^3.1.0",
     "prettier-plugin-java": "^2.0.0",

@@ -2,6 +2,7 @@ import { WebPlugin } from '@capacitor/core';
 import { InitializeOptions, SignInResultOption, SuccessSignInResult, NoSuccessSignInResult, SignOutResult, RenderSignInButtonOptions, RenderSignInButtonWebOptions } from './definitions';
 import { assert, loadScript } from './helpers';
 import type { NotEnrichedSuccessSignInResult } from './definitionsInternal';
+import { type IdConfiguration } from 'google-one-tap';
 
 // Workaround for 'error TS2686: 'google' refers to a UMD global, but the current file is a module. Consider adding an import instead.'
 declare var google: {
@@ -75,7 +76,7 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
         if (momentReason !== undefined && developerErrors.includes(momentReason)) {
           reject({ errorCode: momentReason } as NoSuccessSignInResult);
         }
-        else if(momentReason === 'credential_returned') {
+        else if (momentReason === 'credential_returned') {
           // Do nothing, handled in handleCredentialResponse.
         }
         else if (notification.isNotDisplayed()
@@ -109,10 +110,11 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
       callback: (credentialResponse) => this.handleCredentialResponse(credentialResponse, resolveSignInFunc),
       auto_select: autoSelect,
       itp_support: webOptions?.itpSupport || false,
-      cancel_on_tap_outside: true,
+      cancel_on_tap_outside: webOptions?.cancelOnTapOutside || true,
       ux_mode: webOptions?.uxMode || 'popup',
       nonce: this.nonce,
-    });
+      use_fedcm_for_prompt: true,
+    } as IdConfiguration & { use_fedcm_for_prompt: boolean });
   }
 
   private handleCredentialResponse(credentialResponse: google.CredentialResponse, resolveSignInFunc: ResolveSignInFunc) {

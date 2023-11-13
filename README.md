@@ -167,7 +167,7 @@ getNonce(): string;
 ```
 
 # Design decisions
-Promises will not be rejected for anticipated unsuccessful control flow. For example, if the one tap auto-login does not succeed with the reason `opt_out_or_no_session` then this is not exceptional but expected in many cases. Rejecting the promise would mean the caller would have to catch an exception when calling `await xy` and then run follow-up code in the catch block. However when creating the demo app it was also evident that it is useful to have a promise that only resolves when authentication succeeds. Therefore the `tryAutoOrOneTapSignIn` method returns a Promise object that contains 3 properties with promises. One resolves only when authentication succeeds, the second on error and the third on success or error.
+Promises will not be rejected for anticipated unsuccessful control flow. For example, if the one tap auto-login does not succeed because there is no session then this is not exceptional but expected in many cases. Rejecting the promise would mean the caller would have to catch an exception when calling `await xy` and then run follow-up code in the catch block. However when creating the demo app it was also evident that it is useful to have a promise that only resolves when authentication succeeds. Therefore the `tryAutoOrOneTapSignIn` method returns a Promise object that contains 3 properties with promises. One resolves only when authentication succeeds, the second on error and the third on success or error.
 
 Instead of creating one signIn method with many parameters that are only used in some cases (=unclear dependencies), there are two methods with different parameters and different return types.
 

@@ -71,7 +71,7 @@ export interface SuccessSignInResult {
 
 export interface NoSuccessSignInResult {
   /**
-   * A reason code as 'opt_out_or_no_session'.
+   * A reason code as 'tap_outside'.
    * For the js library see google.PromptMomentNotification for possible values.
    * For android and iOS 'SIGN_IN_CANCELLED' are currently set.
    */
@@ -99,6 +99,11 @@ export interface RenderSignInButtonWebOptions {
    * 	The Sign In With Google button UX flow. The default value is 'popup'.
    */
   uxMode?: 'popup' | 'redirect';
+
+  /**
+   * This field sets whether or not to cancel the One Tap request if a user clicks outside the prompt. The default value is true.
+   */
+  cancelOnTapOutside?: boolean;
 }
 
 export interface SignOutResult {
