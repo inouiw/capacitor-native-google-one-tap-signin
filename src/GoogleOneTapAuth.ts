@@ -2,7 +2,7 @@ import { Capacitor, registerPlugin } from '@capacitor/core';
 import type { InitializeOptions, GoogleOneTapAuthPlugin, SignInResultPromises, SuccessSignInResult, SignOutResult, RenderSignInButtonOptions, NoSuccessSignInResult, SignInResultOption } from './definitions';
 import { assert, randomHexString } from './helpers';
 import { GoogleOneTapAuthWeb } from './web';
-import jwt_decode from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
 import type { NotEnrichedSuccessSignInResult, NotEnrichtedSignInResultOption } from './definitionsInternal';
 
 const GoogleOneTapAuthPlatform = registerPlugin<GoogleOneTapAuthWeb>('GoogleOneTapAuth', {
@@ -172,7 +172,7 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
   }
 
   private enrichSuccessResultWithDecodedIdToken(successSignInResult: NotEnrichedSuccessSignInResult): SuccessSignInResult {
-    const decodedJwt = jwt_decode(successSignInResult.idToken) as any;
+    const decodedJwt = jwtDecode(successSignInResult.idToken) as any;
     return {
       ...successSignInResult,
       decodedIdToken: decodedJwt,

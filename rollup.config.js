@@ -8,7 +8,7 @@ export default {
       globals: {
         '@capacitor/core': 'capacitorExports',
         'scriptjs': 'scriptjs',
-        'jwt-decode': 'jwt_decode',
+        'jwt-decode': 'jwtDecode',
       },
       sourcemap: true,
       inlineDynamicImports: true,

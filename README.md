@@ -79,15 +79,16 @@ console.log(signInResultSuccess);
 // See the demo folder for an example application.
 ```
 
+# Run the demo app
+This repository contains a demo app in the `demo` folder.
+
+
 # Notes about testing with an emulator
 
 To test it using an emulator, you need to create an emulator with android play services and API version 24 or higher. See [my stackoverflow answer](https://stackoverflow.com/questions/71325279/missing-featurename-auth-api-credentials-begin-sign-in-version-6/75285717#75285717). For older API levels like 24, you may need to update Chrome after creating the emulator because the plugin targets JavaScript es2017.
 
 # Supported platforms
 Android, iOS, Web.
-
-# Demos
-See the `demo` folder.
 
 # Detailed description of different use cases
 
