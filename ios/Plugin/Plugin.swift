@@ -68,6 +68,11 @@ public class GoogleOneTapAuth: CAPPlugin {
     }
     
     @objc
+    func cancelOneTapDialog(_ call: CAPPluginCall) {
+        call.resolve();
+    }
+    
+    @objc
     func signOut(_ call: CAPPluginCall) {
         googleSignIn.signOut();
         call.resolve(createSuccessSignOutResult());

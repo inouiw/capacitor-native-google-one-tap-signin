@@ -86,6 +86,10 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
     }
   }
 
+  cancelOneTapDialog(): void {
+    (GoogleOneTapAuthPlatform as any).cancelOneTapDialog();
+  }
+
   async signOut(): Promise<SignOutResult> {
     const result = await (GoogleOneTapAuthPlatform as any).signOut(this.authenticatedUserId);
     this.authenticatedUserId = undefined;

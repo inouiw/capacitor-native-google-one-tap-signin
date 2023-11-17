@@ -157,6 +157,10 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
     resolveSignInFunc(signInResult);
   }
 
+  cancelOneTapDialog(): void {
+    google.accounts.id.cancel();
+  }
+
   signOut(authenticatedUserId: string | undefined): Promise<SignOutResult> {
     return new Promise<SignOutResult>((resolve) => {
       google.accounts.id.cancel();

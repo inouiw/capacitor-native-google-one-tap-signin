@@ -229,6 +229,10 @@ public class GoogleOneTapAuth extends Plugin {
     }
 
     @PluginMethod()
+    public void cancelOneTapDialog(final PluginCall call) {
+    }
+
+    @PluginMethod()
     public void signOut(final PluginCall call) {
         oneTapClient.signOut()
                 .addOnCompleteListener(task -> call.resolve(signOutResultTaskToJSObject(task)));

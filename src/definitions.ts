@@ -199,6 +199,11 @@ export interface GoogleOneTapAuthPlugin {
     : Promise<SuccessSignInResult>;
 
   /**
+   * Closes the One Tap prompt and triggers a dismissed moment.
+   */
+  cancelOneTapDialog(): void;
+
+  /**
    * Ends the session.
    */
   signOut(): Promise<SignOutResult>;
