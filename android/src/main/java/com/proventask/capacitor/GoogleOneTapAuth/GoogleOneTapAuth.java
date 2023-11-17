@@ -108,6 +108,19 @@ public class GoogleOneTapAuth extends Plugin {
     }
 
     @PluginMethod()
+    public void tryOneTapSignIn(PluginCall call) {
+        try {
+            var signInResult = beginSignIn(false).get();
+            if (signInResult.idToken == null && signInResult.noSuccessReasonCode != ReasonCodeSignInCancelled) {
+                signInResult = googleSilentSignIn(call).get();
+            }
+            call.resolve(convertToJsonResult(signInResult));
+        } catch (ExecutionException | InterruptedException e) {
+            call.reject(e.toString());
+        }
+    }
+
+    @PluginMethod()
     public void tryAutoSignIn(PluginCall call) {
         try {
             var signInResult = beginSignIn(true).get();

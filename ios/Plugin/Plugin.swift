@@ -17,11 +17,6 @@ public class GoogleOneTapAuth: CAPPlugin {
     }
 
     @objc
-    func tryAutoSignIn(_ call: CAPPluginCall) {
-        tryAutoOrOneTapSignIn(call);
-    }
-    
-    @objc
     func tryAutoOrOneTapSignIn(_ call: CAPPluginCall) {
         if googleSignIn.hasPreviousSignIn() {
             googleSignIn.restorePreviousSignIn() { user, error in
@@ -34,6 +29,18 @@ public class GoogleOneTapAuth: CAPPlugin {
         } else {
             call.resolve(createNoSuccessSignInResultOption())
         }
+    }
+    
+    @objc
+    func tryOneTapSignIn(_ call: CAPPluginCall) {
+        // Todo: Should use interactive login.
+        tryAutoOrOneTapSignIn(call);
+    }
+    
+    @objc
+    func tryAutoSignIn(_ call: CAPPluginCall) {
+        // Todo: Should use non-interactive login.
+        tryAutoOrOneTapSignIn(call);
     }
     
     // This method is not part of the api but only called from GoogleOneTapAuth.ts in method renderSignInButton.

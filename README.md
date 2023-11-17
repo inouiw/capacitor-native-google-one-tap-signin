@@ -129,6 +129,18 @@ tryAutoOrOneTapSignIn()
 }>;
 
 /**
+ * Tries to show the sign-in UI without trying to auto sign-in the user.
+ * @returns A Promise object that contains 3 properties with promises. One resolves only 
+ * when authentication succeeds, the second on error and the third on success or error.
+ */
+tryOneTapSignIn()
+: Promise<{
+  successPromise: Promise<SuccessSignInResult>;
+  noSuccess: Promise<NoSuccessSignInResult>;
+  signInResultOptionPromise: Promise<SignInResultOption>;
+}>;
+
+/**
  * Tries to auto-sign-in the user without any user interaction needed.
  * If there is a single google account and that account has previously signed into the app, 
  * then that user is auto signed in. A short popover is displayed during sign-in.

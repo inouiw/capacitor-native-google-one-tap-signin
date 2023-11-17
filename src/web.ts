@@ -46,6 +46,22 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
       }
     }
   }
+
+  async tryOneTapSignIn(): Promise<SignInResultOption> {
+    let signInResult = await this.doSignIn(false);
+
+    if ((signInResult as SuccessSignInResult).idToken) {
+      return {
+        isSuccess: true,
+        success: signInResult as SuccessSignInResult
+      }
+    } else {
+      return {
+        isSuccess: false,
+        noSuccess: signInResult as NoSuccessSignInResult
+      }
+    }
+  }
   
   async tryAutoSignIn(): Promise<SignInResultOption> {
     let signInResult = await this.doSignIn(true);

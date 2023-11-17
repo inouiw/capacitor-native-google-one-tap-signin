@@ -50,16 +50,21 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
 
   async tryAutoOrOneTapSignIn(): Promise<SignInResultPromises> {
     await this.ensureInitialized();
-    const signInResultOptionPromise = GoogleOneTapAuthPlatform.tryAutoOrOneTapSignIn();
-    const notEnrichtedSignInResultOption = (await signInResultOptionPromise) as NotEnrichtedSignInResultOption;
+    const notEnrichtedSignInResultOption = await GoogleOneTapAuthPlatform.tryAutoOrOneTapSignIn() as NotEnrichtedSignInResultOption;
+    const enrichtedSignInResultOption = this.enrichOptionResultWithDecodedIdToken(notEnrichtedSignInResultOption);
+    return this.toPromisesResult(enrichtedSignInResultOption);
+  }
+
+  async tryOneTapSignIn(): Promise<SignInResultPromises> {
+    await this.ensureInitialized();
+    const notEnrichtedSignInResultOption = await GoogleOneTapAuthPlatform.tryOneTapSignIn() as NotEnrichtedSignInResultOption;
     const enrichtedSignInResultOption = this.enrichOptionResultWithDecodedIdToken(notEnrichtedSignInResultOption);
     return this.toPromisesResult(enrichtedSignInResultOption);
   }
 
   async tryAutoSignIn(): Promise<SignInResultPromises> {
     await this.ensureInitialized();
-    const signInResultOptionPromise = GoogleOneTapAuthPlatform.tryAutoSignIn();
-    const notEnrichtedSignInResultOption = (await signInResultOptionPromise) as NotEnrichtedSignInResultOption;
+    const notEnrichtedSignInResultOption = await GoogleOneTapAuthPlatform.tryAutoSignIn() as NotEnrichtedSignInResultOption;
     const enrichtedSignInResultOption = this.enrichOptionResultWithDecodedIdToken(notEnrichtedSignInResultOption);
     return this.toPromisesResult(enrichtedSignInResultOption);
   }
