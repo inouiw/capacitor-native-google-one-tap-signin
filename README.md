@@ -122,11 +122,11 @@ initialize(options: InitializeOptions): Promise<void>;
  * when authentication succeeds, the second on error and the third on success or error.
  */
 tryAutoOrOneTapSignIn()
-: Promise<{
-  successPromise: Promise<SuccessSignInResult>;
-  noSuccess: Promise<NoSuccessSignInResult>;
-  signInResultOptionPromise: Promise<SignInResultOption>;
-}>;
+  : Promise<{
+    successPromise: Promise<SuccessSignInResult>;
+    noSuccess: Promise<NoSuccessSignInResult>;
+    signInResultOptionPromise: Promise<SignInResultOption>;
+  }>;
 
 /**
  * Tries to show the sign-in UI without trying to auto sign-in the user.
@@ -134,11 +134,11 @@ tryAutoOrOneTapSignIn()
  * when authentication succeeds, the second on error and the third on success or error.
  */
 tryOneTapSignIn()
-: Promise<{
-  successPromise: Promise<SuccessSignInResult>;
-  noSuccess: Promise<NoSuccessSignInResult>;
-  signInResultOptionPromise: Promise<SignInResultOption>;
-}>;
+  : Promise<{
+    successPromise: Promise<SuccessSignInResult>;
+    noSuccess: Promise<NoSuccessSignInResult>;
+    signInResultOptionPromise: Promise<SignInResultOption>;
+  }>;
 
 /**
  * Tries to auto-sign-in the user without any user interaction needed.
@@ -148,11 +148,11 @@ tryOneTapSignIn()
  * when authentication succeeds, the second on error and the third on success or error.
  */
 tryAutoSignIn()
-: Promise<{
-  successPromise: Promise<SuccessSignInResult>;
-  noSuccess: Promise<NoSuccessSignInResult>;
-  signInResultOptionPromise: Promise<SignInResultOption>;
-}>;
+  : Promise<{
+    successPromise: Promise<SuccessSignInResult>;
+    noSuccess: Promise<NoSuccessSignInResult>;
+    signInResultOptionPromise: Promise<SignInResultOption>;
+  }>;
 
 /**
  * Allows using a custom sign-in button.

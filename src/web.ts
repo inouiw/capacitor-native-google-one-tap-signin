@@ -15,12 +15,10 @@ type ResolveSignInFunc = (result: NotEnrichedSuccessSignInResult) => void;
 export class GoogleOneTapAuthWeb extends WebPlugin {
   gsiScriptUrl = 'https://accounts.google.com/gsi/client';
   gapiLoadedPromise?: Promise<void> = undefined;
-  clientId?: string = undefined;
-  nonce?: string = undefined;
+  initializeOptions?: InitializeOptions = undefined;
 
   async initialize(options: InitializeOptions): Promise<void> {
-    this.clientId = options.clientId;
-    this.nonce = options.nonce;
+    this.initializeOptions = options;
     if (!this.gapiLoadedPromise) {
       this.gapiLoadedPromise = loadScript(this.gsiScriptUrl);
     }
@@ -62,7 +60,7 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
       }
     }
   }
-  
+
   async tryAutoSignIn(): Promise<SignInResultOption> {
     let signInResult = await this.doSignIn(true);
 
@@ -136,15 +134,15 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
     return undefined;
   }
 
-  private oneTapInitialize(autoSelect: boolean, resolveSignInFunc: ResolveSignInFunc, webOptions?: RenderSignInButtonWebOptions) {
+  private oneTapInitialize(autoSelect: boolean, resolveSignInFunc: ResolveSignInFunc, buttonWebOptions?: RenderSignInButtonWebOptions) {
     google.accounts.id.initialize({
-      client_id: this.clientId!,
+      client_id: this.initializeOptions!.clientId!,
       callback: (credentialResponse) => this.handleCredentialResponse(credentialResponse, resolveSignInFunc),
       auto_select: autoSelect,
-      itp_support: webOptions?.itpSupport || false,
-      cancel_on_tap_outside: webOptions?.cancelOnTapOutside || true,
-      ux_mode: webOptions?.uxMode || 'popup',
-      nonce: this.nonce,
+      itp_support: buttonWebOptions?.itpSupport || false,
+      cancel_on_tap_outside: this.initializeOptions!.webOptions?.cancelOnTapOutside || true,
+      ux_mode: buttonWebOptions?.uxMode || 'popup',
+      nonce: this.initializeOptions!.nonce,
       use_fedcm_for_prompt: true,
     } as IdConfiguration & { use_fedcm_for_prompt: boolean });
   }

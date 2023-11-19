@@ -12,6 +12,17 @@ export interface InitializeOptions {
    * See https://github.com/google/GoogleSignIn-iOS/issues/135
    */
   nonce?: string;
+  /**
+   * 	Web platform specific options..
+   */
+  webOptions?: InitializeWebOptions;
+}
+
+export interface InitializeWebOptions {
+  /**
+   * This field sets whether or not to cancel the One Tap request if a user clicks outside the prompt. The default value is true.
+   */
+  cancelOnTapOutside?: boolean;
 }
 
 export interface SignInResultPromises {
@@ -99,11 +110,6 @@ export interface RenderSignInButtonWebOptions {
    * 	The Sign In With Google button UX flow. The default value is 'popup'.
    */
   uxMode?: 'popup' | 'redirect';
-
-  /**
-   * This field sets whether or not to cancel the One Tap request if a user clicks outside the prompt. The default value is true.
-   */
-  cancelOnTapOutside?: boolean;
 }
 
 export interface SignOutResult {
@@ -148,11 +154,11 @@ export interface GoogleOneTapAuthPlugin {
    * when authentication succeeds, the second on error and the third on success or error.
    */
   tryOneTapSignIn()
-  : Promise<{
-    successPromise: Promise<SuccessSignInResult>;
-    noSuccess: Promise<NoSuccessSignInResult>;
-    signInResultOptionPromise: Promise<SignInResultOption>;
-  }>;
+    : Promise<{
+      successPromise: Promise<SuccessSignInResult>;
+      noSuccess: Promise<NoSuccessSignInResult>;
+      signInResultOptionPromise: Promise<SignInResultOption>;
+    }>;
 
   /**
    * Tries to auto-sign-in the user without any user interaction needed.
