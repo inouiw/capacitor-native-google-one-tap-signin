@@ -110,6 +110,7 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
 
       // The visible button width should be the same as the google button width.
       const buttonElemWidth = buttonElem!.offsetWidth;
+      await this.waitForElementOffsetWidthNotZero(buttonElem!);
       assert(() => buttonElemWidth !== 0);
 
       const invisibleGoogleButtonDiv = document.createElement('div');
@@ -127,6 +128,17 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
     } else {
       return await this._doRenderSignInButton(buttonParentId, {}, {}, buttonElem!);
     }
+  }
+
+  private waitForElementOffsetWidthNotZero(element: HTMLElement): Promise<void> {
+    return new Promise<void>((resolve) => {
+      const resizeObserver = new ResizeObserver(() => {
+        if (element.offsetWidth !== 0) {
+          resolve();
+        }
+      });
+      resizeObserver.observe(element);
+    });
   }
 
   async renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.GsiButtonConfiguration): Promise<SuccessSignInResult> {
