@@ -109,8 +109,7 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
       // buttonParentElem!.style.border = '2px solid red';  // uncomment for debugging
 
       // The visible button width should be the same as the google button width.
-      const buttonElemWidth = buttonElem!.offsetWidth;
-      await this.waitForElementOffsetWidthNotZero(buttonElem!);
+      const buttonElemWidth = await this.waitForElementOffsetWidthNotZero(buttonElem!);
       assert(() => buttonElemWidth !== 0);
 
       const invisibleGoogleButtonDiv = document.createElement('div');
@@ -130,11 +129,14 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
     }
   }
 
-  private waitForElementOffsetWidthNotZero(element: HTMLElement): Promise<void> {
-    return new Promise<void>((resolve) => {
+  private waitForElementOffsetWidthNotZero(element: HTMLElement): Promise<number> {
+    if (element.offsetWidth !== 0) {
+      return Promise.resolve(element.offsetWidth);
+    }
+    return new Promise<number>((resolve) => {
       const resizeObserver = new ResizeObserver(() => {
         if (element.offsetWidth !== 0) {
-          resolve();
+          resolve(element.offsetWidth);
         }
       });
       resizeObserver.observe(element);
