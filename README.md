@@ -80,8 +80,7 @@ console.log(signInResultSuccess);
 ```
 
 # Run the demo app
-This repository contains a demo app in the `demo` folder.
-
+This repository contains a demo app in the `demo/react` folder. See the README there.
 
 # Notes about testing with an emulator
 

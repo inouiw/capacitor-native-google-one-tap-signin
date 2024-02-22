@@ -97,7 +97,7 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
 
   private async doSignIn(autoSelect: boolean) {
     var signInPromise = new Promise<NotEnrichedSuccessSignInResult | NoSuccessSignInResult>((resolve, reject) => {
-      this.oneTapInitialize(autoSelect, resolve);
+      this.oneTapInitialize(autoSelect, resolve); // The resolve function is passed, so it can be called in handleCredentialResponse.
 
       google.accounts.id.prompt((notification) => {
         const developerErrors = ['missing_client_id', 'unregistered_origin'];
@@ -109,8 +109,7 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
         else if (momentReason === 'credential_returned') {
           // Do nothing, handled in handleCredentialResponse.
         }
-        else if (notification.isNotDisplayed()
-          || notification.isSkippedMoment()
+        else if (notification.isSkippedMoment()
           || notification.isDismissedMoment()) {
           resolve({
             noSuccessReasonCode: momentReason
@@ -122,11 +121,8 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
   }
 
   private getMomentReason(notification: google.PromptMomentNotification) {
-    if (notification.isNotDisplayed()) {
-      return notification.getNotDisplayedReason();
-    }
     if (notification.isSkippedMoment()) {
-      return notification.getSkippedReason();
+      return 'skipped';
     }
     if (notification.isDismissedMoment()) {
       return notification.getDismissedReason();
