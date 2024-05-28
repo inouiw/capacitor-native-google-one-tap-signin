@@ -102,6 +102,9 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
 
   private async fedCMSignIn(autoSelect: boolean, resolveSignInFunc: ResolveSignInFunc) {
     try {
+      if ('IdentityCredential' in window === false) {
+        return false;
+      }
       this.fedCMAbortController = new AbortController();
       // see https://developers.google.com/privacy-sandbox/3pcd/fedcm
       // see https://developers.google.com/privacy-sandbox/blog/fedcm-auto-reauthn
@@ -115,9 +118,7 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
               // loginHint: ''
               nonce: this.initializeOptions!.nonce
             }
-          ],
-          mode: 'widget'
-          // autoReauthn: autoSelect
+          ]
         },
         mediation: autoSelect ? 'optional' : 'required' as 'optional' | 'required' | 'silent',
         signal: this.fedCMAbortController.signal
