@@ -1,6 +1,6 @@
 {
   "name": "capacitor-native-google-one-tap-signin",
-  "version": "5.1.10",
+  "version": "5.2.0",
   "description": "Google One Tap sign-in plugin for capacitor.",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -64,7 +64,7 @@
     "@ionic/swiftlint-config": "^1.1.2",
     "@types/gapi": "^0.0.47",
     "@types/gapi.auth2": "^0.0.60",
-    "@types/google-one-tap": "^1.2.5",
+    "@types/google-one-tap": "^1.2.6",
     "eslint": "^7.0.0",
     "prettier": "^3.1.0",
     "prettier-plugin-java": "^2.0.0",

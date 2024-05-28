@@ -49,18 +49,8 @@ export interface SignInResultOption {
 export interface SuccessSignInResult {
   /**
    * How the credential was retrieved.
-   * Currently not available for android, only if the js library is used.
-   * For possible values see google.PromptMomentNotification.
    */
-  selectBy?:
-  | 'auto'
-  | 'user'
-  | 'user_1tap'
-  | 'user_2tap'
-  | 'btn'
-  | 'btn_confirm'
-  | 'btn_add_session'
-  | 'btn_confirm_add_session' // see google.CredentialResponse.select_by
+  isAutoSelect?: boolean;
   /**
    * The JWT token base64 encoded.
    */

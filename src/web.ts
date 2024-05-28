@@ -11,16 +11,21 @@ declare var google: {
 
 type ResolveSignInFunc = (result: NotEnrichedSuccessSignInResult) => void;
 
+type IdentityCredential = Credential & { isAutoSelect: boolean, token: string }
+
 // See https://developers.google.com/identity/gsi/web/guides/use-one-tap-js-api
 export class GoogleOneTapAuthWeb extends WebPlugin {
   gsiScriptUrl = 'https://accounts.google.com/gsi/client';
   gapiLoadedPromise?: Promise<void> = undefined;
   initializeOptions?: InitializeOptions = undefined;
+  isGapiLoadRequested = false;
+  fedCMAbortController?: AbortController = undefined;
 
   async initialize(options: InitializeOptions): Promise<void> {
     this.initializeOptions = options;
     if (!this.gapiLoadedPromise) {
       this.gapiLoadedPromise = loadScript(this.gsiScriptUrl);
+      this.isGapiLoadRequested = true;
     }
     return this.gapiLoadedPromise;
   }
@@ -95,39 +100,67 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
     return signInPromise;
   }
 
-  private async doSignIn(autoSelect: boolean) {
-    var signInPromise = new Promise<NotEnrichedSuccessSignInResult | NoSuccessSignInResult>((resolve, reject) => {
-      this.oneTapInitialize(autoSelect, resolve); // The resolve function is passed, so it can be called in handleCredentialResponse.
+  private async fedCMSignIn(autoSelect: boolean, resolveSignInFunc: ResolveSignInFunc) {
+    try {
+      this.fedCMAbortController = new AbortController();
+      // see https://developers.google.com/privacy-sandbox/3pcd/fedcm
+      // see https://developers.google.com/privacy-sandbox/blog/fedcm-auto-reauthn
+      const identityCredential = await navigator.credentials.get({
+        identity: {
+          context: 'signin',
+          providers: [
+            {
+              configURL: 'https://accounts.google.com/gsi/fedcm.json',
+              clientId: this.initializeOptions!.clientId!,
+              // loginHint: ''
+              nonce: this.initializeOptions!.nonce
+            }
+          ],
+          mode: 'widget'
+          // autoReauthn: autoSelect
+        },
+        mediation: autoSelect ? 'optional' : 'required' as 'optional' | 'required' | 'silent',
+        signal: this.fedCMAbortController.signal
+      } as any) as IdentityCredential;
 
-      google.accounts.id.prompt((notification) => {
-        const developerErrors = ['missing_client_id', 'unregistered_origin'];
-        const momentReason = this.getMomentReason(notification);
+      // console.log('fedCMSignIn result: ', identityCredential);
 
-        if (momentReason !== undefined && developerErrors.includes(momentReason)) {
-          reject({ errorCode: momentReason } as NoSuccessSignInResult);
-        }
-        else if (momentReason === 'credential_returned') {
-          // Do nothing, handled in handleCredentialResponse.
-        }
-        else if (notification.isSkippedMoment()
-          || notification.isDismissedMoment()) {
-          resolve({
-            noSuccessReasonCode: momentReason
-          });
-        }
+      if (!identityCredential?.token) {
+        return false;
+      }
+
+      resolveSignInFunc({
+        idToken: identityCredential.token,
+        isAutoSelect: identityCredential.isAutoSelect
       });
-    });
-    return signInPromise;
+
+      return true;
+    } catch (e) {
+      // NotSupportedError DOMException
+      // IdentityCredentialError DOMException
+      // NetworkError DOMException
+      // NotAllowedError DOMException
+      // console.error('fedCMSignIn Error: ', e);
+      return false;
+    }
   }
 
-  private getMomentReason(notification: google.PromptMomentNotification) {
-    if (notification.isSkippedMoment()) {
-      return 'skipped';
-    }
-    if (notification.isDismissedMoment()) {
-      return notification.getDismissedReason();
-    }
-    return undefined;
+  private fedCMSignOut() {
+    navigator.credentials.preventSilentAccess();
+  }
+
+  private fedCMAbort() {
+    this.fedCMAbortController?.abort()
+  }
+
+  private async doSignIn(autoSelect: boolean) {
+    var signInPromise = new Promise<NotEnrichedSuccessSignInResult | NoSuccessSignInResult>(async (resolve, _reject) => {
+      if (await this.fedCMSignIn(autoSelect, resolve) === false) {
+        this.oneTapInitialize(autoSelect, resolve); // The resolve function is passed, so it can be called in handleCredentialResponse.
+        google.accounts.id.prompt();
+      }
+    });
+    return signInPromise;
   }
 
   private oneTapInitialize(autoSelect: boolean, resolveSignInFunc: ResolveSignInFunc, buttonWebOptions?: RenderSignInButtonWebOptions) {
@@ -140,25 +173,32 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
       ux_mode: buttonWebOptions?.uxMode || 'popup',
       nonce: this.initializeOptions!.nonce,
       use_fedcm_for_prompt: true,
+      use_fedcm_for_button: true
+      // log_level: 'debug'
     } as IdConfiguration & { use_fedcm_for_prompt: boolean });
   }
 
   private handleCredentialResponse(credentialResponse: google.CredentialResponse, resolveSignInFunc: ResolveSignInFunc) {
     let signInResult: NotEnrichedSuccessSignInResult = {
       idToken: credentialResponse.credential,
-      selectBy: credentialResponse.select_by,
+      isAutoSelect: credentialResponse.isAutoSelect,
     };
     resolveSignInFunc(signInResult);
   }
 
   cancelOneTapDialog(): void {
+    if (this.isGapiLoadRequested === false) {
+      this.fedCMAbort();
+    }
     google.accounts.id.cancel();
   }
 
   signOut(authenticatedUserId: string | undefined): Promise<SignOutResult> {
+    if (this.isGapiLoadRequested === false) {
+      this.fedCMSignOut();
+      return Promise.resolve({ isSuccess: true });
+    }
     return new Promise<SignOutResult>((resolve) => {
-      google.accounts.id.cancel();
-
       if (authenticatedUserId) {
         // Calling revoke method revokes all OAuth2 scopes previously granted by the Sign In With Google client library.
         google.accounts.id.revoke(authenticatedUserId, response => {
