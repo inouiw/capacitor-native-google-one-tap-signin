@@ -25,6 +25,8 @@ The major version of this plugin indicates the capacitor version that it is comp
 npm i --save capacitor-native-google-one-tap-signin
 ```
 
+See [capacitor-native-google-one-tap-signin](https://www.npmjs.com/package/capacitor-native-google-one-tap-signin) on NPM
+
 #### 2. Update capacitor dependencies
 
 ```sh
