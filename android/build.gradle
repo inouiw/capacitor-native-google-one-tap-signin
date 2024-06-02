@@ -13,7 +13,7 @@ apply plugin: 'com.android.library'
 
 android {
     namespace "com.proventask.capacitor.GoogleOneTapAuth.capacitorgoogleauth"
-    compileSdkVersion 33
+    compileSdk 34
     defaultConfig {
         minSdkVersion 24
         targetSdkVersion 31
@@ -46,12 +46,20 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':capacitor-android')
     implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'androidx.test:monitor:1.6.1'
+    implementation 'androidx.test.ext:junit:1.1.5'
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation 'com.google.android.gms:play-services-auth:20.4.1'
     implementation 'com.google.android.gms:play-services-tasks:18.0.2'
     implementation 'com.google.android.gms:play-services-base:18.0.1'
+    implementation 'androidx.credentials:credentials:1.2.2'
+    implementation 'com.google.android.libraries.identity.googleid:googleid:1.1.0'
+
+    // optional - needed for credentials support from play services, for devices running
+    // Android 13 and below.
+    implementation 'androidx.credentials:credentials-play-services-auth:1.2.2'
     implementation 'org.json:json:20220924'
 }
 
