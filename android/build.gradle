@@ -10,9 +10,10 @@ buildscript {
 }
 
 apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
-    namespace "com.proventask.capacitor.GoogleOneTapAuth.capacitorgoogleauth"
+    namespace "com.proventask.capacitor.googleOneTapAuth.capacitorgoogleauth"
     compileSdk 34
     defaultConfig {
         minSdkVersion 24
@@ -34,6 +35,9 @@ android {
         targetCompatibility JavaVersion.VERSION_17
         sourceCompatibility JavaVersion.VERSION_17
     }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
 }
 
 repositories {
@@ -48,6 +52,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.4.2'
     implementation 'androidx.test:monitor:1.6.1'
     implementation 'androidx.test.ext:junit:1.1.5'
+    implementation 'androidx.core:core-ktx:1.13.1'
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'

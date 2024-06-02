@@ -72,7 +72,7 @@ const Page1: React.FC = () => {
   }
 
   function reportSignInResultSuccess(successResult: SuccessSignInResult) {
-    setAuthResult(`SignIn success! email: '${successResult.email}', userId: '${successResult.userId}', selectBy: '${successResult.selectBy}', nonce: '${successResult.decodedIdToken.nonce}'. See browser console for idToken and full result.`);
+    setAuthResult(`SignIn success! email: '${successResult.email}', userId: '${successResult.userId}', isAutoSelect: '${successResult.isAutoSelect}', nonce: '${successResult.decodedIdToken.nonce}'. See browser console for idToken and full result.`);
     console.log('Success! ' + JSON.stringify(successResult));
   }
 

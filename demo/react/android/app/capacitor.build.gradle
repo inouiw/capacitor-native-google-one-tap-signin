@@ -14,6 +14,7 @@ dependencies {
     implementation project(':capacitor-keyboard')
     implementation project(':capacitor-status-bar')
     implementation project(':capacitor-native-google-one-tap-signin')
+    implementation 'androidx.core:core-ktx:1.13.1'
 
 }
 
