@@ -1,7 +1,14 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 33
+
+
+  namespace 'io.ionic.starter'
+  kotlinOptions {
+    jvmTarget = '17'
+  }
+  compileSdk 34
     defaultConfig {
         applicationId "io.ionic.starter"
         minSdkVersion 24
@@ -42,6 +49,7 @@ dependencies {
 }
 
 apply from: 'capacitor.build.gradle'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 try {
     def servicesJSON = file('google-services.json')

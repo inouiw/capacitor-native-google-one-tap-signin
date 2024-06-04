@@ -1,6 +1,15 @@
-# Capacitor Native Google One Tap Signin plugin
+# Capacitor Native Sign in with Google plugin
 
-Wraps the native android One Tap api for ionic capacitor apps. One Tap Sign In is part of Sign in with Google and offers features as automatic sign-in on return visits.
+Wraps the native android and iOS Sign in with Google api for ionic capacitor apps. 
+
+### Features
+- Auto sign-in returning users (that you did not sign out). No user action needed but shows a status UI for a few seconds.*
+- New users can sign-up with one tap.
+- After sign-out users can sign-in with one tap.
+- You can attach a handler to your own custom sign-in button.
+
+
+&ast; To avoid any UI, you could create your own authentication cookie. Send the google idToken to your server, verify it, create a JWT and return it as cookie. When the user returns, just verify your JWT cookie.
 
 This library intends to provide the best google authentication experience for each platform.
 
@@ -11,9 +20,7 @@ This library intends to provide the best google authentication experience for ea
 
 After a successful authentication, the idToken is returned as base64 and as object.
 
-The user is automatically signed-in, without a prompt after the first sign-in.
-
-The android minSdkVersion is 24, however the one-tap library seems to require API version 29. For lower API versions GoogleSignIn is used.
+The android minSdkVersion is 24.
 
 # Install and Configure
 
