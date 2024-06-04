@@ -41,6 +41,8 @@ const Page1: React.FC = () => {
       });
       const renderButtonPromise = renderSignInButton();
       const signInResultSuccess = await Promise.race([autoOrOneTapSuccessPromise, renderButtonPromise]);
+      // If the user signed-in with the button, the UI may still be shown. So close it.
+      await GoogleOneTapAuth.cancelOneTapDialog();
       reportSignInResultSuccess(signInResultSuccess);
     } catch(e) {
       setAuthResult(`Something unexpected happened. Message: '${e}', Stack: ${new Error().stack}`);

@@ -51,6 +51,8 @@ If you get the error `[GSI_LOGGER]: The given origin is not allowed for the give
 
 - For the ios platform, you need to create a client ID of type iOS in the [Google Cloud Console](https://console.cloud.google.com/apis/dashboard). Add the client ID to the  `{your-app}/ios/App/App/Info.plist` file with the key `GIDClientID` (see the demo app for reference). When creating the client ID, you will see the "iOS URL scheme" value in the Google Cloud Console. Add this also to the `Info.plist` file.
 
+After some testing the Chrome browser may decide to block third-party sign-in promts on localhost. In the browser console you will see the message *Third-party sign in was disabled in browser Site Settings*. Re-enable it under `chrome://settings/content/federatedIdentityApi`
+
 # Usage
 
 ### Example 1: Showing the button only if auto-sign-in or one-tap sign in fail.
@@ -88,6 +90,8 @@ const successResult = await GoogleOneTapAuth.addSignInActionToExistingButton(
   'google-signin-existing-btn-parent', 'google-signin-existing-btn');
   
 const signInResultSuccess = await Promise.race([autoOrOneTapSuccessPromise, renderButtonPromise]);
+// If the user signed-in with the button, the UI may still be shown. So close it.
+await GoogleOneTapAuth.cancelOneTapDialog();
 console.log(signInResultSuccess);
 ```
 

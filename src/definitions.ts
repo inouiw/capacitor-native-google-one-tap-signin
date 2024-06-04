@@ -74,7 +74,7 @@ export interface NoSuccessSignInResult {
   /**
    * A reason code as 'tap_outside'.
    * For the js library see google.PromptMomentNotification for possible values.
-   * For android and iOS 'SIGN_IN_CANCELLED' are currently set.
+   * For android, iOS and web 'SIGN_IN_CANCELLED' is currently set.
    */
   noSuccessReasonCode?: string;
   /**

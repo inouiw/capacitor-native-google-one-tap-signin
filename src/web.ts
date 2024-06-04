@@ -13,6 +13,8 @@ type ResolveSignInFunc = (result: NotEnrichedSuccessSignInResult) => void;
 
 type IdentityCredential = Credential & { isAutoSelect: boolean, token: string }
 
+enum FedCMSignInResult { SUCCESS, CANCELLED, OTHER_ERROR }
+
 // See https://developers.google.com/identity/gsi/web/guides/use-one-tap-js-api
 export class GoogleOneTapAuthWeb extends WebPlugin {
   gsiScriptUrl = 'https://accounts.google.com/gsi/client';
@@ -20,6 +22,7 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
   initializeOptions?: InitializeOptions = undefined;
   isGapiLoadRequested = false;
   fedCMAbortController?: AbortController = undefined;
+  cancelCalledAbortReason = 'CANCEL_CALLED';
 
   async initialize(options: InitializeOptions): Promise<void> {
     this.initializeOptions = options;
@@ -33,7 +36,9 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
   async tryAutoOrOneTapSignIn(): Promise<SignInResultOption> {
     let signInResult = await this.doSignIn(true);
 
-    if (!(signInResult as SuccessSignInResult).idToken) {
+    if (!(signInResult as SuccessSignInResult).idToken
+      // If the popup was cancelled, do not show it again.
+      && (signInResult as NoSuccessSignInResult).noSuccessReasonCode !== 'SIGN_IN_CANCELLED') {
       signInResult = await this.doSignIn(false);
     }
 
@@ -100,10 +105,11 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
     return signInPromise;
   }
 
-  private async fedCMSignIn(autoSelect: boolean, resolveSignInFunc: ResolveSignInFunc) {
+  private async fedCMSignIn(autoSelect: boolean, resolveSignInFunc: ResolveSignInFunc) : Promise<FedCMSignInResult> {
     try {
+      // console.log(`IdentityCredential supported: ${'IdentityCredential' in window}`);
       if ('IdentityCredential' in window === false) {
-        return false;
+        return FedCMSignInResult.OTHER_ERROR;
       }
       this.fedCMAbortController = new AbortController();
       // see https://developers.google.com/privacy-sandbox/3pcd/fedcm
@@ -127,7 +133,7 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
       // console.log('fedCMSignIn result: ', identityCredential);
 
       if (!identityCredential?.token) {
-        return false;
+        return FedCMSignInResult.OTHER_ERROR;
       }
 
       resolveSignInFunc({
@@ -135,14 +141,23 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
         isAutoSelect: identityCredential.isAutoSelect
       });
 
-      return true;
+      return FedCMSignInResult.SUCCESS;
     } catch (e) {
       // NotSupportedError DOMException
       // IdentityCredentialError DOMException
-      // NetworkError DOMException
+      // NetworkError DOMException --> name: 'NetworkError'
       // NotAllowedError DOMException
-      // console.error('fedCMSignIn Error: ', e);
-      return false;
+      const name = (e as Error).name ?? '';
+      const message = (e as Error).message ?? '';
+      // console.log('fedCMSignIn error: ', e, name);
+      if (message.includes(this.cancelCalledAbortReason) 
+        || (name === 'NetworkError' && message.includes('Error retrieving a token.'))) {
+        return FedCMSignInResult.CANCELLED;
+      }
+      return FedCMSignInResult.OTHER_ERROR;
+    }
+    finally {
+      this.fedCMAbortController = undefined;
     }
   }
 
@@ -151,12 +166,16 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
   }
 
   private fedCMAbort() {
-    this.fedCMAbortController?.abort()
+    this.fedCMAbortController?.abort({ message: this.cancelCalledAbortReason });
   }
 
   private async doSignIn(autoSelect: boolean) {
     var signInPromise = new Promise<NotEnrichedSuccessSignInResult | NoSuccessSignInResult>(async (resolve, _reject) => {
-      if (await this.fedCMSignIn(autoSelect, resolve) === false) {
+      let fedCMResult = await this.fedCMSignIn(autoSelect, resolve);
+
+      if (fedCMResult === FedCMSignInResult.CANCELLED) {
+        resolve({noSuccessReasonCode: 'SIGN_IN_CANCELLED' });
+      } else if (fedCMResult === FedCMSignInResult.OTHER_ERROR) {
         this.oneTapInitialize(autoSelect, resolve); // The resolve function is passed, so it can be called in handleCredentialResponse.
         google.accounts.id.prompt();
       }
@@ -188,10 +207,8 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
   }
 
   cancelOneTapDialog(): void {
-    if (this.isGapiLoadRequested === false) {
-      this.fedCMAbort();
-    }
     google.accounts.id.cancel();
+    this.fedCMAbort();
   }
 
   signOut(authenticatedUserId: string | undefined): Promise<SignOutResult> {
