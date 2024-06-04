@@ -20,7 +20,7 @@ This library intends to provide the best google authentication experience for ea
 
 After a successful authentication, the idToken is returned as base64 and as object.
 
-The android minSdkVersion is 24.
+The android minSdkVersion is 24. Tested with android 10 and above.
 
 # Install and Configure
 
@@ -53,14 +53,13 @@ If you get the error `[GSI_LOGGER]: The given origin is not allowed for the give
 
 # Usage
 
+### Example 1: Showing the button only if auto-sign-in or one-tap sign in fail.
 ```TypeScript
 import { GoogleOneTapAuth, SignInResult } from 'capacitor-native-google-one-tap-signin';
 
 await GoogleOneTapAuth.initialize({ clientId: clientId });
 
-// Example 1: Showing the button only if auto-sign-in or one-tap sign in fail.
-const signInResult = await GoogleOneTapAuth.tryAutoOrOneTapSignIn()
-  .then(res => res.signInResultOptionPromise);
+const signInResult = await GoogleOneTapAuth.tryAutoOrOneTapSignIn();
 if (signInResult.isSuccess) {
   console.log(signInResult);
 } else { 
@@ -71,20 +70,34 @@ if (signInResult.isSuccess) {
 
 // See the demo folder for an example application.
 ```
-
+  
+### Example 2: Trigger auto-sign-in and if not successful one-tap sign and show the button in parallel.
 ```TypeScript
 import { GoogleOneTapAuth, SignInResult } from 'capacitor-native-google-one-tap-signin';
 
 await GoogleOneTapAuth.initialize({ clientId: clientId });
 
-// Example 2: Trigger auto-sign-in or one-tap sign and show the button in parallel.
-const autoOrOneTapSuccessPromise = GoogleOneTapAuth.tryAutoOrOneTapSignIn()
-  .then(res => res.successPromise);
-const renderButtonPromise = GoogleOneTapAuth
-  .renderSignInButton('google-signin', {}, { text: 'continue_with' });
+const autoOrOneTapSuccessPromise = new Promise<SuccessSignInResult>(async (resolve) => {
+  const autoOrOneTapResult = await GoogleOneTapAuth.tryAutoOrOneTapSignIn();
+  // Ignore if the result is not success because the user can use the button.
+  if (autoOrOneTapResult.isSuccess) {
+    resolve(autoOrOneTapResult.success!);
+  }
+});
+const successResult = await GoogleOneTapAuth.addSignInActionToExistingButton(
+  'google-signin-existing-btn-parent', 'google-signin-existing-btn');
+  
 const signInResultSuccess = await Promise.race([autoOrOneTapSuccessPromise, renderButtonPromise]);
 console.log(signInResultSuccess);
+```
 
+```HTML
+<div id='google-signin-existing-btn-parent'>
+    <button id='google-signin-existing-btn'>Custom Sign-in Button</button>
+</div>
+```
+
+```TypeScript
 // See the demo folder for an example application.
 ```
 
@@ -117,7 +130,7 @@ See `src/definitions.ts` for a complete definition.
 initialize(options: InitializeOptions): Promise<void>;
 
 /**
- * Tries to either auto-sign-in the user or sign-in the user with just one tap/click.
+ * Tries to first auto-sign-in the user and if not successful sign-in the user with just one tap/click.
  * If there is a single google account and that account has previously signed into the app, 
  * then that user is auto signed in. A short popover is displayed during sign-in.
  * If there are multiple google accounts and more than one have previously signed into the 
@@ -126,41 +139,26 @@ initialize(options: InitializeOptions): Promise<void>;
  * the app or if the user has opt out of One Tap, then the response will indicate that 
  * the auto sign-in did not succeed.
  * See https://developers.google.com/identity/gsi/web/guides/features
- * @returns A Promise object that contains 3 properties with promises. One resolves only 
- * when authentication succeeds, the second on error and the third on success or error.
+ * @returns A Promise object that resolves to an object with isSuccess, success and noSuccess properties.
  */
 tryAutoOrOneTapSignIn()
-  : Promise<{
-    successPromise: Promise<SuccessSignInResult>;
-    noSuccess: Promise<NoSuccessSignInResult>;
-    signInResultOptionPromise: Promise<SignInResultOption>;
-  }>;
+  : Promise<SignInResultOption>;
 
 /**
  * Tries to show the sign-in UI without trying to auto sign-in the user.
- * @returns A Promise object that contains 3 properties with promises. One resolves only 
- * when authentication succeeds, the second on error and the third on success or error.
+ * @returns A Promise object that resolves to an object with isSuccess, success and noSuccess properties.
  */
 tryOneTapSignIn()
-  : Promise<{
-    successPromise: Promise<SuccessSignInResult>;
-    noSuccess: Promise<NoSuccessSignInResult>;
-    signInResultOptionPromise: Promise<SignInResultOption>;
-  }>;
+  : Promise<SignInResultOption>;
 
 /**
  * Tries to auto-sign-in the user without any user interaction needed.
  * If there is a single google account and that account has previously signed into the app, 
  * then that user is auto signed in. A short popover is displayed during sign-in.
- * @returns A Promise object that contains 3 properties with promises. One resolves only 
- * when authentication succeeds, the second on error and the third on success or error.
+ * @returns A Promise object that resolves to an object with isSuccess, success and noSuccess properties.
  */
 tryAutoSignIn()
-  : Promise<{
-    successPromise: Promise<SuccessSignInResult>;
-    noSuccess: Promise<NoSuccessSignInResult>;
-    signInResultOptionPromise: Promise<SignInResultOption>;
-  }>;
+  : Promise<SignInResultOption>;
 
 /**
  * Allows using a custom sign-in button.
@@ -193,7 +191,7 @@ renderSignInButton(
   : Promise<SuccessSignInResult>;
 
 /**
- * Closes the One Tap prompt and triggers a dismissed moment.
+ * Closes the One Tap prompt.
  */
 cancelOneTapDialog(): void;
 
@@ -211,7 +209,7 @@ getNonce(): string;
 ```
 
 # Design decisions
-Promises will not be rejected for anticipated unsuccessful control flow. For example, if the one tap auto-login does not succeed because there is no session then this is not exceptional but expected in many cases. Rejecting the promise would mean the caller would have to catch an exception when calling `await xy` and then run follow-up code in the catch block. However when creating the demo app it was also evident that it is useful to have a promise that only resolves when authentication succeeds. Therefore the `tryAutoOrOneTapSignIn` method returns a Promise object that contains 3 properties with promises. One resolves only when authentication succeeds, the second on error and the third on success or error.
+Promises will not be rejected for anticipated unsuccessful control flow. For example, if the one tap auto-login does not succeed because there is no session then this is not exceptional but expected in many cases. Rejecting the promise would mean the caller would have to catch an exception when calling `await xy` and then run follow-up code in the catch block. 
 
 Instead of creating one signIn method with many parameters that are only used in some cases (=unclear dependencies), there are two methods with different parameters and different return types.
 

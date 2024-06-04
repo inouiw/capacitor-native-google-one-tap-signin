@@ -11,12 +11,14 @@ const Page1: React.FC = () => {
   useEffect(() => {
     // It is allowed but not needed to await initialize.
     GoogleOneTapAuth.initialize({ clientId: clientId });
+
+    addSignInActionToExistingButton();
   }, []);
 
   async function triggerGoogleAutoOrOneTapSignInShowSignInButtonIfNotSuccessfulHandler() {
     setAuthResult('');
     try {
-      const signInResult = await GoogleOneTapAuth.tryAutoOrOneTapSignIn().then(res => res.signInResultOptionPromise);
+      const signInResult = await GoogleOneTapAuth.tryAutoOrOneTapSignIn();
       reportSignInResult(signInResult);
       if (!signInResult.isSuccess) { 
         const successResult = await renderSignInButton();
@@ -30,7 +32,13 @@ const Page1: React.FC = () => {
   async function triggerGoogleAutoOrOneTapSignInAndShowSignInButtonHandler() {
     setAuthResult('');
     try {
-      const autoOrOneTapSuccessPromise = GoogleOneTapAuth.tryAutoOrOneTapSignIn().then(res => res.successPromise);
+      const autoOrOneTapSuccessPromise = new Promise<SuccessSignInResult>(async (resolve) => {
+        const autoOrOneTapResult = await GoogleOneTapAuth.tryAutoOrOneTapSignIn();
+        // Ignore if the result is not success because the user can use the button.
+        if (autoOrOneTapResult.isSuccess) {
+          resolve(autoOrOneTapResult.success!);
+        }
+      });
       const renderButtonPromise = renderSignInButton();
       const signInResultSuccess = await Promise.race([autoOrOneTapSuccessPromise, renderButtonPromise]);
       reportSignInResultSuccess(signInResultSuccess);
@@ -133,15 +141,11 @@ const Page1: React.FC = () => {
           </IonRow>
           <IonRow>
             <IonCol size='auto'>
-              <IonButton onClick={() => addSignInActionToExistingButton()}>
-                Add to existing button
-              </IonButton>
-            </IonCol>
-            <IonCol>
               <div id='google-signin-existing-btn-parent'>
-                Click the "Add to existing button" then this one. <IonButton id='google-signin-existing-btn' color='secondary'>User Created Sign-in Button</IonButton>
+                 <button id='google-signin-existing-btn' style={{padding: 20, backgroundColor: '#3dc418' }}>Custom Sign-in Button</button>
               </div>
             </IonCol>
+            <IonCol></IonCol>
           </IonRow>
           <IonRow>
             <IonCol size='auto'>

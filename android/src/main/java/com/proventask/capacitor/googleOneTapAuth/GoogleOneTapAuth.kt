@@ -205,7 +205,7 @@ class GoogleOneTapAuth : Plugin() {
             val errorObj = JSObject()
             errorObj.put("noSuccessReasonCode", signInResult.noSuccessReasonCode)
             errorObj.put("noSuccessAdditionalInfo", signInResult.noSuccessAdditionalInfo)
-            result.put("error", errorObj)
+            result.put("noSuccess", errorObj)
         }
         return result
     }

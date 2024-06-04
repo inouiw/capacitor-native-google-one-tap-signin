@@ -1,5 +1,5 @@
 import { Capacitor, registerPlugin } from '@capacitor/core';
-import type { InitializeOptions, GoogleOneTapAuthPlugin, SignInResultPromises, SuccessSignInResult, SignOutResult, RenderSignInButtonOptions, NoSuccessSignInResult, SignInResultOption } from './definitions';
+import type { InitializeOptions, GoogleOneTapAuthPlugin, SuccessSignInResult, SignOutResult, RenderSignInButtonOptions, SignInResultOption } from './definitions';
 import { assert, randomHexString } from './helpers';
 import { GoogleOneTapAuthWeb } from './web';
 import { jwtDecode } from "jwt-decode";
@@ -48,41 +48,33 @@ class GoogleOneTapAuth implements GoogleOneTapAuthPlugin {
     }
   }
 
-  async tryAutoOrOneTapSignIn(): Promise<SignInResultPromises> {
+  async tryAutoOrOneTapSignIn(): Promise<SignInResultOption> {
     await this.ensureInitialized();
     const notEnrichtedSignInResultOption = await GoogleOneTapAuthPlatform.tryAutoOrOneTapSignIn() as NotEnrichtedSignInResultOption;
     const enrichtedSignInResultOption = this.enrichOptionResultWithDecodedIdToken(notEnrichtedSignInResultOption);
-    return this.toPromisesResult(enrichtedSignInResultOption);
+    this.onResultReceived(enrichtedSignInResultOption);
+    return enrichtedSignInResultOption;
   }
 
-  async tryOneTapSignIn(): Promise<SignInResultPromises> {
+  async tryOneTapSignIn(): Promise<SignInResultOption> {
     await this.ensureInitialized();
     const notEnrichtedSignInResultOption = await GoogleOneTapAuthPlatform.tryOneTapSignIn() as NotEnrichtedSignInResultOption;
     const enrichtedSignInResultOption = this.enrichOptionResultWithDecodedIdToken(notEnrichtedSignInResultOption);
-    return this.toPromisesResult(enrichtedSignInResultOption);
+    this.onResultReceived(enrichtedSignInResultOption);
+    return enrichtedSignInResultOption;
   }
 
-  async tryAutoSignIn(): Promise<SignInResultPromises> {
+  async tryAutoSignIn(): Promise<SignInResultOption> {
     await this.ensureInitialized();
     const notEnrichtedSignInResultOption = await GoogleOneTapAuthPlatform.tryAutoSignIn() as NotEnrichtedSignInResultOption;
     const enrichtedSignInResultOption = this.enrichOptionResultWithDecodedIdToken(notEnrichtedSignInResultOption);
-    return this.toPromisesResult(enrichtedSignInResultOption);
+    this.onResultReceived(enrichtedSignInResultOption);
+    return enrichtedSignInResultOption
   }
 
-  private toPromisesResult(signInResultOption: SignInResultOption): SignInResultPromises {
+  private onResultReceived(signInResultOption: SignInResultOption) {
     if (signInResultOption.isSuccess) {
       this.authenticatedUserId = signInResultOption.success!.userId;
-      return {
-        successPromise: Promise.resolve(signInResultOption.success!),
-        noSuccess: new Promise<NoSuccessSignInResult>(() => { }),
-        signInResultOptionPromise: Promise.resolve(signInResultOption)
-      };
-    } else {
-      return {
-        successPromise: new Promise<SuccessSignInResult>(() => { }),
-        noSuccess: Promise.resolve(signInResultOption.noSuccess!),
-        signInResultOptionPromise: Promise.resolve(signInResultOption)
-      };
     }
   }
 
