@@ -4,20 +4,22 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.0.0'
-        classpath 'com.google.gms:google-services:4.3.15'
+        classpath 'com.android.tools.build:gradle:8.4.1'
+        classpath 'com.google.gms:google-services:4.4.2'
     }
 }
 
-apply plugin: 'com.android.library'
-apply plugin: 'org.jetbrains.kotlin.android'
+plugins {
+    id "com.android.library"
+    id "org.jetbrains.kotlin.android" version "2.0.0"
+}
 
 android {
     namespace "com.proventask.capacitor.googleOneTapAuth.capacitorgoogleauth"
     compileSdk 34
     defaultConfig {
         minSdkVersion 24
-        targetSdkVersion 31
+        targetSdkVersion 33
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
