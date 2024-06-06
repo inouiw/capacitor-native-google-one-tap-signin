@@ -16,7 +16,7 @@ The pre-configured client-id should has the following origins allowed: http://lo
 Some features as `navigator.credentials.get` require a secure context but also work on localhost.
 
 ## Run on android
-Then open and edit the plugin and demo app in Android Stuido. `ionic capacitor open android`
+Then open and edit the plugin and demo app in Android Stuido. `npx cap open android`
 
 ## Run on ios
-Then open and edit the plugin and demo app in XCode. `ionic capacitor open ios`
+Then open and edit the plugin and demo app in XCode. `npx cap open ios`
