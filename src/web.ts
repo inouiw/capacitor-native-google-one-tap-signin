@@ -201,7 +201,7 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
   private handleCredentialResponse(credentialResponse: google.CredentialResponse, resolveSignInFunc: ResolveSignInFunc) {
     let signInResult: NotEnrichedSuccessSignInResult = {
       idToken: credentialResponse.credential,
-      isAutoSelect: credentialResponse.isAutoSelect,
+      isAutoSelect: credentialResponse.select_by === 'auto',
     };
     resolveSignInFunc(signInResult);
   }
