@@ -148,8 +148,8 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
     });
   }
 
-  private async renderSignInButtonUsingGoogleIdentityServicesForWeb(onResult: (value: SignInResultOption) => void, parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration: google.accounts.id.GsiButtonConfiguration | undefined) {
-    const notEnrichedSignInResultOption = await GoogleOneTapAuthPlatform.renderSignInButton(parentElementId, options, gsiButtonConfiguration);
+  private async renderSignInButtonUsingGoogleIdentityServicesForWeb(onResult: (value: SignInResultOption) => void, invisibleGoogleButtonDivId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration: google.accounts.id.GsiButtonConfiguration | undefined) {
+    const notEnrichedSignInResultOption = await GoogleOneTapAuthPlatform.renderSignInButton(invisibleGoogleButtonDivId, options, gsiButtonConfiguration);
     const enrichedSignInResultOption = this.enrichOptionResultWithDecodedIdToken(notEnrichedSignInResultOption);
     this.onResultReceived(enrichedSignInResultOption);
     onResult(enrichedSignInResultOption);
@@ -212,8 +212,8 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
   }
 
   private async addSignInActionToExistingButtonForWeb(buttonParentElem: HTMLElement, buttonElem: HTMLElement, onResult: (value: SignInResultOption) => void): Promise<void> {
-    buttonParentElem!.style.position = 'relative';
-    buttonParentElem!.style.overflow = 'hidden';
+    buttonParentElem.style.position = 'relative';
+    buttonParentElem.style.overflow = 'hidden';
     // buttonParentElem!.style.border = '2px solid red';  // uncomment for debugging
 
     // The visible button width should be the same as the google button width.
@@ -231,7 +231,7 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
     invisibleGoogleButtonDiv.style.opacity = '0.0001'; // change it for debugging
     buttonElem!.appendChild(invisibleGoogleButtonDiv);
 
-    await this.renderSignInButtonUsingGoogleIdentityServicesForWeb(onResult, buttonParentElem.id, {}, { type: 'standard', width: buttonElemWidth });
+    await this.renderSignInButtonUsingGoogleIdentityServicesForWeb(onResult, invisibleGoogleButtonDivId, {}, { type: 'standard', width: buttonElemWidth });
   }
 
   private waitForElementOffsetWidthNotZero(element: HTMLElement): Promise<number> {
