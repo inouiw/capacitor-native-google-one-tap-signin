@@ -54,11 +54,10 @@ If you get the error `[GSI_LOGGER]: The given origin is not allowed for the give
 After some testing the Chrome browser may decide to block third-party sign-in promts on localhost. In the browser console you will see the message *Third-party sign in was disabled in browser Site Settings*. Re-enable it under `chrome://settings/content/federatedIdentityApi`
 
 #### FAQ
-How to disconnect your google account form your app?
-See [Manage connections between your Google Account and third-parties](https://support.google.com/accounts/answer/13533235)
-
-What does the warning `[GSI_LOGGER]: Your client application uses one of the Google One Tap prompt UI status methods that may stop functioning when FedCM becomes mandatory. Refer to the migration guide to update your code accordingly and opt-in to FedCM to test your changes. Learn more: https://developers.google.com/identity/gsi/web/guides/fedcm-migration?s=dc#display_moment and https://developers.google.com/identity/gsi/web/guides/fedcm-migration?s=dc#skipped_moment` mean?
-The warning is triggered when the `google.accounts.id.prompt` method is used with a callback argument. The message says "*may* stop functioning". The documentation states that some status methods as `isSkippedMoment()`, `isDismissedMoment()` and `getDismissedReason()` are still allowed.
+- How to disconnect your google account form your app?  
+--> See [Manage connections between your Google Account and third-parties](https://support.google.com/accounts/answer/13533235)
+- What does the warning `[GSI_LOGGER]: Your client application uses one of the Google One Tap prompt UI status methods that may stop functioning when FedCM becomes mandatory. Refer to the migration guide to update your code accordingly and opt-in to FedCM to test your changes. Learn more: https://developers.google.com/identity/gsi/web/guides/fedcm-migration?s=dc#display_moment and https://developers.google.com/identity/gsi/web/guides/fedcm-migration?s=dc#skipped_moment` mean?  
+--> The warning is triggered when the `google.accounts.id.prompt` method is used with a callback argument. The message says "*may* stop functioning". The documentation states that some status methods as `isSkippedMoment()`, `isDismissedMoment()` and `getDismissedReason()` are still allowed.
 
 
 # Usage
