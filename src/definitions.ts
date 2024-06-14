@@ -86,7 +86,8 @@ export interface SignOutResult {
 export interface GoogleOneTapAuthPlugin {
   /**
    * Performs common or one-time initializations.
-   * For the web platform, starts pre-loading the google one tap JavaScript library if the browser does not support FedCM.
+   * For the web platform, starts pre-loading the google one tap JavaScript library if the 
+   * browser does not support FedCM.
    * initialize must be called before any other method.
    * initialize remembers if it was called so it is safe to be called multiple times.
    * Other methods wait till initialize is finished so you must not await initialize.
@@ -96,15 +97,15 @@ export interface GoogleOneTapAuthPlugin {
   initialize(options: InitializeOptions): Promise<void>;
 
   /**
-   * Tries to first auto-sign-in the user and if not successful sign-in the user with one tap/click.
-   * @returns A Promise object that resolves to an object with isSuccess, success and noSuccess properties.
+   * Tries to first auto-sign-in the user and if not successful uses one tap/click sign-in.
+   * @returns A Promise that resolves to a result option object.
    */
   tryAutoOrOneTapSignIn()
     : Promise<SignInResultOption>;
 
   /**
-   * Tries to first auto-sign-in the user and if not successful sign-in the user with one tap/click.
-   * @param onResult A callback that is passed an object with isSuccess, success and noSuccess properties.
+   * Tries to first auto-sign-in and if not successful sign-in the user with one tap/click.
+   * @param onResult A callback that is passed the result option object.
    */
   tryAutoOrOneTapSignInWithCallback(onResult: (value: SignInResultOption) => void)
   : Promise<void>;
@@ -114,7 +115,7 @@ export interface GoogleOneTapAuthPlugin {
    * If there is a single google account and that account has previously signed into the app, 
    * then that user is auto signed in. A short popover is displayed during sign-in.
    * For android, sets FilterByAuthorizedAccounts to true. See https://developer.android.com/identity/sign-in/credential-manager-siwg
-   * @returns A Promise object that resolves to an object with isSuccess, success and noSuccess properties.
+   * @returns A Promise that resolves to a result option object.
    */
   tryAutoSignIn()
     : Promise<SignInResultOption>;
@@ -122,7 +123,7 @@ export interface GoogleOneTapAuthPlugin {
   /**
    * Tries to show the sign-in UI without trying to auto sign-in the user.
    * For android, sets FilterByAuthorizedAccounts to false. See https://developer.android.com/identity/sign-in/credential-manager-siwg
-   * @returns A Promise object that resolves to an object with isSuccess, success and noSuccess properties.
+   * @returns A Promise that resolves to a result option object.
    */
   tryOneTapSignIn()
     : Promise<SignInResultOption>;
@@ -132,12 +133,12 @@ export interface GoogleOneTapAuthPlugin {
    * 
    * Allows using a custom sign-in button.
    * The element to which buttonParentId refers must have the style position: 'relative'.
-   * For the web platform, the implementation renders the google button invisible in front of the passed button.
+   * For the web platform, the implementation renders the google button invisible in front of
+   * the passed button.
    * @param buttonParentId 
    * @param buttonId
-   * @param onResult A callback that is passed an object with isSuccess, success and noSuccess properties.
-   * @returns A Promise object with isSuccess, success and noSuccess properties, that resolves when the signIn 
-   *   is successful or in case of a configuration error.
+   * @param onResult A callback that is passed the result option object.
+   * @returns A Promise with a success result, that resolves when the signIn is successful.
    */
   addSignInActionToExistingButton(
     buttonParentId: string,
@@ -147,10 +148,11 @@ export interface GoogleOneTapAuthPlugin {
   /**
    * Allows using a custom sign-in button.
    * The element to which buttonParentId refers must have the style position: 'relative'.
-   * For the web platform, the implementation renders the google button invisible in front of the passed button.
+   * For the web platform, the implementation renders the google button invisible in front of
+   * the passed button.
    * @param buttonParentId 
    * @param buttonId
-   * @param onResult A callback that is passed an object with isSuccess, success and noSuccess properties.
+   * @param onResult A callback that is passed the result option object.
    */
   addSignInActionToExistingButtonWithCallback(
     buttonParentId: string,
@@ -168,7 +170,7 @@ export interface GoogleOneTapAuthPlugin {
    * @param parentElementId 
    * @param options 
    * @param gsiButtonConfiguration Not all button configuration options are supported on android.
-   * @returns A Promise object that resolves when the signIn is successful.
+   * @returns A Promise with a success result, that resolves when the signIn is successful.
    */
   renderSignInButton(
     parentElementId: string,
@@ -181,7 +183,7 @@ export interface GoogleOneTapAuthPlugin {
    * @param parentElementId 
    * @param options 
    * @param gsiButtonConfiguration Not all button configuration options are supported on android.
-   * @param onResult A callback that is passed an object with isSuccess, success and noSuccess properties.
+   * @param onResult A callback that is passed the result option object.
    */
   renderSignInButtonWithCallback(
     parentElementId: string,
