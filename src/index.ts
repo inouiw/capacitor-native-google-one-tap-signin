@@ -1,6 +1,4 @@
-import { GoogleOneTapAuth } from './GoogleOneTapAuth';
-
-export type * as google from 'google-one-tap';
+import { GoogleOneTapAuth } from './GoogleSignIn';
 
 export * from './definitions';
 export { GoogleOneTapAuth };

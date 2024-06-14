@@ -1,6 +1,6 @@
-# Capacitor Native Sign in with Google plugin
+# Capacitor Native Sign-In with Google plugin
 
-Wraps the native android and iOS Sign in with Google api for ionic capacitor apps. 
+Wraps the native android, iOS and JavaScript Google Identity Services api for ionic capacitor apps.
 
 ### Features
 - Auto sign-in returning users (that you did not sign out). No user action needed but shows a status UI for a few seconds.*
@@ -11,7 +11,7 @@ Wraps the native android and iOS Sign in with Google api for ionic capacitor app
 
 &ast; To avoid any UI, you could create your own authentication cookie. Send the google idToken to your server, verify it, create a JWT and return it as cookie. When the user returns, just verify your JWT cookie.
 
-This library intends to provide the best google authentication experience for each platform.
+This GoogleSignIn library intends to provide the best google authentication experience for each platform.
 
 <img src="screenshots/one-tap-sign-in-demo-initial-sign-in.jpg" alt="One tap signin screenshot initial sign-in" width=250/>
 <img src="screenshots/one-tap-sign-in-demo-sign-back-in.jpg" alt="One tap signin screenshot sign back in" width=250/>
@@ -53,46 +53,35 @@ If you get the error `[GSI_LOGGER]: The given origin is not allowed for the give
 
 After some testing the Chrome browser may decide to block third-party sign-in promts on localhost. In the browser console you will see the message *Third-party sign in was disabled in browser Site Settings*. Re-enable it under `chrome://settings/content/federatedIdentityApi`
 
+#### FAQ
+How to disconnect your google account form your app?
+See [Manage connections between your Google Account and third-parties](https://support.google.com/accounts/answer/13533235)
+
+What does the warning `[GSI_LOGGER]: Your client application uses one of the Google One Tap prompt UI status methods that may stop functioning when FedCM becomes mandatory. Refer to the migration guide to update your code accordingly and opt-in to FedCM to test your changes. Learn more: https://developers.google.com/identity/gsi/web/guides/fedcm-migration?s=dc#display_moment and https://developers.google.com/identity/gsi/web/guides/fedcm-migration?s=dc#skipped_moment` mean?
+The warning is triggered when the `google.accounts.id.prompt` method is used with a callback argument. The message says "*may* stop functioning". The documentation states that some status methods as `isSkippedMoment()`, `isDismissedMoment()` and `getDismissedReason()` are still allowed.
+
+
 # Usage
-
-### Example 1: Showing the button only if auto-sign-in or one-tap sign in fail.
-```TypeScript
-import { GoogleOneTapAuth, SignInResult } from 'capacitor-native-google-one-tap-signin';
-
-await GoogleOneTapAuth.initialize({ clientId: clientId });
-
-const signInResult = await GoogleOneTapAuth.tryAutoOrOneTapSignIn();
-if (signInResult.isSuccess) {
-  console.log(signInResult);
-} else { 
-  const successResult = await GoogleOneTapAuth
-    .renderSignInButton('google-signin', {}, { text: 'continue_with' });
-  console.log(successResult);
-}
-
-// See the demo folder for an example application.
-```
   
-### Example 2: Trigger auto-sign-in and if not successful one-tap sign and show the button in parallel.
+### Example: Trigger auto-sign-in and if not successful one-tap sign and show the button in parallel.
+For the web platform, auto or one-tap sign-in may not be shown with no error returned. Therefore it is recommened to always also show the button.
+The button also allows the user to select an account with which she did not sign-in previously.
 ```TypeScript
 import { GoogleOneTapAuth, SignInResult } from 'capacitor-native-google-one-tap-signin';
 
 await GoogleOneTapAuth.initialize({ clientId: clientId });
 
-const autoOrOneTapSuccessPromise = new Promise<SuccessSignInResult>(async (resolve) => {
-  const autoOrOneTapResult = await GoogleOneTapAuth.tryAutoOrOneTapSignIn();
-  // Ignore if the result is not success because the user can use the button.
-  if (autoOrOneTapResult.isSuccess) {
-    resolve(autoOrOneTapResult.success!);
+const onResultHandler = async (signInResultOption: SignInResultOption) => {
+  if (signInResultOption.isSuccess) {
+    // If the user signed-in with the button, the UI may still be shown. So close it.
+    await GoogleOneTapAuth.cancelOneTapDialog();
+    console.log(signInResultOption.success!);
+  } else {
+    console.log(signInResultOption.noSuccess!);
   }
-});
-const successResult = await GoogleOneTapAuth.addSignInActionToExistingButton(
-  'google-signin-existing-btn-parent', 'google-signin-existing-btn');
-  
-const signInResultSuccess = await Promise.race([autoOrOneTapSuccessPromise, renderButtonPromise]);
-// If the user signed-in with the button, the UI may still be shown. So close it.
-await GoogleOneTapAuth.cancelOneTapDialog();
-console.log(signInResultSuccess);
+}
+await GoogleOneTapAuth.tryAutoOrOneTapSignInWithCallback(onResultHandler);
+await GoogleOneTapAuth.addSignInActionToExistingButtonWithCallback('google-signin-existing-btn-parent', 'google-signin-existing-btn', onResultHandler);
 ```
 
 ```HTML
@@ -125,54 +114,58 @@ See `src/definitions.ts` for a complete definition.
 ```TypeScript
 /**
  * Performs common or one-time initializations.
- * For the web platform, starts pre-loading the google one tap JavaScript library.
+ * For the web platform, starts pre-loading the google one tap JavaScript library if the browser does not support FedCM.
  * initialize must be called before any other method.
  * initialize remembers if it was called so it is safe to be called multiple times.
  * Other methods wait till initialize is finished so you must not await initialize.
+ * If you await the result, it will throw on error.
  * @param options 
  */
 initialize(options: InitializeOptions): Promise<void>;
 
 /**
- * Tries to first auto-sign-in the user and if not successful sign-in the user with just one tap/click.
- * If there is a single google account and that account has previously signed into the app, 
- * then that user is auto signed in. A short popover is displayed during sign-in.
- * If there are multiple google accounts and more than one have previously signed into the 
- * app then a user selection screen is shown.
- * If there is no active google session or if no user session has logged in previously in 
- * the app or if the user has opt out of One Tap, then the response will indicate that 
- * the auto sign-in did not succeed.
- * See https://developers.google.com/identity/gsi/web/guides/features
+ * Tries to first auto-sign-in the user and if not successful sign-in the user with one tap/click.
  * @returns A Promise object that resolves to an object with isSuccess, success and noSuccess properties.
  */
 tryAutoOrOneTapSignIn()
   : Promise<SignInResultOption>;
 
 /**
- * Tries to show the sign-in UI without trying to auto sign-in the user.
- * @returns A Promise object that resolves to an object with isSuccess, success and noSuccess properties.
+ * Tries to first auto-sign-in the user and if not successful sign-in the user with one tap/click.
+ * @param onResult A callback that is passed an object with isSuccess, success and noSuccess properties.
  */
-tryOneTapSignIn()
-  : Promise<SignInResultOption>;
+tryAutoOrOneTapSignInWithCallback(onResult: (value: SignInResultOption) => void)
+: Promise<void>;
 
 /**
  * Tries to auto-sign-in the user without any user interaction needed.
  * If there is a single google account and that account has previously signed into the app, 
  * then that user is auto signed in. A short popover is displayed during sign-in.
+ * For android, sets FilterByAuthorizedAccounts to true. See https://developer.android.com/identity/sign-in/credential-manager-siwg
  * @returns A Promise object that resolves to an object with isSuccess, success and noSuccess properties.
  */
 tryAutoSignIn()
   : Promise<SignInResultOption>;
 
 /**
+ * Tries to show the sign-in UI without trying to auto sign-in the user.
+ * For android, sets FilterByAuthorizedAccounts to false. See https://developer.android.com/identity/sign-in/credential-manager-siwg
+ * @returns A Promise object that resolves to an object with isSuccess, success and noSuccess properties.
+ */
+tryOneTapSignIn()
+  : Promise<SignInResultOption>;
+
+/**
+ * @deprecated Use addSignInActionToExistingButtonWithCallback instead.
+ * 
  * Allows using a custom sign-in button.
  * The element to which buttonParentId refers must have the style position: 'relative'.
  * For the web platform, the implementation renders the google button invisible in front of the passed button.
- * The returned promise will only resolve if successful.
- * The returned promise is rejected for unrecoverable errors as 'unregistered_origin' 
- * for the web platform.
  * @param buttonParentId 
  * @param buttonId
+ * @param onResult A callback that is passed an object with isSuccess, success and noSuccess properties.
+ * @returns A Promise object with isSuccess, success and noSuccess properties, that resolves when the signIn 
+ *   is successful or in case of a configuration error.
  */
 addSignInActionToExistingButton(
   buttonParentId: string,
@@ -180,6 +173,22 @@ addSignInActionToExistingButton(
   : Promise<SuccessSignInResult>;
 
 /**
+ * Allows using a custom sign-in button.
+ * The element to which buttonParentId refers must have the style position: 'relative'.
+ * For the web platform, the implementation renders the google button invisible in front of the passed button.
+ * @param buttonParentId 
+ * @param buttonId
+ * @param onResult A callback that is passed an object with isSuccess, success and noSuccess properties.
+ */
+addSignInActionToExistingButtonWithCallback(
+  buttonParentId: string,
+  buttonId: string,
+  onResult: (value: SignInResultOption) => void)
+  : Promise<void>;
+
+/**
+ * @deprecated Use renderSignInButtonWithCallback instead.
+ * 
  * Renders the sign-in button.
  * The returned promise will only resolve if successful.
  * The returned promise is rejected for unrecoverable errors as 'unregistered_origin' 
@@ -187,12 +196,27 @@ addSignInActionToExistingButton(
  * @param parentElementId 
  * @param options 
  * @param gsiButtonConfiguration Not all button configuration options are supported on android.
+ * @returns A Promise object that resolves when the signIn is successful.
  */
 renderSignInButton(
   parentElementId: string,
   options: RenderSignInButtonOptions,
-  gsiButtonConfiguration?: google.GsiButtonConfiguration)
+  gsiButtonConfiguration?: google.accounts.id.GsiButtonConfiguration)
   : Promise<SuccessSignInResult>;
+
+/**
+ * Renders a google style sign-in button.
+ * @param parentElementId 
+ * @param options 
+ * @param gsiButtonConfiguration Not all button configuration options are supported on android.
+ * @param onResult A callback that is passed an object with isSuccess, success and noSuccess properties.
+ */
+renderSignInButtonWithCallback(
+  parentElementId: string,
+  options: RenderSignInButtonOptions,
+  gsiButtonConfiguration: google.accounts.id.GsiButtonConfiguration | undefined,
+  onResult: (value: SignInResultOption) => void)
+  : Promise<void>;
 
 /**
  * Closes the One Tap prompt.
@@ -213,7 +237,9 @@ getNonce(): string;
 ```
 
 # Design decisions
-Promises will not be rejected for anticipated unsuccessful control flow. For example, if the one tap auto-login does not succeed because there is no session then this is not exceptional but expected in many cases. Rejecting the promise would mean the caller would have to catch an exception when calling `await xy` and then run follow-up code in the catch block. 
+API methods return an Option with a `isSuccess` property to specify if the operation could complete successfully. For some operations like `tryAutoSignIn` not successful can mean that the user is not currently logged into her google account. So not successful is not an exceptional case but an expected result.
+To avoid that the caller needs to check `isSuccess` *and* handle exceptions, all methods will never throw an exception.
+
 
 Instead of creating one signIn method with many parameters that are only used in some cases (=unclear dependencies), there are two methods with different parameters and different return types.
 

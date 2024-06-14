@@ -12,23 +12,6 @@ export interface InitializeOptions {
    * See https://github.com/google/GoogleSignIn-iOS/issues/135
    */
   nonce?: string;
-  /**
-   * 	Web platform specific options..
-   */
-  webOptions?: InitializeWebOptions;
-}
-
-export interface InitializeWebOptions {
-  /**
-   * This field sets whether or not to cancel the One Tap request if a user clicks outside the prompt. The default value is true.
-   */
-  cancelOnTapOutside?: boolean;
-}
-
-export interface SignInResultPromises {
-  successPromise: Promise<SuccessSignInResult>;
-  noSuccess: Promise<NoSuccessSignInResult>;
-  signInResultOptionPromise: Promise<SignInResultOption>;
 }
 
 export interface SignInResultOption {
@@ -72,14 +55,11 @@ export interface SuccessSignInResult {
 
 export interface NoSuccessSignInResult {
   /**
-   * A reason code as 'tap_outside'.
-   * For the js library see google.PromptMomentNotification for possible values.
-   * For android, iOS and web 'SIGN_IN_CANCELLED' is currently set.
+   * A reason code for the no success result.
    */
-  noSuccessReasonCode?: string;
+  noSuccessReasonCode?: 'SIGN_IN_CANCELLED' | string;
   /**
-   * A error message.
-   * Set in case of error if the native android code is used.
+   * Additional information relating to the cause of the no success result.
    */
   noSuccessAdditionalInfo?: string;
 }
@@ -92,10 +72,6 @@ export interface RenderSignInButtonOptions {
 }
 
 export interface RenderSignInButtonWebOptions {
-  /**
-   * 	Enables upgraded One Tap UX on ITP browsers. The default value is false.
-   */
-  itpSupport?: boolean;
   /**
    * 	The Sign In With Google button UX flow. The default value is 'popup'.
    */
@@ -110,61 +86,81 @@ export interface SignOutResult {
 export interface GoogleOneTapAuthPlugin {
   /**
    * Performs common or one-time initializations.
-   * For the web platform, starts pre-loading the google one tap JavaScript library.
+   * For the web platform, starts pre-loading the google one tap JavaScript library if the browser does not support FedCM.
    * initialize must be called before any other method.
    * initialize remembers if it was called so it is safe to be called multiple times.
    * Other methods wait till initialize is finished so you must not await initialize.
+   * If you await the result, it will throw on error.
    * @param options 
    */
   initialize(options: InitializeOptions): Promise<void>;
 
   /**
-   * Tries to first auto-sign-in the user and if not successful sign-in the user with just one tap/click.
-   * If there is a single google account and that account has previously signed into the app, 
-   * then that user is auto signed in. A short popover is displayed during sign-in.
-   * If there are multiple google accounts and more than one have previously signed into the 
-   * app then a user selection screen is shown.
-   * If there is no active google session or if no user session has logged in previously in 
-   * the app or if the user has opt out of One Tap, then the response will indicate that 
-   * the auto sign-in did not succeed.
-   * See https://developers.google.com/identity/gsi/web/guides/features
+   * Tries to first auto-sign-in the user and if not successful sign-in the user with one tap/click.
    * @returns A Promise object that resolves to an object with isSuccess, success and noSuccess properties.
    */
   tryAutoOrOneTapSignIn()
     : Promise<SignInResultOption>;
 
   /**
-   * Tries to show the sign-in UI without trying to auto sign-in the user.
-   * @returns A Promise object that resolves to an object with isSuccess, success and noSuccess properties.
+   * Tries to first auto-sign-in the user and if not successful sign-in the user with one tap/click.
+   * @param onResult A callback that is passed an object with isSuccess, success and noSuccess properties.
    */
-  tryOneTapSignIn()
-    : Promise<SignInResultOption>;
+  tryAutoOrOneTapSignInWithCallback(onResult: (value: SignInResultOption) => void)
+  : Promise<void>;
 
   /**
    * Tries to auto-sign-in the user without any user interaction needed.
    * If there is a single google account and that account has previously signed into the app, 
    * then that user is auto signed in. A short popover is displayed during sign-in.
+   * For android, sets FilterByAuthorizedAccounts to true. See https://developer.android.com/identity/sign-in/credential-manager-siwg
    * @returns A Promise object that resolves to an object with isSuccess, success and noSuccess properties.
    */
   tryAutoSignIn()
     : Promise<SignInResultOption>;
 
   /**
- * Allows using a custom sign-in button.
- * The element to which buttonParentId refers must have the style position: 'relative'.
- * For the web platform, the implementation renders the google button invisible in front of the passed button.
- * The returned promise will only resolve if successful.
- * The returned promise is rejected for unrecoverable errors as 'unregistered_origin' 
- * for the web platform.
- * @param buttonParentId 
- * @param buttonId
- */
+   * Tries to show the sign-in UI without trying to auto sign-in the user.
+   * For android, sets FilterByAuthorizedAccounts to false. See https://developer.android.com/identity/sign-in/credential-manager-siwg
+   * @returns A Promise object that resolves to an object with isSuccess, success and noSuccess properties.
+   */
+  tryOneTapSignIn()
+    : Promise<SignInResultOption>;
+
+  /**
+   * @deprecated Use addSignInActionToExistingButtonWithCallback instead.
+   * 
+   * Allows using a custom sign-in button.
+   * The element to which buttonParentId refers must have the style position: 'relative'.
+   * For the web platform, the implementation renders the google button invisible in front of the passed button.
+   * @param buttonParentId 
+   * @param buttonId
+   * @param onResult A callback that is passed an object with isSuccess, success and noSuccess properties.
+   * @returns A Promise object with isSuccess, success and noSuccess properties, that resolves when the signIn 
+   *   is successful or in case of a configuration error.
+   */
   addSignInActionToExistingButton(
     buttonParentId: string,
     buttonId: string)
     : Promise<SuccessSignInResult>;
 
   /**
+   * Allows using a custom sign-in button.
+   * The element to which buttonParentId refers must have the style position: 'relative'.
+   * For the web platform, the implementation renders the google button invisible in front of the passed button.
+   * @param buttonParentId 
+   * @param buttonId
+   * @param onResult A callback that is passed an object with isSuccess, success and noSuccess properties.
+   */
+  addSignInActionToExistingButtonWithCallback(
+    buttonParentId: string,
+    buttonId: string,
+    onResult: (value: SignInResultOption) => void)
+    : Promise<void>;
+
+  /**
+   * @deprecated Use renderSignInButtonWithCallback instead.
+   * 
    * Renders the sign-in button.
    * The returned promise will only resolve if successful.
    * The returned promise is rejected for unrecoverable errors as 'unregistered_origin' 
@@ -172,12 +168,27 @@ export interface GoogleOneTapAuthPlugin {
    * @param parentElementId 
    * @param options 
    * @param gsiButtonConfiguration Not all button configuration options are supported on android.
+   * @returns A Promise object that resolves when the signIn is successful.
    */
   renderSignInButton(
     parentElementId: string,
     options: RenderSignInButtonOptions,
-    gsiButtonConfiguration?: google.GsiButtonConfiguration)
+    gsiButtonConfiguration?: google.accounts.id.GsiButtonConfiguration)
     : Promise<SuccessSignInResult>;
+
+  /**
+   * Renders a google style sign-in button.
+   * @param parentElementId 
+   * @param options 
+   * @param gsiButtonConfiguration Not all button configuration options are supported on android.
+   * @param onResult A callback that is passed an object with isSuccess, success and noSuccess properties.
+   */
+  renderSignInButtonWithCallback(
+    parentElementId: string,
+    options: RenderSignInButtonOptions,
+    gsiButtonConfiguration: google.accounts.id.GsiButtonConfiguration | undefined,
+    onResult: (value: SignInResultOption) => void)
+    : Promise<void>;
 
   /**
    * Closes the One Tap prompt.

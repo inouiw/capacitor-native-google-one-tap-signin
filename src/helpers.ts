@@ -1,3 +1,6 @@
+import { NoSuccessSignInResult, SignInResultOption, SuccessSignInResult } from "./definitions";
+import { NotEnrichedSuccessSignInResult, NotEnrichedSignInResultOption } from "./definitionsInternal";
+
 export function assert(predicate: () => boolean, customMessage?: string) {
   if (!predicate()) {
     const callerName = callingFunctionName();
@@ -33,4 +36,32 @@ export function loadScript(url: string): Promise<void> {
     scriptEl.src = url;
     document.getElementsByTagName('head')[0].appendChild(scriptEl);
   });
+}
+
+export function toSignInResultOption(signInResult: SuccessSignInResult | NoSuccessSignInResult): SignInResultOption {
+  if ((signInResult as SuccessSignInResult).idToken) {
+    return {
+      isSuccess: true,
+      success: signInResult as SuccessSignInResult
+    }
+  } else {
+    return {
+      isSuccess: false,
+      noSuccess: signInResult as NoSuccessSignInResult
+    }
+  }
+}
+
+export function toNotEnrichedSignInResultOption(signInResult: NotEnrichedSuccessSignInResult | NoSuccessSignInResult): NotEnrichedSignInResultOption {
+  if ((signInResult as SuccessSignInResult).idToken) {
+    return {
+      isSuccess: true,
+      success: signInResult as NotEnrichedSuccessSignInResult
+    }
+  } else {
+    return {
+      isSuccess: false,
+      noSuccess: signInResult as NoSuccessSignInResult
+    }
+  }
 }

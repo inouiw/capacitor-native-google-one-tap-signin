@@ -13,63 +13,91 @@ public class GoogleOneTapAuth: CAPPlugin {
     
     @objc
     func initialize(_ call: CAPPluginCall) {
-        call.resolve();
+        call.resolve()
     }
-
+    
     @objc
     func tryAutoOrOneTapSignIn(_ call: CAPPluginCall) {
-        if googleSignIn.hasPreviousSignIn() {
-            googleSignIn.restorePreviousSignIn() { user, error in
-                if let error = error {
-                    call.reject(error.localizedDescription, "\(error._code)");
-                    return;
-                }
-                call.resolve(self.wrapInSignInResultInOption(self.createSuccessSignInResult(user: user!)))
+        nonInteractiveSignIn(call) { signInResult in
+            if signInResult.idToken != nil {
+                call.resolve(self.toJsonResult(SignInResult(idToken: signInResult.idToken!)))
+                return
             }
-        } else {
-            call.resolve(createNoSuccessSignInResultOption())
+            self.interactiveSignIn(call)
+        }
+    }
+    
+    @objc
+    func tryAutoSignIn(_ call: CAPPluginCall) {
+        nonInteractiveSignIn(call) { isSuccess in
         }
     }
     
     @objc
     func tryOneTapSignIn(_ call: CAPPluginCall) {
-        // Todo: Should use interactive login.
-        tryAutoOrOneTapSignIn(call);
-    }
-    
-    @objc
-    func tryAutoSignIn(_ call: CAPPluginCall) {
-        // Todo: Should use non-interactive login.
-        tryAutoOrOneTapSignIn(call);
+        interactiveSignIn(call)
     }
     
     // This method is not part of the api but only called from GoogleOneTapAuth.ts in method renderSignInButton.
     @objc
     func triggerGoogleSignIn(_ call: CAPPluginCall) {
+        interactiveSignIn(call)
+    }
+    
+    func nonInteractiveSignIn(_ call: CAPPluginCall, completion: @escaping (SignInResult) -> Void) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            if googleSignIn.hasPreviousSignIn() {
+                googleSignIn.restorePreviousSignIn() { user, error in
+                    if let error = error {
+                        completion(SignInResult(noSuccessReasonCode: error.localizedDescription, noSuccessAdditionalInfo: "api method: restorePreviousSignIn, error code: \(error._code)"))
+                        return
+                    }
+                    let idToken = user?.idToken?.tokenString
+                    
+                    if (idToken != nil) {
+                        completion(SignInResult(idToken: idToken!))
+                    } else {
+                        completion(SignInResult(noSuccessReasonCode: "NO_CREDENTIAL", noSuccessAdditionalInfo: nil))
+                    }
+                }
+            } else {
+               completion(SignInResult(noSuccessReasonCode: "NO_CREDENTIAL", noSuccessAdditionalInfo: nil))
+            }
+        }
+    }
+    
+    func interactiveSignIn(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
             let presentingVc = self.bridge!.viewController!
             self.googleSignIn.signIn(withPresenting: presentingVc) { signInResult, error in
                 if let error = error {
                     if (error._code == self.gIDSignInErrorCodeCanceled) {
-                        call.resolve(self.wrapInSignInResultInOption(self.createErrorResponse(reasonCode: "SIGN_IN_CANCELLED")))
+                        call.resolve(self.toJsonResult(SignInResult(noSuccessReasonCode: "SIGN_IN_CANCELLED", noSuccessAdditionalInfo: nil)))
                         return;
                     }
-                    call.reject(error.localizedDescription, "\(error._code)")
+                    call.resolve(self.toJsonResult(SignInResult(noSuccessReasonCode: error.localizedDescription, noSuccessAdditionalInfo: "api method: signIn, error code: \(error._code)")))
                     return;
                 }
-                call.resolve(self.wrapInSignInResultInOption(self.createSuccessSignInResult(user: signInResult?.user)))
+                let idToken = signInResult?.user.idToken?.tokenString
+                
+                if (idToken != nil) {
+                    call.resolve(self.toJsonResult(SignInResult(idToken: idToken!)))
+                } else {
+                    call.resolve(self.toJsonResult(SignInResult(noSuccessReasonCode: "NO_CREDENTIAL", noSuccessAdditionalInfo: nil)))
+                }
             };
         }
     }
     
     @objc
     func renderSignInButton(_ call: CAPPluginCall) {
-        call.resolve();
+        call.resolve()
     }
     
     @objc
     func cancelOneTapDialog(_ call: CAPPluginCall) {
-        call.resolve();
+        call.resolve()
     }
     
     @objc
@@ -77,42 +105,50 @@ public class GoogleOneTapAuth: CAPPlugin {
         googleSignIn.signOut();
         call.resolve(createSuccessSignOutResult());
     }
-
-    func createErrorResponse(reasonCode: String, noSuccessAdditionalInfo: String? = nil) -> [String: Any] {
-        let noSuccessSignInResult: [String: Any] = [
-            "noSuccessReasonCode": reasonCode,
-            "noSuccessAdditionalInfo": noSuccessAdditionalInfo ?? NSNull(),
-        ];
-        return noSuccessSignInResult;
+    
+    private func toJsonResult(_ signInResult: SignInResult) -> [String: Any] {
+        var result: [String: Any] = [:]
+        let isSuccess = signInResult.idToken != nil
+        result["isSuccess"] = isSuccess
+        
+        if isSuccess {
+            var successObj: [String: Any] = [:]
+            successObj["idToken"] = signInResult.idToken
+            result["success"] = successObj
+        } else {
+            var errorObj: [String: Any] = [:]
+            errorObj["noSuccessReasonCode"] = signInResult.noSuccessReasonCode
+            errorObj["noSuccessAdditionalInfo"] = signInResult.noSuccessAdditionalInfo
+            result["noSuccess"] = errorObj
+        }
+        
+        return result
     }
     
-    func createSuccessSignInResult(user: GIDGoogleUser?) -> [String: Any] {
-        let successSignInResult: [String: Any] = [
-            "idToken": user?.idToken?.tokenString ?? NSNull(),
-        ];
-        return successSignInResult;
-    }
-    
-    func wrapInSignInResultInOption(_ successSignInResult: [String: Any]) -> [String: Any] {
-        let signInResultOption: [String: Any] = [
-            "isSuccess": true,
-            "success": successSignInResult,
-        ];
-        return signInResultOption;
-    }
-    
-    func createNoSuccessSignInResultOption() -> [String: Any] {
-        let noSuccessResultJson: [String: Any] = [
-            "isSuccess": false,
-            "noSuccess": [:] as [String: Any],
-        ];
-        return noSuccessResultJson;
-    }
-    
-    func createSuccessSignOutResult() -> [String: Any] {
+    private func createSuccessSignOutResult() -> [String: Any] {
         let successResultJson: [String: Any] = [
             "isSuccess": true,
         ];
         return successResultJson;
+    }
+}
+
+class SignInResult {
+    var idToken: String?
+    var noSuccessReasonCode: String?
+    var noSuccessAdditionalInfo: String?
+
+    init(idToken: String? = nil, noSuccessReasonCode: String? = nil, noSuccessAdditionalInfo: String? = nil) {
+        self.idToken = idToken
+        self.noSuccessReasonCode = noSuccessReasonCode
+        self.noSuccessAdditionalInfo = noSuccessAdditionalInfo
+    }
+
+    convenience init(noSuccessReasonCode: String?, noSuccessAdditionalInfo: String?) {
+        self.init(idToken: nil, noSuccessReasonCode: noSuccessReasonCode, noSuccessAdditionalInfo: noSuccessAdditionalInfo)
+    }
+
+    convenience init(idToken: String?) {
+        self.init(idToken: idToken, noSuccessReasonCode: nil, noSuccessAdditionalInfo: nil)
     }
 }

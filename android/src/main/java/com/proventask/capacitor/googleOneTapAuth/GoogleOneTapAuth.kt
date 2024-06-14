@@ -11,6 +11,7 @@ import androidx.credentials.GetCredentialResponse
 import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialInterruptedException
+import androidx.credentials.exceptions.NoCredentialException
 import com.getcapacitor.JSObject
 import com.getcapacitor.Plugin
 import com.getcapacitor.PluginCall
@@ -33,6 +34,7 @@ class GoogleOneTapAuth : Plugin() {
     private val TAG = "GoogleOneTapAuth Plugin"
     private val ReasonCodeSignInCancelled = "SIGN_IN_CANCELLED"
     private val ReasonCodeSignInInterrupted = "SIGN_IN_INTERRUPTED"
+    private val ReasonCodeNoCredential = "NO_CREDENTIAL"
     private var webClientId: String? = null
     private var nonce: String? = null
     private lateinit var credentialManager: CredentialManager
@@ -117,6 +119,7 @@ class GoogleOneTapAuth : Plugin() {
         val googleSignInDeferred = CompletableDeferred<SignInResult>()
         val request: GetCredentialRequest = GetCredentialRequest.Builder()
             .addCredentialOption(credentialOption)
+            .setPreferImmediatelyAvailableCredentials(true)
             .build()
 
         try {
@@ -126,6 +129,9 @@ class GoogleOneTapAuth : Plugin() {
             googleSignInDeferred.complete(SignInResult(ReasonCodeSignInCancelled, e.message))
         } catch (e: GetCredentialInterruptedException) { // should retry
             googleSignInDeferred.complete(SignInResult(ReasonCodeSignInInterrupted, e.message))
+        } catch (e: NoCredentialException) {
+            var filterByAuthorizedAccounts = (credentialOption as? GetGoogleIdOption)?.filterByAuthorizedAccounts ?: false;
+            googleSignInDeferred.complete(SignInResult(ReasonCodeNoCredential, "filterByAuthorizedAccounts: $filterByAuthorizedAccounts"))
         } catch (t: Throwable) { // GetCredentialException
             val exceptionType = t::class.java.simpleName
             val errorMsg = "$exceptionType error in getCredential."
@@ -172,7 +178,6 @@ class GoogleOneTapAuth : Plugin() {
                     googleSignInDeferred.completeExceptionally(Exception("Unexpected CustomCredential type: " + credential.type))
                 }
             }
-
             else -> {
                 // Catch any unrecognized credential type here.
                 Log.e(TAG, "Unexpected type of credential")
