@@ -50,6 +50,10 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
     return toNotEnrichedSignInResultOption(signInResult);
   }
 
+  signInWithGoogleButtonFlowForNativePlatform(): Promise<NotEnrichedSignInResultOption> {
+    return Promise.reject('signInWithGoogleButtonFlowForNativePlatform: For the web platform, the sign in with Google button flow cannot be triggered by a api call but only by pressing a button.');
+  }
+
   async renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.accounts.id.GsiButtonConfiguration): Promise<NotEnrichedSignInResultOption> {
     const signInResult = await GoogleIdentityServicesClient.renderSignInButton(this.initializeOptions!.clientId!, this.initializeOptions!.nonce, parentElementId, options, gsiButtonConfiguration);
     return toNotEnrichedSignInResultOption(signInResult);

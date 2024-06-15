@@ -38,9 +38,8 @@ public class GoogleOneTapAuth: CAPPlugin {
         interactiveSignIn(call)
     }
     
-    // This method is not part of the api but only called from GoogleOneTapAuth.ts in method renderSignInButton.
     @objc
-    func triggerGoogleSignIn(_ call: CAPPluginCall) {
+    func signInWithGoogleButtonFlowForNativePlatform(_ call: CAPPluginCall) {
         interactiveSignIn(call)
     }
     

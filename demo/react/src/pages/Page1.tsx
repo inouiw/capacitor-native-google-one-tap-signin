@@ -104,6 +104,14 @@ const Page1: React.FC = () => {
           </IonRow>
           <IonRow>
             <IonCol size='auto'>
+              <IonButton onClick={async () => { setAuthResult(''); reportSignInResult(await GoogleOneTapAuth.signInWithGoogleButtonFlowForNativePlatform()) }}>
+                Sign-in with google button flow for native platforms
+              </IonButton>
+            </IonCol>
+            <IonCol style={{ minWidth: '200px' }}>Trigger Sign in with Google button for native platforms.</IonCol>
+          </IonRow>
+          <IonRow>
+            <IonCol size='auto'>
               <IonButton onClick={() => { setAuthResult(''); renderButtonHandler(reportSignInResult) }}>
                 Render sign-in button
               </IonButton>

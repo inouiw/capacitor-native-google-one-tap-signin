@@ -133,6 +133,16 @@ export interface GoogleOneTapAuthPlugin {
     : Promise<SignInResultOption>;
 
   /**
+   * Triggers a Sign in with Google button flow for android and iOS.
+   * For native platforms, it will trigger the same handler as when a button
+   * with addSignInActionToExistingButtonWithCallback is clicked.
+   * For android the displayed UI is different than when tryOneTapSignIn is called.
+   * @returns A Promise that resolves to a result option object.
+   */
+  signInWithGoogleButtonFlowForNativePlatform()
+    : Promise<SignInResultOption>;
+
+  /**
    * @deprecated Use addSignInActionToExistingButtonWithCallback instead.
    * 
    * Allows using a custom sign-in button.

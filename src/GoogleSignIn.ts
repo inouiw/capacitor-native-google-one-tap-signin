@@ -76,6 +76,18 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
     onResult(signInResultOption);
   }
 
+  async tryAutoSignIn(): Promise<SignInResultOption> {
+    return new Promise<SignInResultOption>(async (resolve) => {
+      await this.withHandleError(resolve, async () => {
+        await this.ensureInitialized();
+        const notEnrichedSignInResultOption = await GoogleOneTapAuthPlatform.tryAutoSignIn();
+        const enrichedSignInResultOption = this.enrichOptionResultWithDecodedIdToken(notEnrichedSignInResultOption);
+        this.onResultReceived(enrichedSignInResultOption);
+        resolve(enrichedSignInResultOption);
+      });
+    });
+  }
+
   async tryOneTapSignIn(): Promise<SignInResultOption> {
     return new Promise<SignInResultOption>(async (resolve) => {
       await this.withHandleError(resolve, async () => {
@@ -88,12 +100,12 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
     });
   }
 
-  async tryAutoSignIn(): Promise<SignInResultOption> {
+  async signInWithGoogleButtonFlowForNativePlatform() : Promise<SignInResultOption> {
     return new Promise<SignInResultOption>(async (resolve) => {
       await this.withHandleError(resolve, async () => {
         await this.ensureInitialized();
-        const notEnrichedSignInResultOption = await GoogleOneTapAuthPlatform.tryAutoSignIn();
-        const enrichedSignInResultOption = this.enrichOptionResultWithDecodedIdToken(notEnrichedSignInResultOption);
+        const notEnrichedSuccessSignInResultOption: NotEnrichedSignInResultOption = await (GoogleOneTapAuthPlatform as any).signInWithGoogleButtonFlowForNativePlatform();
+        const enrichedSignInResultOption = this.enrichOptionResultWithDecodedIdToken(notEnrichedSuccessSignInResultOption);
         this.onResultReceived(enrichedSignInResultOption);
         resolve(enrichedSignInResultOption);
       });
@@ -175,7 +187,7 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
   private addOnClickHandlerToExistingButtonForNatitivePlatform(androidOrIosButtonElem: HTMLElement, onResult: (value: SignInResultOption) => void) {
     const onClickAction = () => {
       this.withHandleError(onResult, async () => {
-        const notEnrichedSuccessSignInResultOption: NotEnrichedSignInResultOption = await (GoogleOneTapAuthPlatform as any).triggerGoogleSignIn();
+        const notEnrichedSuccessSignInResultOption: NotEnrichedSignInResultOption = await (GoogleOneTapAuthPlatform as any).signInWithGoogleButtonFlowForNativePlatform();
         if (notEnrichedSuccessSignInResultOption.isSuccess) {
           const enrichedSignInResultOption = this.enrichOptionResultWithDecodedIdToken(notEnrichedSuccessSignInResultOption);
           this.onResultReceived(enrichedSignInResultOption);

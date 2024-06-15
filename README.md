@@ -63,7 +63,7 @@ After some testing the Chrome browser may decide to block third-party sign-in pr
 # Usage
   
 ### Example: Trigger auto-sign-in and if not successful one-tap sign and show the button in parallel.
-For the web platform, auto or one-tap sign-in may not be shown with no error returned. Therefore it is recommened to always also show the button.
+For the web platform the one-tap or FedCM prompt may not be shown with no error returned. Therefore it is recommened to always also show the button.
 The button also allows the user to select an account with which she did not sign-in previously.
 ```TypeScript
 import { GoogleOneTapAuth, SignInResult } from 'capacitor-native-google-one-tap-signin';
@@ -79,8 +79,12 @@ const onResultHandler = async (signInResultOption: SignInResultOption) => {
     console.log(signInResultOption.noSuccess!);
   }
 }
+// Trigger auto sign-in and if not successful try one-tap sign-in. Pass a callback.
 await GoogleOneTapAuth.tryAutoOrOneTapSignInWithCallback(onResultHandler);
-await GoogleOneTapAuth.addSignInActionToExistingButtonWithCallback('google-signin-existing-btn-parent', 'google-signin-existing-btn', onResultHandler);
+
+// Add a handler to the button shown below. Pass a callback.
+await GoogleOneTapAuth.addSignInActionToExistingButtonWithCallback(
+  'google-signin-existing-btn-parent', 'google-signin-existing-btn', onResultHandler);
 ```
 
 ```HTML
@@ -152,6 +156,16 @@ tryAutoSignIn()
  * @returns A Promise that resolves to a result option object.
  */
 tryOneTapSignIn()
+  : Promise<SignInResultOption>;
+
+/**
+ * Triggers a Sign in with Google button flow for android and iOS.
+ * For native platforms, it will trigger the same handler as when a button
+ * with addSignInActionToExistingButtonWithCallback is clicked.
+ * For android the displayed UI is different than when tryOneTapSignIn is called.
+ * @returns A Promise that resolves to a result option object.
+ */
+signInWithGoogleButtonFlowForNativePlatform()
   : Promise<SignInResultOption>;
 
 /**

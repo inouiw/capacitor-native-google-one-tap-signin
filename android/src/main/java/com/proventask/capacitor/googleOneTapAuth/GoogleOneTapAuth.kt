@@ -186,9 +186,8 @@ class GoogleOneTapAuth : Plugin() {
         }
     }
 
-    // This method is not part of the api but only called from GoogleOneTapAuth.ts in method renderSignInButton.
     @PluginMethod
-    fun triggerGoogleSignIn(call: PluginCall) {
+    fun signInWithGoogleButtonFlowForNativePlatform(call: PluginCall) {
         GlobalScope.launch {
             // Trigger the Sign in with Google button flow.
             val signInWithGoogleOption = createSignInWithGoogleButtonOption()
