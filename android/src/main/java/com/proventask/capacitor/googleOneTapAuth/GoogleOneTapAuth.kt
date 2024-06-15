@@ -2,12 +2,7 @@ package com.proventask.capacitor.googleOneTapAuth
 
 import android.content.Context
 import android.util.Log
-import androidx.credentials.ClearCredentialStateRequest
-import androidx.credentials.CredentialManager
-import androidx.credentials.CredentialOption
-import androidx.credentials.CustomCredential
-import androidx.credentials.GetCredentialRequest
-import androidx.credentials.GetCredentialResponse
+import androidx.credentials.*
 import androidx.credentials.exceptions.ClearCredentialException
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialInterruptedException
@@ -23,11 +18,7 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-
+import kotlinx.coroutines.*
 
 @CapacitorPlugin
 class GoogleOneTapAuth : Plugin() {
@@ -40,12 +31,12 @@ class GoogleOneTapAuth : Plugin() {
     private lateinit var credentialManager: CredentialManager
 
     override fun load() {
+        credentialManager = CredentialManager.create(context)
     }
 
     @PluginMethod
     fun initialize(call: PluginCall) {
         initializeOptionsFromCall(call)
-        credentialManager = CredentialManager.create(context)
         call.resolve()
     }
 
@@ -59,7 +50,6 @@ class GoogleOneTapAuth : Plugin() {
     fun tryAutoOrOneTapSignIn(call: PluginCall) {
         GlobalScope.launch {
             var signInResult = signIn(true).await()
-
             if (signInResult.idToken == null && signInResult.noSuccessReasonCode != ReasonCodeSignInCancelled) {
                 signInResult = signIn(false).await()
             }
@@ -84,7 +74,7 @@ class GoogleOneTapAuth : Plugin() {
     // For sign-up, set filterByAuthorizedAccounts to false.
     private suspend fun signIn(call: PluginCall, filterByAuthorizedAccounts: Boolean) {
         var signInResult = signIn(filterByAuthorizedAccounts).await()
-        if (signInResult.idToken == null && signInResult.noSuccessReasonCode !== ReasonCodeSignInInterrupted) {
+        if (signInResult.idToken == null && signInResult.noSuccessReasonCode != ReasonCodeSignInInterrupted) {
             signInResult = signIn(filterByAuthorizedAccounts).await()
         }
         call.resolve(convertToJsonResult(signInResult))
@@ -96,28 +86,26 @@ class GoogleOneTapAuth : Plugin() {
     }
 
     private fun createGoogleIdOption(filterByAuthorizedAccounts: Boolean): GetGoogleIdOption {
-        val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
+        return GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(filterByAuthorizedAccounts)
-            .setServerClientId(this.webClientId!!)
+            .setServerClientId(webClientId!!)
             // Enable automatic sign-in for returning users that have not signed out.
             .setAutoSelectEnabled(true)
-            .setNonce(this.nonce)
-            .build();
-        return googleIdOption;
+            .setNonce(nonce)
+            .build()
     }
 
     private fun createSignInWithGoogleButtonOption(): GetSignInWithGoogleOption {
         // Trigger the Sign in with Google button flow.
-        val signInWithGoogleOption = GetSignInWithGoogleOption.Builder(webClientId!!)
+        return GetSignInWithGoogleOption.Builder(webClientId!!)
             // .setHostedDomainFilter()
             .setNonce(nonce)
             .build()
-        return signInWithGoogleOption;
     }
 
     private suspend fun launchGetCredentialRequest(credentialOption: CredentialOption): Deferred<SignInResult> {
         val googleSignInDeferred = CompletableDeferred<SignInResult>()
-        val request: GetCredentialRequest = GetCredentialRequest.Builder()
+        val request = GetCredentialRequest.Builder()
             .addCredentialOption(credentialOption)
             .setPreferImmediatelyAvailableCredentials(true)
             .build()
@@ -126,18 +114,16 @@ class GoogleOneTapAuth : Plugin() {
             val result = credentialManager.getCredential(request = request, context = this.context)
             handleSignIn(googleSignInDeferred, result)
         } catch (e: GetCredentialCancellationException) {
-            googleSignInDeferred.complete(SignInResult(ReasonCodeSignInCancelled, e.message))
+            googleSignInDeferred.complete(errorSignInResult(ReasonCodeSignInCancelled, e.message))
         } catch (e: GetCredentialInterruptedException) { // should retry
-            googleSignInDeferred.complete(SignInResult(ReasonCodeSignInInterrupted, e.message))
+            googleSignInDeferred.complete(errorSignInResult(ReasonCodeSignInInterrupted, e.message))
         } catch (e: NoCredentialException) {
-            var filterByAuthorizedAccounts = (credentialOption as? GetGoogleIdOption)?.filterByAuthorizedAccounts ?: false;
-            googleSignInDeferred.complete(SignInResult(ReasonCodeNoCredential, "filterByAuthorizedAccounts: $filterByAuthorizedAccounts"))
-        } catch (t: Throwable) { // GetCredentialException
-            val exceptionType = t::class.java.simpleName
-            val errorMsg = "$exceptionType error in getCredential."
+            val filterByAuthorizedAccounts = (credentialOption as? GetGoogleIdOption)?.filterByAuthorizedAccounts ?: false
+            googleSignInDeferred.complete(errorSignInResult(ReasonCodeNoCredential, "filterByAuthorizedAccounts: $filterByAuthorizedAccounts"))
+        } catch (t: Throwable) {
+            val errorMsg = "${t::class.java.simpleName} error in getCredential."
             Log.i(TAG, errorMsg, t)
             var errorMessage = t.toString()
-
             if (!isGooglePlayServicesAvailable(context)) {
                 errorMessage += "\nGooglePlayService is not installed or must be updated."
             }
@@ -151,9 +137,9 @@ class GoogleOneTapAuth : Plugin() {
             // com.google.android.gms.common.api.ApiException: 10: Caller not whitelisted to call this API.
             // --> Try if restarting the phone fixes the problem.
             // --> Test to sign in several times to ensure it works repeatedly.
-            googleSignInDeferred.complete(SignInResult(null, errorMessage))
+            googleSignInDeferred.complete(errorSignInResult(null, errorMessage))
         }
-        return googleSignInDeferred;
+        return googleSignInDeferred
     }
 
     private fun handleSignIn(
@@ -161,25 +147,21 @@ class GoogleOneTapAuth : Plugin() {
         response: GetCredentialResponse
     ) {
         when (val credential = response.credential) {
-            // GoogleIdToken credential
             is CustomCredential -> {
                 if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                     try {
-                        val googleIdTokenCredential =
-                            GoogleIdTokenCredential.createFrom(credential.data)
-                        googleSignInDeferred.complete(SignInResult(googleIdTokenCredential.idToken))
+                        val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                        googleSignInDeferred.complete(successSignInResult(googleIdTokenCredential.idToken))
                     } catch (e: GoogleIdTokenParsingException) {
                         Log.e(TAG, "Received an invalid google id token response", e)
                         googleSignInDeferred.completeExceptionally(e)
                     }
                 } else {
-                    // Catch any unrecognized custom credential type here.
                     Log.e(TAG, "Unexpected CustomCredential type of credential")
                     googleSignInDeferred.completeExceptionally(Exception("Unexpected CustomCredential type: " + credential.type))
                 }
             }
             else -> {
-                // Catch any unrecognized credential type here.
                 Log.e(TAG, "Unexpected type of credential")
                 googleSignInDeferred.completeExceptionally(Exception("Unexpected type of credential: " + credential.type))
             }
@@ -189,7 +171,6 @@ class GoogleOneTapAuth : Plugin() {
     @PluginMethod
     fun signInWithGoogleButtonFlowForNativePlatform(call: PluginCall) {
         GlobalScope.launch {
-            // Trigger the Sign in with Google button flow.
             val signInWithGoogleOption = createSignInWithGoogleButtonOption()
             val signInResult = launchGetCredentialRequest(signInWithGoogleOption).await()
             call.resolve(convertToJsonResult(signInResult))
@@ -238,7 +219,7 @@ class GoogleOneTapAuth : Plugin() {
 
     @PluginMethod
     fun disconnect(call: PluginCall) {
-        signOut(call);
+        signOut(call)
     }
 
     private fun createSuccessSignOutResult(): JSObject {
@@ -253,4 +234,17 @@ class GoogleOneTapAuth : Plugin() {
         signOutResult.put("error", errorMessage)
         return signOutResult
     }
+
+    private fun successSignInResult(idToken: String): SignInResult {
+        return SignInResult(idToken, null, null)
+    }
+    private fun errorSignInResult(noSuccessReasonCode: String?, noSuccessAdditionalInfo: String?): SignInResult {
+        return SignInResult(null, noSuccessReasonCode, noSuccessAdditionalInfo)
+    }
 }
+
+data class SignInResult(
+    val idToken: String?,
+    val noSuccessReasonCode: String?,
+    val noSuccessAdditionalInfo: String?
+)
