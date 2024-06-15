@@ -1,16 +1,16 @@
 /// <reference types="gapi" />
 /// <reference types="google.accounts" />
 
-import { NoSuccessSignInResult, SignOutResult, RenderSignInButtonOptions, RenderSignInButtonWebOptions } from '../definitions';
-import { assert, loadScript } from '../helpers';
+import type { NoSuccessSignInResult, SignOutResult, RenderSignInButtonOptions, RenderSignInButtonWebOptions, DisconnectResult } from '../definitions';
 import type { NotEnrichedSuccessSignInResult } from '../definitionsInternal';
+import { assert, loadScript } from '../helpers';
 
 type ResolveSignInFunc = (result: NotEnrichedSuccessSignInResult) => void;
 
 const gsiScriptUrl = 'https://accounts.google.com/gsi/client';
 let gapiLoadedPromise: Promise<void> | undefined = undefined;
 
-export function initialize() {
+export function initialize(): Promise<void> {
   if (gapiLoadedPromise === undefined) {
     gapiLoadedPromise = loadScript(gsiScriptUrl);
   }
@@ -35,7 +35,7 @@ function oneTapInitialize(autoSelect: boolean, clientId: string, nonce: string |
   } as google.accounts.id.IdConfiguration & { use_fedcm_for_prompt: boolean });
 }
 
-export async function signIn(autoSelect: boolean, clientId: string, nonce?: string) {
+export async function signIn(autoSelect: boolean, clientId: string, nonce?: string): Promise<NotEnrichedSuccessSignInResult | NoSuccessSignInResult>{
   return new Promise<NotEnrichedSuccessSignInResult | NoSuccessSignInResult>(async (resolve, _reject) => {
     oneTapInitialize(autoSelect, clientId, nonce, resolve); // The resolve function is passed, so it can be called in handleCredentialResponse.
     // Display the One Tap prompt or the browser native credential manager.
@@ -85,7 +85,7 @@ export async function renderSignInButton(clientId: string, nonce: string | undef
   : Promise<NotEnrichedSuccessSignInResult | NoSuccessSignInResult> {
   const parentElem = document.getElementById(parentElementId);
   assert(() => !!parentElem)
-  var signInPromise = new Promise<NotEnrichedSuccessSignInResult>((resolve) => {
+  const signInPromise = new Promise<NotEnrichedSuccessSignInResult>((resolve) => {
     oneTapInitialize(false, clientId, nonce, resolve, options.webOptions);
 
     // // Adding a click_listener allows to detect when the popup is opened.
@@ -101,19 +101,24 @@ export async function renderSignInButton(clientId: string, nonce: string | undef
 }
 
 function handleCredentialResponse(credentialResponse: google.accounts.id.CredentialResponse, resolveSignInFunc: ResolveSignInFunc) {
-  let signInResult: NotEnrichedSuccessSignInResult = {
+  const signInResult: NotEnrichedSuccessSignInResult = {
     idToken: credentialResponse.credential,
-    isAutoSelect: credentialResponse.select_by === 'auto',
+    isAutoSelected: credentialResponse.select_by === 'auto',
   };
   resolveSignInFunc(signInResult);
 }
 
-export function cancel() {
+export function cancel(): void {
   google.accounts.id.cancel();
 }
 
-export function signOut(authenticatedUserId: string | undefined): Promise<SignOutResult> {
-  return new Promise<SignOutResult>((resolve) => {
+export function signOut(_authenticatedUserId: string | undefined): Promise<SignOutResult> {
+  google.accounts.id.disableAutoSelect();
+  return Promise.resolve({ isSuccess: true });
+}
+
+export function disconnect(authenticatedUserId: string | undefined): Promise<DisconnectResult> {
+  return new Promise<DisconnectResult>((resolve) => {
     if (authenticatedUserId) {
       // Calling revoke method revokes all OAuth2 scopes previously granted by the Sign In With Google client library.
       google.accounts.id.revoke(authenticatedUserId, response => {

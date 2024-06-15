@@ -1,9 +1,9 @@
-// The FedCM browser API is a new privacy-preserving alternative to third-party cookies for federated identity providers like google.
+// The Federated Credential Management (FedCM) browser API is a new privacy-preserving alternative to third-party cookies for federated identity providers like google.
 
-import { NoSuccessSignInResult, SignOutResult } from "../definitions";
-import { NotEnrichedSuccessSignInResult } from "../definitionsInternal";
+import type { DisconnectResult, NoSuccessSignInResult, SignOutResult } from "../definitions";
+import type { NotEnrichedSuccessSignInResult } from "../definitionsInternal";
 
-type IdentityCredential = Credential & { isAutoSelect: boolean, token: string }
+type IdentityCredential = Credential & { isAutoSelected: boolean, token: string }
 
 let fedCMAbortController: AbortController | undefined = undefined;
 const cancelCalledAbortReason = 'CANCEL_CALLED';
@@ -41,9 +41,10 @@ export async function signIn(autoSelect: boolean, clientId: string, nonce?: stri
       };
     }
 
+    console.log('identityCredential', identityCredential)
     return {
       idToken: identityCredential.token,
-      isAutoSelect: identityCredential.isAutoSelect
+      isAutoSelected: identityCredential.isAutoSelected
     };
   } catch (e) {
     // NotSupportedError DOMException
@@ -72,6 +73,12 @@ export function signOut(_authenticatedUserId: string | undefined): Promise<SignO
   return Promise.resolve({ isSuccess: true });
 }
 
-export function cancel() {
+// This method is not called, instead the GoogleIdentityServicesClient.disconnect is called in GoogleSignInWeb.disconnect.
+export function disconnect(_authenticatedUserId: string | undefined): Promise<DisconnectResult> {
+  google.accounts.id.disableAutoSelect();
+  return Promise.resolve({ isSuccess: true });
+}
+
+export function cancel(): void {
   fedCMAbortController?.abort({ message: cancelCalledAbortReason });
 }

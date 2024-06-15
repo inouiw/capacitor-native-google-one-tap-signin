@@ -1,4 +1,4 @@
-export function createSignInButtonElement(gsiButtonConfiguration?: google.accounts.id.GsiButtonConfiguration) {
+export function createSignInButtonElement(gsiButtonConfiguration?: google.accounts.id.GsiButtonConfiguration): HTMLButtonElement {
   // Note: Replacing double quotes with single quotes will break some strings.
   const localizedStrings = {
     en: { signin: 'Sign in', continue_with: 'Continue with Google', signin_with: 'Sign in with Google', signup_with: 'Sign up with Google' },

@@ -1,7 +1,7 @@
-import { NoSuccessSignInResult, SignInResultOption, SuccessSignInResult } from "./definitions";
-import { NotEnrichedSuccessSignInResult, NotEnrichedSignInResultOption } from "./definitionsInternal";
+import type { NoSuccessSignInResult, SignInResultOption, SuccessSignInResult } from "./definitions";
+import type { NotEnrichedSuccessSignInResult, NotEnrichedSignInResultOption } from "./definitionsInternal";
 
-export function assert(predicate: () => boolean, customMessage?: string) {
+export function assert(predicate: () => boolean, customMessage?: string): void {
   if (!predicate()) {
     const callerName = callingFunctionName();
     if (customMessage != undefined) {
@@ -11,7 +11,7 @@ export function assert(predicate: () => boolean, customMessage?: string) {
   }
 }
 
-export function randomHexString(length: number) {
+export function randomHexString(length: number): string {
   let uint8RandomNumbers = new Uint8Array((length / 2) + 1);
   uint8RandomNumbers = crypto.getRandomValues(uint8RandomNumbers);
   const numbersAsHexString = Array.from(uint8RandomNumbers).map(x => x.toString(16)).join('');
@@ -29,7 +29,7 @@ function callingFunctionName() {
 
 export function loadScript(url: string): Promise<void> {
   return new Promise<void>((resolve, reject) => {
-    var scriptEl = document.createElement('script') as HTMLScriptElement;
+    const scriptEl = document.createElement('script') as HTMLScriptElement;
     scriptEl.async = true;
     scriptEl.onerror = () => reject();
     scriptEl.onload = () => resolve();

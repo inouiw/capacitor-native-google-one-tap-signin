@@ -1,10 +1,13 @@
 import { WebPlugin } from '@capacitor/core';
-import { InitializeOptions, SignOutResult, RenderSignInButtonOptions, SuccessSignInResult, NoSuccessSignInResult } from '../definitions';
+
+import type { InitializeOptions, SignOutResult, RenderSignInButtonOptions, SuccessSignInResult, NoSuccessSignInResult, DisconnectResult } from '../definitions';
 import type { NotEnrichedSignInResultOption } from '../definitionsInternal';
-import * as  GoogleIdentityServicesClient from './GoogleIdentityServicesClient';
-import * as  FedCMAuthClient from './FedCMAuthClient';
-import { IAuthClient } from './IAuthClient';
 import { toNotEnrichedSignInResultOption } from '../helpers';
+
+import * as  FedCMAuthClient from './FedCMAuthClient';
+import * as  GoogleIdentityServicesClient from './GoogleIdentityServicesClient';
+import type { IAuthClient } from './IAuthClient';
+
 
 /*
  * Web platform specific implementation of the Google One Tap Auth plugin.
@@ -38,17 +41,17 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
   }
 
   async tryOneTapSignIn(): Promise<NotEnrichedSignInResultOption> {
-    let signInResult = await this.authClient!.signIn(false, this.initializeOptions!.clientId!, this.initializeOptions!.nonce);
+    const signInResult = await this.authClient!.signIn(false, this.initializeOptions!.clientId!, this.initializeOptions!.nonce);
     return toNotEnrichedSignInResultOption(signInResult);
   }
 
   async tryAutoSignIn(): Promise<NotEnrichedSignInResultOption> {
-    let signInResult = await this.authClient!.signIn(true, this.initializeOptions!.clientId!, this.initializeOptions!.nonce);
+    const signInResult = await this.authClient!.signIn(true, this.initializeOptions!.clientId!, this.initializeOptions!.nonce);
     return toNotEnrichedSignInResultOption(signInResult);
   }
 
   async renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.accounts.id.GsiButtonConfiguration): Promise<NotEnrichedSignInResultOption> {
-    let signInResult = await GoogleIdentityServicesClient.renderSignInButton(this.initializeOptions!.clientId!, this.initializeOptions!.nonce, parentElementId, options, gsiButtonConfiguration);
+    const signInResult = await GoogleIdentityServicesClient.renderSignInButton(this.initializeOptions!.clientId!, this.initializeOptions!.nonce, parentElementId, options, gsiButtonConfiguration);
     return toNotEnrichedSignInResultOption(signInResult);
   }
 
@@ -58,5 +61,9 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
 
   signOut(authenticatedUserId: string | undefined): Promise<SignOutResult> {
     return this.authClient!.signOut(authenticatedUserId);
+  }
+
+  disconnect(authenticatedUserId: string | undefined): Promise<DisconnectResult> {
+    return GoogleIdentityServicesClient.disconnect(authenticatedUserId);
   }
 }

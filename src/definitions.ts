@@ -33,7 +33,7 @@ export interface SuccessSignInResult {
   /**
    * How the credential was retrieved.
    */
-  isAutoSelect?: boolean;
+  isAutoSelected?: boolean;
   /**
    * The JWT token base64 encoded.
    */
@@ -83,11 +83,15 @@ export interface SignOutResult {
   error?: string;
 }
 
+export interface DisconnectResult {
+  isSuccess: boolean;
+  error?: string;
+}
+
 export interface GoogleOneTapAuthPlugin {
   /**
    * Performs common or one-time initializations.
-   * For the web platform, starts pre-loading the google one tap JavaScript library if the 
-   * browser does not support FedCM.
+   * For the web platform, starts pre-loading the google one tap JavaScript library.
    * initialize must be called before any other method.
    * initialize remembers if it was called so it is safe to be called multiple times.
    * Other methods wait till initialize is finished so you must not await initialize.
@@ -198,9 +202,15 @@ export interface GoogleOneTapAuthPlugin {
   cancelOneTapDialog(): void;
 
   /**
-   * Ends the session.
+   * Ends the credential session with google.
    */
   signOut(): Promise<SignOutResult>;
+
+  /**
+   * Revokes all OAuth 2.0 scopes previously granted.
+   * Supported by iOS and web. Calls signOut for android.
+   */
+  disconnect(): Promise<DisconnectResult>;
 
   /**
    * Gets the last user defined or auto-created nonce.

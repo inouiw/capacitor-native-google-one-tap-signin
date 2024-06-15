@@ -103,6 +103,19 @@ public class GoogleOneTapAuth: CAPPlugin {
         call.resolve(createSuccessSignOutResult());
     }
     
+    @objc
+    func disconnect(_ call: CAPPluginCall) {
+        googleSignIn.disconnect() { error in
+            if error != nil {
+                call.resolve(self.createErrorDisconnectResult(error?.localizedDescription ?? ""));
+                return
+            }
+            else {
+                call.resolve(self.createSuccessDisconnectResult());
+            }
+        }
+    }
+    
     private func toJsonResult(_ signInResult: SignInResult) -> [String: Any] {
         var result: [String: Any] = [:]
         let isSuccess = signInResult.idToken != nil
@@ -125,6 +138,21 @@ public class GoogleOneTapAuth: CAPPlugin {
     private func createSuccessSignOutResult() -> [String: Any] {
         let successResultJson: [String: Any] = [
             "isSuccess": true,
+        ];
+        return successResultJson;
+    }
+    
+    private func createSuccessDisconnectResult() -> [String: Any] {
+        let successResultJson: [String: Any] = [
+            "isSuccess": true,
+        ];
+        return successResultJson;
+    }
+    
+    private func createErrorDisconnectResult(_ message: String) -> [String: Any] {
+        let successResultJson: [String: Any] = [
+            "isSuccess": false,
+            "error": message
         ];
         return successResultJson;
     }

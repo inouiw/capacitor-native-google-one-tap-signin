@@ -11,4 +11,5 @@ CAP_PLUGIN(GoogleOneTapAuth, "GoogleOneTapAuth",
            CAP_PLUGIN_METHOD(triggerGoogleSignIn, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(cancelOneTapDialog, CAPPluginReturnPromise);
            CAP_PLUGIN_METHOD(signOut, CAPPluginReturnPromise);
+           CAP_PLUGIN_METHOD(disconnect, CAPPluginReturnPromise);
 )

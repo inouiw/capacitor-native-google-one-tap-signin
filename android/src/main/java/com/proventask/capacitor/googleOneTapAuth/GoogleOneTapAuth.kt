@@ -237,6 +237,11 @@ class GoogleOneTapAuth : Plugin() {
         }
     }
 
+    @PluginMethod
+    fun disconnect(call: PluginCall) {
+        signOut(call);
+    }
+
     private fun createSuccessSignOutResult(): JSObject {
         val signOutResult = JSObject()
         signOutResult.put("isSuccess", true)

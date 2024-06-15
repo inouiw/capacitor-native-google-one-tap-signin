@@ -1,10 +1,11 @@
 import { Capacitor, registerPlugin } from '@capacitor/core';
-import type { InitializeOptions, GoogleOneTapAuthPlugin, SuccessSignInResult, SignOutResult, RenderSignInButtonOptions, SignInResultOption } from './definitions';
+import { jwtDecode } from "jwt-decode";
+
+import { createSignInButtonElement } from './SignInButtonElement'
+import type { InitializeOptions, GoogleOneTapAuthPlugin, SuccessSignInResult, SignOutResult, RenderSignInButtonOptions, SignInResultOption, DisconnectResult } from './definitions';
+import type { NotEnrichedSuccessSignInResult, NotEnrichedSignInResultOption } from './definitionsInternal';
 import { assert, randomHexString } from './helpers';
 import { GoogleOneTapAuthWeb } from './web/GoogleSignInWeb';
-import { jwtDecode } from "jwt-decode";
-import type { NotEnrichedSuccessSignInResult, NotEnrichedSignInResultOption } from './definitionsInternal';
-import { createSignInButtonElement } from './SignInButtonElement'
 
 const GoogleOneTapAuthPlatform = registerPlugin<GoogleOneTapAuthWeb>('GoogleOneTapAuth', {
   web: () => new GoogleOneTapAuthWeb(),
@@ -113,6 +114,16 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
     return new Promise<SignOutResult>(async (resolve) => {
       await this.withHandleError(resolve, async () => {
         const result = await (GoogleOneTapAuthPlatform as any).signOut(this.authenticatedUserId);
+        this.authenticatedUserId = undefined;
+        resolve(result);
+      });
+    });
+  }
+
+  async disconnect(): Promise<DisconnectResult> {
+    return new Promise<DisconnectResult>(async (resolve) => {
+      await this.withHandleError(resolve, async () => {
+        const result = await (GoogleOneTapAuthPlatform as any).disconnect(this.authenticatedUserId);
         this.authenticatedUserId = undefined;
         resolve(result);
       });

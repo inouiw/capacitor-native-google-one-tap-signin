@@ -54,7 +54,7 @@ If you get the error `[GSI_LOGGER]: The given origin is not allowed for the give
 After some testing the Chrome browser may decide to block third-party sign-in promts on localhost. In the browser console you will see the message *Third-party sign in was disabled in browser Site Settings*. Re-enable it under `chrome://settings/content/federatedIdentityApi`
 
 #### FAQ
-- How to disconnect your google account form your app?  
+- How to see and disconnect the link between your google account and your app?  
 --> See [Manage connections between your Google Account and third-parties](https://support.google.com/accounts/answer/13533235)
 - What does the warning `[GSI_LOGGER]: Your client application uses one of the Google One Tap prompt UI status methods that may stop functioning when FedCM becomes mandatory. Refer to the migration guide to update your code accordingly and opt-in to FedCM to test your changes. Learn more: https://developers.google.com/identity/gsi/web/guides/fedcm-migration?s=dc#display_moment and https://developers.google.com/identity/gsi/web/guides/fedcm-migration?s=dc#skipped_moment` mean?  
 --> The warning is triggered when the `google.accounts.id.prompt` method is used with a callback argument. The message says "*may* stop functioning". The documentation states that some status methods as `isSkippedMoment()`, `isDismissedMoment()` and `getDismissedReason()` are still allowed.
@@ -113,8 +113,7 @@ See `src/definitions.ts` for a complete definition.
 ```TypeScript
 /**
  * Performs common or one-time initializations.
- * For the web platform, starts pre-loading the google one tap JavaScript library if the 
- * browser does not support FedCM.
+ * For the web platform, starts pre-loading the google one tap JavaScript library.
  * initialize must be called before any other method.
  * initialize remembers if it was called so it is safe to be called multiple times.
  * Other methods wait till initialize is finished so you must not await initialize.
@@ -225,9 +224,15 @@ renderSignInButtonWithCallback(
 cancelOneTapDialog(): void;
 
 /**
- * Ends the session.
+ * Ends the credential session with google.
  */
 signOut(): Promise<SignOutResult>;
+
+/**
+ * Revokes all OAuth 2.0 scopes previously granted.
+ * Supported by iOS and web. Calls signOut for android.
+ */
+disconnect(): Promise<DisconnectResult>;
 
 /**
  * Gets the last user defined or auto-created nonce.

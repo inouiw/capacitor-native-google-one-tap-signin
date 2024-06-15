@@ -29,13 +29,23 @@ function renderSignInButtonWithCallback(onResult: (signInResultOption: SignInRes
   return GoogleOneTapAuth.renderSignInButtonWithCallback('google-signin', {}, { type: 'standard', locale: 'en-GB', theme: 'outline', text: 'continue_with', shape: 'rectangular', size: 'large' }, onResult);
 }
 
-async function signOutGoogleHandler(onResultStatus: (status: string) => void) {
+async function signOutHandler(onResultStatus: (status: string) => void) {
   const signOutResult = await GoogleOneTapAuth.signOut();
 
   if (signOutResult.isSuccess) {
     onResultStatus('SignOut success');
   } else {
     onResultStatus(`SignOut error: ${signOutResult.error}`);
+  }
+}
+
+async function disconnectHandler(onResultStatus: (status: string) => void) {
+  const disconnectResult = await GoogleOneTapAuth.disconnect();
+
+  if (disconnectResult.isSuccess) {
+    onResultStatus('Disconnect success');
+  } else {
+    onResultStatus(`Disconnect error: ${disconnectResult.error}`);
   }
 }
 
@@ -58,7 +68,7 @@ const Page1: React.FC = () => {
   }, [reportSignInResult]);
 
   function reportSignInResultSuccess(successResult: SuccessSignInResult) {
-    setAuthResult(`SignIn success! email: '${successResult.email}', userId: '${successResult.userId}', isAutoSelect: '${successResult.isAutoSelect}', nonce: '${successResult.decodedIdToken.nonce}'. See browser console for idToken and full result.`);
+    setAuthResult(`SignIn success! email: '${successResult.email}', userId: '${successResult.userId}', isAutoSelected: '${successResult.isAutoSelected}', nonce: '${successResult.decodedIdToken.nonce}'. See browser console for idToken and full result.`);
     console.log('Success! ' + JSON.stringify(successResult));
   }
 
@@ -116,8 +126,16 @@ const Page1: React.FC = () => {
           </IonRow>
           <IonRow>
             <IonCol size='auto'>
-              <IonButton onClick={() => { setAuthResult(''); signOutGoogleHandler(setAuthResult) }}>
+              <IonButton onClick={() => { setAuthResult(''); signOutHandler(setAuthResult) }}>
                 Sign-out
+              </IonButton>
+            </IonCol>
+            <IonCol></IonCol>
+          </IonRow>
+          <IonRow>
+            <IonCol size='auto'>
+              <IonButton onClick={() => { setAuthResult(''); disconnectHandler(setAuthResult) }}>
+                Disconnect
               </IonButton>
             </IonCol>
             <IonCol></IonCol>
