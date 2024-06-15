@@ -45,25 +45,22 @@ public class GoogleOneTapAuth: CAPPlugin {
     }
     
     func nonInteractiveSignIn(_ call: CAPPluginCall, completion: @escaping (SignInResult) -> Void) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            if googleSignIn.hasPreviousSignIn() {
-                googleSignIn.restorePreviousSignIn() { user, error in
-                    if let error = error {
-                        completion(SignInResult(noSuccessReasonCode: error.localizedDescription, noSuccessAdditionalInfo: "api method: restorePreviousSignIn, error code: \(error._code)"))
-                        return
-                    }
-                    let idToken = user?.idToken?.tokenString
-                    
-                    if (idToken != nil) {
-                        completion(SignInResult(idToken: idToken!))
-                    } else {
-                        completion(SignInResult(noSuccessReasonCode: "NO_CREDENTIAL", noSuccessAdditionalInfo: nil))
-                    }
+        if googleSignIn.hasPreviousSignIn() {
+            googleSignIn.restorePreviousSignIn() { user, error in
+                if let error = error {
+                    completion(SignInResult(noSuccessReasonCode: error.localizedDescription, noSuccessAdditionalInfo: "api method: restorePreviousSignIn, error code: \(error._code)"))
+                    return
                 }
-            } else {
-               completion(SignInResult(noSuccessReasonCode: "NO_CREDENTIAL", noSuccessAdditionalInfo: nil))
+                let idToken = user?.idToken?.tokenString
+                
+                if (idToken != nil) {
+                    completion(SignInResult(idToken: idToken!))
+                } else {
+                    completion(SignInResult(noSuccessReasonCode: "NO_CREDENTIAL", noSuccessAdditionalInfo: nil))
+                }
             }
+        } else {
+           completion(SignInResult(noSuccessReasonCode: "NO_CREDENTIAL", noSuccessAdditionalInfo: nil))
         }
     }
     
