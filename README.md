@@ -9,7 +9,7 @@ Wraps the native android, iOS and JavaScript Google Identity Services api for io
 - You can attach a handler to your own custom sign-in button.
 
 
-&ast; For ios, the GoogleSignIn library stores and loads the AuthSession with idToken in the keychain until signed-out. To avoid any UI for Android and Web, you could create your own authentication cookie. To create your own auth cookie, send the google idToken to your server, verify it, create a JWT and return it as cookie. When the user returns, just verify your JWT cookie.
+&ast; For iOS, the GoogleSignIn library stores and loads the AuthSession with idToken in the keychain until signed-out. To avoid any UI for Android and Web, you could create your own authentication cookie. To create your own auth cookie, send the Google idToken to your server, verify it, create a JWT and return it as cookie. When the user returns, just verify your JWT cookie.
 
 This GoogleSignIn library intends to provide the best google authentication experience for each platform.
 
@@ -62,13 +62,13 @@ After some testing the Chrome browser may decide to block third-party sign-in pr
 
 # Usage
   
-### Example: Trigger auto-sign-in and if not successful one-tap sign and show the button in parallel.
+### Example 1: Trigger auto-sign-in and if not successful one-tap sign and show the button in parallel.
 For the web platform the one-tap or FedCM prompt may not be shown with no error returned. Therefore it is recommened to always also show the button.
 The button also allows the user to select an account with which she did not sign-in previously.
 ```TypeScript
-import { GoogleOneTapAuth, SignInResult } from 'capacitor-native-google-one-tap-signin';
+import { GoogleOneTapAuth, SignInResultOption } from 'capacitor-native-google-one-tap-signin';
 
-await GoogleOneTapAuth.initialize({ clientId: clientId });
+void GoogleOneTapAuth.initialize({ clientId: clientId });
 
 const onResultHandler = async (signInResultOption: SignInResultOption) => {
   if (signInResultOption.isSuccess) {
@@ -88,9 +88,28 @@ await GoogleOneTapAuth.addSignInActionToExistingButtonWithCallback(
 ```
 
 ```HTML
+<!-- To display a nice google button, see https://github.com/inouiw/ReactSignInWithGoogleButton -->
 <div id='google-signin-existing-btn-parent'>
     <button id='google-signin-existing-btn'>Custom Sign-in Button</button>
 </div>
+```
+
+### Example 2: Android and iOS only.
+On Android and iOS, the Google button flow, that allows the user sign-in with a different account, can be triggered via an API call.
+To display a nice google button, see https://github.com/inouiw/ReactSignInWithGoogleButton
+```TypeScript
+import { GoogleOneTapAuth, SignInResultOption } from 'capacitor-native-google-one-tap-signin';
+
+void GoogleOneTapAuth.initialize({ clientId: clientId });
+
+// Trigger auto sign-in and if not successful try one-tap sign-in.
+let signInResultOption = await GoogleOneTapAuth.tryAutoOrOneTapSignIn();
+
+if (signInResultOption.isSuccess === false) {
+  // Start the sign-in with button flow.
+  signInResultOption = await GoogleOneTapAuth.signInWithGoogleButtonFlowForNativePlatform();
+}
+console.log(signInResultOption);
 ```
 
 ```TypeScript

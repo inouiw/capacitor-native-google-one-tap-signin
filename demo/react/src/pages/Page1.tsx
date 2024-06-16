@@ -62,7 +62,7 @@ const Page1: React.FC = () => {
 
   useEffect(() => {
     // It is allowed but not needed to await initialize.
-    GoogleOneTapAuth.initialize({ clientId: clientId });
+    void GoogleOneTapAuth.initialize({ clientId: clientId });
 
     addSignInActionToExistingButton(reportSignInResult);
   }, [reportSignInResult]);

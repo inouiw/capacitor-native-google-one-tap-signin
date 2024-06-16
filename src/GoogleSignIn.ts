@@ -43,6 +43,9 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
         GoogleOneTapAuthPlatform.initialize(options).then(() => {
           this.initializeStatus = InitializeStatus.Initialized;
           this.resolveIsInitializedPromise!();
+        }).catch((e) => {
+          this.initializeStatus = InitializeStatus.NotInitialized;
+          this.rejectIsInitializedPromise!(e);
         });
       }
     }
@@ -186,7 +189,7 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
 
   private addOnClickHandlerToExistingButtonForNatitivePlatform(androidOrIosButtonElem: HTMLElement, onResult: (value: SignInResultOption) => void) {
     const onClickAction = () => {
-      this.withHandleError(onResult, async () => {
+      void this.withHandleError(onResult, async () => {
         const notEnrichedSuccessSignInResultOption: NotEnrichedSignInResultOption = await (GoogleOneTapAuthPlatform as any).signInWithGoogleButtonFlowForNativePlatform();
         if (notEnrichedSuccessSignInResultOption.isSuccess) {
           const enrichedSignInResultOption = this.enrichOptionResultWithDecodedIdToken(notEnrichedSuccessSignInResultOption);

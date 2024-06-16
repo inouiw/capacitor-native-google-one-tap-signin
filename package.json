@@ -64,7 +64,7 @@
     "@ionic/swiftlint-config": "^1.1.2",
     "@types/gapi": "^0.0.47",
     "@types/google.accounts": "^0.0.14",
-    "eslint": "^7.0.0",
+    "eslint": "^8.57.0",
     "prettier": "^3.1.0",
     "prettier-plugin-java": "^2.0.0",
     "rimraf": "^5.0.5",
