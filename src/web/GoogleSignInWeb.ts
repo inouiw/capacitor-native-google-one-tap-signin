@@ -4,28 +4,22 @@ import type { InitializeOptions, SignOutResult, RenderSignInButtonOptions, Succe
 import type { NotEnrichedSignInResultOption } from '../definitionsInternal';
 import { toNotEnrichedSignInResultOption } from '../helpers';
 
-import * as  FedCMAuthClient from './FedCMAuthClient';
-import * as  GoogleIdentityServicesClient from './GoogleIdentityServicesClient';
+import * as FedCMAuthClient from './FedCMAuthClient';
+import * as GoogleIdentityServicesClient from './GoogleIdentityServicesClient';
 import type { IAuthClient } from './IAuthClient';
 
-
-/*
+/**
  * Web platform specific implementation of the Google One Tap Auth plugin.
  * Called from @see {@link GoogleSignIn}
  */
 export class GoogleOneTapAuthWeb extends WebPlugin {
-  initializeOptions?: InitializeOptions = undefined;
-  authClient?: IAuthClient = undefined;
+  initializeOptions?: InitializeOptions;
+  authClient?: IAuthClient;
 
   async initialize(options: InitializeOptions): Promise<void> {
     this.initializeOptions = options;
-
-    if (FedCMAuthClient.isFedCMSupported()) {
-      this.authClient = FedCMAuthClient;
-    } else {
-      this.authClient = GoogleIdentityServicesClient;
-    }
-    return GoogleIdentityServicesClient.initialize();
+    this.authClient = FedCMAuthClient.isFedCMSupported() ? FedCMAuthClient : GoogleIdentityServicesClient;
+    await GoogleIdentityServicesClient.initialize();
   }
 
   async tryAutoOrOneTapSignIn(): Promise<NotEnrichedSignInResultOption> {
@@ -34,7 +28,6 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
     if (!(signInResult as SuccessSignInResult).idToken
       // If the popup was cancelled, do not show it again.
       && (signInResult as NoSuccessSignInResult).noSuccessReasonCode !== 'SIGN_IN_CANCELLED') {
-      
       signInResult = await this.authClient!.signIn(false, this.initializeOptions!.clientId!, this.initializeOptions!.nonce);
     }
     return toNotEnrichedSignInResultOption(signInResult);
@@ -51,7 +44,7 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
   }
 
   signInWithGoogleButtonFlowForNativePlatform(): Promise<NotEnrichedSignInResultOption> {
-    return Promise.reject('signInWithGoogleButtonFlowForNativePlatform: For the web platform, the sign in with Google button flow cannot be triggered by a api call but only by pressing a button.');
+    return Promise.reject('signInWithGoogleButtonFlowForNativePlatform: For the web platform, the sign-in with Google button flow cannot be triggered by an API call but only by pressing a button.');
   }
 
   async renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.accounts.id.GsiButtonConfiguration): Promise<NotEnrichedSignInResultOption> {

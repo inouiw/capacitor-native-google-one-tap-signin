@@ -3,7 +3,7 @@
 import type { DisconnectResult, NoSuccessSignInResult, SignOutResult } from "../definitions";
 import type { NotEnrichedSuccessSignInResult } from "../definitionsInternal";
 
-type IdentityCredential = Credential & { isAutoSelected: boolean, token: string }
+type IdentityCredential = Credential & { isAutoSelected: boolean, token: string };
 
 let fedCMAbortController: AbortController | undefined = undefined;
 const cancelCalledAbortReason = 'CANCEL_CALLED';
@@ -24,7 +24,7 @@ export async function signIn(autoSelect: boolean, clientId: string, nonce?: stri
         providers: [
           {
             configURL: 'https://accounts.google.com/gsi/fedcm.json',
-            clientId: clientId!,
+            clientId: clientId,
             // loginHint: ''
             nonce: nonce
           }
@@ -34,14 +34,10 @@ export async function signIn(autoSelect: boolean, clientId: string, nonce?: stri
       signal: fedCMAbortController.signal
     } as any) as IdentityCredential;
 
-    // console.log('fedCMSignIn result: ', identityCredential);
-
     if (!identityCredential?.token) {
-      return {
-      };
+      return {};
     }
 
-    console.log('identityCredential', identityCredential)
     return {
       idToken: identityCredential.token,
       isAutoSelected: identityCredential.isAutoSelected
@@ -54,16 +50,16 @@ export async function signIn(autoSelect: boolean, clientId: string, nonce?: stri
     const name = (e as Error).name ?? '';
     const message = (e as Error).message ?? '';
     // console.log('fedCMSignIn error: ', e, name);
+
     if (message.includes(cancelCalledAbortReason)
       || (name === 'NetworkError' && message.includes('Error retrieving a token.'))) {
       return {
         noSuccessReasonCode: 'SIGN_IN_CANCELLED'
       };
     }
-    return {
-    };
-  }
-  finally {
+
+    return {};
+  } finally {
     fedCMAbortController = undefined;
   }
 }
@@ -73,7 +69,6 @@ export function signOut(_authenticatedUserId: string | undefined): Promise<SignO
   return Promise.resolve({ isSuccess: true });
 }
 
-// This method is not called, instead the GoogleIdentityServicesClient.disconnect is called in GoogleSignInWeb.disconnect.
 export function disconnect(_authenticatedUserId: string | undefined): Promise<DisconnectResult> {
   google.accounts.id.disableAutoSelect();
   return Promise.resolve({ isSuccess: true });

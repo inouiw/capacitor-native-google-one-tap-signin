@@ -3,13 +3,13 @@
 Wraps the native android, iOS and JavaScript Google Identity Services api for ionic capacitor apps.
 
 ### Features
-- Auto sign-in returning users (that you did not sign out). No user action needed but shows a status UI for a few seconds.*
+- Automatically signs in returning users (unless signed out). No user action is required, but a status UI is displayed briefly, except on iOS.*
 - New users can sign-up with one tap.
 - After sign-out users can sign-in with one tap.
 - You can attach a handler to your own custom sign-in button.
 
 
-&ast; To avoid any UI, you could create your own authentication cookie. Send the google idToken to your server, verify it, create a JWT and return it as cookie. When the user returns, just verify your JWT cookie.
+&ast; For ios, the GoogleSignIn library stores and loads the AuthSession with idToken in the keychain until signed-out. To avoid any UI for Android and Web, you could create your own authentication cookie. To create your own auth cookie, send the google idToken to your server, verify it, create a JWT and return it as cookie. When the user returns, just verify your JWT cookie.
 
 This GoogleSignIn library intends to provide the best google authentication experience for each platform.
 
@@ -51,7 +51,7 @@ If you get the error `[GSI_LOGGER]: The given origin is not allowed for the give
 
 - For the ios platform, you need to create a client ID of type iOS in the [Google Cloud Console](https://console.cloud.google.com/apis/dashboard). Add the client ID to the  `{your-app}/ios/App/App/Info.plist` file with the key `GIDClientID` (see the demo app for reference). When creating the client ID, you will see the "iOS URL scheme" value in the Google Cloud Console. Add this also to the `Info.plist` file.
 
-After some testing the Chrome browser may decide to block third-party sign-in promts on localhost. In the browser console you will see the message *Third-party sign in was disabled in browser Site Settings*. Re-enable it under `chrome://settings/content/federatedIdentityApi`
+After some testing the Chrome browser may decide to block third-party sign-in promts on localhost. In the browser console you will see the message *Third-party sign in was disabled in browser Site Settings*. Re-enable it under `chrome://settings/content/federatedIdentityApi`.
 
 #### FAQ
 - How to see and disconnect the link between your google account and your app?  
@@ -111,7 +111,7 @@ Android, iOS, Web.
 
 See https://developers.google.com/identity/gsi/web/guides/features
 
-# Exposed api
+# Exposed API
 See `src/definitions.ts` for a complete definition.
 
 ```TypeScript

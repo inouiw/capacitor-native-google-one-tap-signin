@@ -31,16 +31,16 @@ function oneTapInitialize(autoSelect: boolean, clientId: string, nonce: string |
     nonce: nonce,
     use_fedcm_for_prompt: true,
     use_fedcm_for_button: true,
-    log_level: 'error' // 'debug'
+    // log_level: 'debug'
   } as google.accounts.id.IdConfiguration & { use_fedcm_for_prompt: boolean });
 }
 
-export async function signIn(autoSelect: boolean, clientId: string, nonce?: string): Promise<NotEnrichedSuccessSignInResult | NoSuccessSignInResult>{
+export async function signIn(autoSelect: boolean, clientId: string, nonce?: string): Promise<NotEnrichedSuccessSignInResult | NoSuccessSignInResult> {
   return new Promise<NotEnrichedSuccessSignInResult | NoSuccessSignInResult>(async (resolve, _reject) => {
-    oneTapInitialize(autoSelect, clientId, nonce, resolve); // The resolve function is passed, so it can be called in handleCredentialResponse.
+    // The resolve function is passed, so it can be called in handleCredentialResponse.
+    oneTapInitialize(autoSelect, clientId, nonce, resolve);
     // Display the One Tap prompt or the browser native credential manager.
     google.accounts.id.prompt((notification) => {
-      // console.log('notification', notification)
       const configurationErrors = ['missing_client_id', 'unregistered_origin'];
       const momentReason = getMomentReason(notification);
 
@@ -49,19 +49,15 @@ export async function signIn(autoSelect: boolean, clientId: string, nonce?: stri
           noSuccessReasonCode: 'configuration_error',
           noSuccessAdditionalInfo: momentReason
         });
-      }
-      else if (momentReason === 'credential_returned') {
+      } else if (momentReason === 'credential_returned') {
         // Do nothing, handled in handleCredentialResponse.
-      }
-      else if (notification.isSkippedMoment()
+      } else if (notification.isSkippedMoment()
         || notification.isDismissedMoment()) {
         resolve({
           noSuccessReasonCode: momentReason
         });
-      }
-      else {
+      } else {
         // Do nothing, may be display moment indicating that the prompt is displayed.
-        // But could also be display moment indicating that the prompt is not displayed because it is suppressed_by_user (cooldown period).
       }
     });
   });
@@ -84,7 +80,8 @@ function getMomentReason(notification: google.accounts.id.PromptMomentNotificati
 export async function renderSignInButton(clientId: string, nonce: string | undefined, parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.accounts.id.GsiButtonConfiguration)
   : Promise<NotEnrichedSuccessSignInResult | NoSuccessSignInResult> {
   const parentElem = document.getElementById(parentElementId);
-  assert(() => !!parentElem)
+  assert(() => !!parentElem);
+  
   const signInPromise = new Promise<NotEnrichedSuccessSignInResult>((resolve) => {
     oneTapInitialize(false, clientId, nonce, resolve, options.webOptions);
 
@@ -124,8 +121,7 @@ export function disconnect(authenticatedUserId: string | undefined): Promise<Dis
       google.accounts.id.revoke(authenticatedUserId, response => {
         if (response.successful) {
           resolve({ isSuccess: true });
-        }
-        else {
+        } else {
           resolve({ isSuccess: false, error: response.error });
         }
       });
