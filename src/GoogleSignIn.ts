@@ -13,6 +13,11 @@ const GoogleOneTapAuthPlatform = registerPlugin<GoogleOneTapAuthWeb>('GoogleOneT
 
 enum InitializeStatus { NotInitialized, Initializing, Initialized }
 
+interface ElementOffsetSize {
+  width: number,
+  height: number,
+}
+
 /* 
  * This file is the entry point for all plugin methods. It contains common logic to web, android, iOS or delegates to the specific implementation.
  */
@@ -243,8 +248,14 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
     // buttonParentElem!.style.border = '2px solid red';  // uncomment for debugging
 
     // The visible button width should be the same as the google button width.
-    const buttonElemWidth = await this.waitForElementOffsetWidthNotZero(buttonElem!);
+    const {width: buttonElemWidth, height: buttonElemHeight} = await this.waitForElementOffsetWidthNotZero(buttonElem!);
     assert(() => buttonElemWidth !== 0);
+    assert(() => buttonElemHeight !== 0);
+
+    // Since we can't set the height on the Google sign-in button, we'll just scale everything up, and adjust its width
+    const googleButtonHeight = 40;
+    const scale = buttonElemHeight / googleButtonHeight;
+    const effectiveWidth = buttonElemWidth / scale;
 
     const invisibleGoogleButtonDiv = document.createElement('div');
     const invisibleGoogleButtonDivId = 'invisibleGoogleButtonDiv';
@@ -252,22 +263,28 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
     invisibleGoogleButtonDiv.style.position = 'absolute';
     invisibleGoogleButtonDiv.style.top = '0px';
     invisibleGoogleButtonDiv.style.left = '0px';
-    invisibleGoogleButtonDiv.style.width = `${buttonElemWidth}px`;
+    invisibleGoogleButtonDiv.style.width = `${effectiveWidth}px`;
     invisibleGoogleButtonDiv.style.boxSizing = 'border-box';
     invisibleGoogleButtonDiv.style.opacity = '0.0001'; // change it for debugging
+
+    // Scale the invisible button so that the clickable area will be tall enough, such as if our button has vertical
+    // padding. Otherwise, the button of our button may not respond to clicks.
+    invisibleGoogleButtonDiv.style.transformOrigin = 'top left';
+    invisibleGoogleButtonDiv.style.transform = 'scale(' + scale + ')';
+
     buttonElem!.appendChild(invisibleGoogleButtonDiv);
 
-    await this.renderSignInButtonUsingGoogleIdentityServicesForWeb(onResult, invisibleGoogleButtonDivId, {}, { type: 'standard', width: buttonElemWidth });
+    await this.renderSignInButtonUsingGoogleIdentityServicesForWeb(onResult, invisibleGoogleButtonDivId, {}, { type: 'standard', width: effectiveWidth });
   }
 
-  private waitForElementOffsetWidthNotZero(element: HTMLElement): Promise<number> {
-    if (element.offsetWidth !== 0) {
-      return Promise.resolve(element.offsetWidth);
+  private waitForElementOffsetWidthNotZero(element: HTMLElement): Promise<ElementOffsetSize> {
+    if (element.offsetWidth !== 0 && element.offsetHeight !== 0) {
+      return Promise.resolve({width: element.offsetWidth, height: element.offsetHeight});
     }
-    return new Promise<number>((resolve) => {
+    return new Promise<ElementOffsetSize>((resolve) => {
       const resizeObserver = new ResizeObserver(() => {
-        if (element.offsetWidth !== 0) {
-          resolve(element.offsetWidth);
+        if (element.offsetWidth !== 0 && element.offsetHeight !== 0) {
+          resolve({width: element.offsetWidth, height: element.offsetHeight});
         }
       });
       resizeObserver.observe(element);
