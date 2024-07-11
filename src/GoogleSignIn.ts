@@ -252,29 +252,28 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
     assert(() => buttonElemWidth !== 0);
     assert(() => buttonElemHeight !== 0);
 
-    // Since we can't set the height on the Google sign-in button, we'll just scale everything up, and adjust its width
-    const googleButtonHeight = 40;
-    const scale = buttonElemHeight / googleButtonHeight;
-    const effectiveWidth = buttonElemWidth / scale;
-
     const invisibleGoogleButtonDiv = document.createElement('div');
     const invisibleGoogleButtonDivId = 'invisibleGoogleButtonDiv';
     invisibleGoogleButtonDiv.setAttribute('id', invisibleGoogleButtonDivId);
     invisibleGoogleButtonDiv.style.position = 'absolute';
     invisibleGoogleButtonDiv.style.top = '0px';
     invisibleGoogleButtonDiv.style.left = '0px';
-    invisibleGoogleButtonDiv.style.width = `${effectiveWidth}px`;
+    invisibleGoogleButtonDiv.style.width = `${buttonElemWidth}px`;
     invisibleGoogleButtonDiv.style.boxSizing = 'border-box';
     invisibleGoogleButtonDiv.style.opacity = '0.0001'; // change it for debugging
 
-    // Scale the invisible button so that the clickable area will be tall enough, such as if our button has vertical
-    // padding. Otherwise, the button of our button may not respond to clicks.
-    invisibleGoogleButtonDiv.style.transformOrigin = 'top left';
-    invisibleGoogleButtonDiv.style.transform = 'scale(' + scale + ')';
-
     buttonElem!.appendChild(invisibleGoogleButtonDiv);
 
-    await this.renderSignInButtonUsingGoogleIdentityServicesForWeb(onResult, invisibleGoogleButtonDivId, {}, { type: 'standard', width: effectiveWidth });
+    // Since we can't set the height on the Google sign-in button, we'll just scale everything up vertically.
+    const googleButtonHeight = 40;
+    const scaleY = buttonElemHeight / googleButtonHeight;
+
+    // Scale the invisible button so that the clickable area will be tall enough, such as if our button has vertical
+    // padding. Otherwise, the bottom of our button may not respond to clicks.
+    invisibleGoogleButtonDiv.style.transformOrigin = 'top left';
+    invisibleGoogleButtonDiv.style.transform = 'scale(1, ' + scaleY + ')';
+
+    await this.renderSignInButtonUsingGoogleIdentityServicesForWeb(onResult, invisibleGoogleButtonDivId, {}, { type: 'standard', width: buttonElemWidth });
   }
 
   private waitForElementOffsetWidthNotZero(element: HTMLElement): Promise<ElementOffsetSize> {
