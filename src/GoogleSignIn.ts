@@ -13,6 +13,11 @@ const GoogleOneTapAuthPlatform = registerPlugin<GoogleOneTapAuthWeb>('GoogleOneT
 
 enum InitializeStatus { NotInitialized, Initializing, Initialized }
 
+interface ElementOffsetSize {
+  width: number,
+  height: number,
+}
+
 /* 
  * This file is the entry point for all plugin methods. It contains common logic to web, android, iOS or delegates to the specific implementation.
  */
@@ -243,8 +248,13 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
     // buttonParentElem!.style.border = '2px solid red';  // uncomment for debugging
 
     // The visible button width should be the same as the google button width.
-    const buttonElemWidth = await this.waitForElementOffsetWidthNotZero(buttonElem!);
+    const {width: buttonElemWidth, height: buttonElemHeight} = await this.waitForElementOffsetWidthNotZero(buttonElem!);
     assert(() => buttonElemWidth !== 0);
+    assert(() => buttonElemHeight !== 0);
+
+    // We can't set the height on the Google sign-in button, but scaling the parent element vertically has the same effect.
+    const googleButtonHeight = 40;
+    const scaleY = buttonElemHeight / googleButtonHeight;
 
     const invisibleGoogleButtonDiv = document.createElement('div');
     const invisibleGoogleButtonDivId = 'invisibleGoogleButtonDiv';
@@ -255,19 +265,22 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
     invisibleGoogleButtonDiv.style.width = `${buttonElemWidth}px`;
     invisibleGoogleButtonDiv.style.boxSizing = 'border-box';
     invisibleGoogleButtonDiv.style.opacity = '0.0001'; // change it for debugging
+    invisibleGoogleButtonDiv.style.transformOrigin = 'top left';
+    invisibleGoogleButtonDiv.style.transform = 'scale(1, ' + scaleY + ')';
+
     buttonElem!.appendChild(invisibleGoogleButtonDiv);
 
     await this.renderSignInButtonUsingGoogleIdentityServicesForWeb(onResult, invisibleGoogleButtonDivId, {}, { type: 'standard', width: buttonElemWidth });
   }
 
-  private waitForElementOffsetWidthNotZero(element: HTMLElement): Promise<number> {
-    if (element.offsetWidth !== 0) {
-      return Promise.resolve(element.offsetWidth);
+  private waitForElementOffsetWidthNotZero(element: HTMLElement): Promise<ElementOffsetSize> {
+    if (element.offsetWidth !== 0 && element.offsetHeight !== 0) {
+      return Promise.resolve({width: element.offsetWidth, height: element.offsetHeight});
     }
-    return new Promise<number>((resolve) => {
+    return new Promise<ElementOffsetSize>((resolve) => {
       const resizeObserver = new ResizeObserver(() => {
-        if (element.offsetWidth !== 0) {
-          resolve(element.offsetWidth);
+        if (element.offsetWidth !== 0 && element.offsetHeight !== 0) {
+          resolve({width: element.offsetWidth, height: element.offsetHeight});
         }
       });
       resizeObserver.observe(element);
