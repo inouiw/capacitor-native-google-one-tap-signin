@@ -110,11 +110,9 @@
 		50ADFF8A201F53D600D50D53 /* Plugin */ = {
 			isa = PBXGroup;
 			children = (
-				50E1A94720377CB70090CE1A /* Plugin.swift */,
-				C01E1FC52C389851006F868A /* GIDSignInProtocol.swift */,
-				50ADFF8B201F53D600D50D53 /* Plugin.h */,
-				50ADFFA72020EE4F00D50D53 /* Plugin.m */,
 				50ADFF8C201F53D600D50D53 /* Info.plist */,
+				C0FF6F682C47149200A21B97 /* ObjC */,
+				C0FF6F662C47147E00A21B97 /* Swift */,
 			);
 			path = Plugin;
 			sourceTree = "<group>";
@@ -122,13 +120,9 @@
 		50ADFF95201F53D600D50D53 /* PluginTests */ = {
 			isa = PBXGroup;
 			children = (
-				50ADFF96201F53D600D50D53 /* PluginTests.swift */,
-				C01E1FC32C388A36006F868A /* MockGIDSignIn.swift */,
-				C01E1FBF2C387E6F006F868A /* MockBridge.swift */,
-				C01E1FC12C387E95006F868A /* MockViewController.swift */,
+				C0FF6F6B2C4716A400A21B97 /* Swift */,
+				C0FF6F6A2C47169100A21B97 /* ObjC */,
 				50ADFF98201F53D600D50D53 /* Info.plist */,
-				C01E1FCE2C3913C2006F868A /* PluginTests-Bridging-Header.h */,
-				C01E1FD82C392101006F868A /* GoogleSignIn */,
 			);
 			path = PluginTests;
 			sourceTree = "<group>";
@@ -156,17 +150,63 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		C01E1FD82C392101006F868A /* GoogleSignIn */ = {
+		C0FF6F662C47147E00A21B97 /* Swift */ = {
+			isa = PBXGroup;
+			children = (
+				50E1A94720377CB70090CE1A /* Plugin.swift */,
+				C01E1FC52C389851006F868A /* GIDSignInProtocol.swift */,
+			);
+			path = Swift;
+			sourceTree = "<group>";
+		};
+		C0FF6F682C47149200A21B97 /* ObjC */ = {
+			isa = PBXGroup;
+			children = (
+				C0FF6F692C47160700A21B97 /* include */,
+				50ADFFA72020EE4F00D50D53 /* Plugin.m */,
+			);
+			path = ObjC;
+			sourceTree = "<group>";
+		};
+		C0FF6F692C47160700A21B97 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				50ADFF8B201F53D600D50D53 /* Plugin.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		C0FF6F6A2C47169100A21B97 /* ObjC */ = {
 			isa = PBXGroup;
 			children = (
 				C01E1FCF2C3913C2006F868A /* GIDSignInResult+Testing.m */,
-				C01E1FCD2C391344006F868A /* GIDSignInResult+Testing.h */,
-				C01E1FD12C391618006F868A /* GIDGoogleUser+Testing.h */,
-				C01E1FD22C39166F006F868A /* GIDGoogleUser+Testing.m */,
 				C01E1FD52C39177A006F868A /* GIDToken+Testing.m */,
-				C01E1FD42C391704006F868A /* GIDToken+Testing.h */,
+				C01E1FD22C39166F006F868A /* GIDGoogleUser+Testing.m */,
+				C0FF6F6C2C4716BB00A21B97 /* include */,
 			);
-			path = GoogleSignIn;
+			path = ObjC;
+			sourceTree = "<group>";
+		};
+		C0FF6F6B2C4716A400A21B97 /* Swift */ = {
+			isa = PBXGroup;
+			children = (
+				C01E1FBF2C387E6F006F868A /* MockBridge.swift */,
+				C01E1FC12C387E95006F868A /* MockViewController.swift */,
+				C01E1FC32C388A36006F868A /* MockGIDSignIn.swift */,
+				50ADFF96201F53D600D50D53 /* PluginTests.swift */,
+				C01E1FCE2C3913C2006F868A /* PluginTests-Bridging-Header.h */,
+			);
+			path = Swift;
+			sourceTree = "<group>";
+		};
+		C0FF6F6C2C4716BB00A21B97 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				C01E1FCD2C391344006F868A /* GIDSignInResult+Testing.h */,
+				C01E1FD42C391704006F868A /* GIDToken+Testing.h */,
+				C01E1FD12C391618006F868A /* GIDGoogleUser+Testing.h */,
+			);
+			path = include;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -567,7 +607,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.getcapacitor.PluginTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "PluginTests/PluginTests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "PluginTests/Swift/PluginTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -585,7 +625,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.getcapacitor.PluginTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "PluginTests/PluginTests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "PluginTests/Swift/PluginTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
