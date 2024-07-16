@@ -4,33 +4,99 @@ import Capacitor
 
 class PluginTests: XCTestCase {
     
+    var plugin: GoogleOneTapAuth!
+    var mockBridge: MockBridge!
+    
     override func setUp() {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        plugin = GoogleOneTapAuth()
+        plugin.load()
+        
+        mockBridge = MockBridge()
+        mockBridge.viewController = MockViewController()
+        plugin.bridge = mockBridge
     }
     
     override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        plugin = nil
+        mockBridge = nil
         super.tearDown()
     }
     
-    func testEcho() {
-        // This is an example of a functional test case for a plugin.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        
-        let value = "Hello, World!"
-        let plugin = GoogleOneTapAuth()
-   
-        let call = CAPPluginCall(callbackId: "test", options: [
-            "value": value
-        ], success: { (result, call) in
-            let resultValue = result!.data?["value"] as? String
-            XCTAssertEqual(value, resultValue)
-        }, error: { (err) in
-            XCTFail("Error shouldn't have been called")
+    private func createPluginCall(success: @escaping CAPPluginCallSuccessHandler, error: @escaping CAPPluginCallErrorHandler) -> CAPPluginCall {
+        return CAPPluginCall(callbackId: "test", options: [:], success: success, error: error)
+    }
+    
+    private func createPluginCallAssertNoError() -> CAPPluginCall {
+        return createPluginCall(success: { (result, _) in
+            // do nothing
+        }, error: { (error) in
+            XCTFail("Call failed with error: \(String(describing: error))")
         })
-   
-        plugin.load()
-        //plugin.signIn(call!)
+    }
+    
+    private func createPluginCallAssertSuccessIdToken() -> CAPPluginCall {
+        return createPluginCall(success: { (result, _) in
+            guard let data = result?.data,
+                  let isSuccess = data["isSuccess"] as? Bool,
+                  let success = data["success"] as? [String: Any],
+                  let idToken = success["idToken"] as? String else {
+                XCTFail("Invalid result structure")
+                return
+            }
+            XCTAssertTrue(isSuccess)
+            XCTAssertEqual(idToken, MockGIDSignIn.tokenString)
+        }, error: { (error) in
+            XCTFail("Call failed with error: \(String(describing: error))")
+        })
+    }
+    
+    private func createPluginCallAssertIsSuccessFalse() -> CAPPluginCall {
+        return createPluginCall(success: { (result, _) in
+            guard let data = result?.data,
+                  let isSuccess = data["isSuccess"] as? Bool else {
+                XCTFail("Invalid result structure")
+                return
+            }
+            XCTAssertFalse(isSuccess)
+        }, error: { (error) in
+            XCTFail("Call failed with error: \(String(describing: error))")
+        })
+    }
+    
+    func testInitialize() {
+        let call = createPluginCallAssertNoError()
+        plugin.initialize(call)
+        // Add assertions or verifications here if needed
+    }
+    
+    func testTryAutoOrOneTapSignInWithToken() {
+        plugin.googleSignIn = MockGIDSignIn(hasPreviousSignIn: false)
+        let call = createPluginCallAssertSuccessIdToken()
+        plugin.tryAutoOrOneTapSignIn(call)
+    }
+    
+    func testTryAutoSignIn_hasPreviousSignIn() {
+        plugin.googleSignIn = MockGIDSignIn(hasPreviousSignIn: true)
+        let call = createPluginCallAssertSuccessIdToken()
+        plugin.tryAutoSignIn(call)
+    }
+    
+    func testTryAutoSignIn_hasNotPreviousSignIn() {
+        plugin.googleSignIn = MockGIDSignIn(hasPreviousSignIn: false)
+        let call = createPluginCallAssertIsSuccessFalse()
+        plugin.tryAutoSignIn(call)
+    }
+    
+    func testTryOneTapSignIn() {
+        plugin.googleSignIn = MockGIDSignIn(hasPreviousSignIn: true)
+        let call = createPluginCallAssertSuccessIdToken()
+        plugin.tryOneTapSignIn(call)
+    }
+    
+    func testSignInWithGoogleButtonFlowForNativePlatform() {
+        plugin.googleSignIn = MockGIDSignIn(hasPreviousSignIn: true)
+        let call = createPluginCallAssertSuccessIdToken()
+        plugin.signInWithGoogleButtonFlowForNativePlatform(call)
     }
 }

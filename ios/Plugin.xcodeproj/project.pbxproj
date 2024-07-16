@@ -13,6 +13,13 @@
 		50ADFFA82020EE4F00D50D53 /* Plugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 50ADFFA72020EE4F00D50D53 /* Plugin.m */; };
 		50E1A94820377CB70090CE1A /* Plugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E1A94720377CB70090CE1A /* Plugin.swift */; };
 		759CDDC1546C0E7AF289962A /* Pods_PluginTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 205A25BA65407F47727D28AC /* Pods_PluginTests.framework */; };
+		C01E1FC02C387E6F006F868A /* MockBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01E1FBF2C387E6F006F868A /* MockBridge.swift */; };
+		C01E1FC22C387E95006F868A /* MockViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01E1FC12C387E95006F868A /* MockViewController.swift */; };
+		C01E1FC42C388A36006F868A /* MockGIDSignIn.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01E1FC32C388A36006F868A /* MockGIDSignIn.swift */; };
+		C01E1FC62C389851006F868A /* GIDSignInProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01E1FC52C389851006F868A /* GIDSignInProtocol.swift */; };
+		C01E1FD02C3913C2006F868A /* GIDSignInResult+Testing.m in Sources */ = {isa = PBXBuildFile; fileRef = C01E1FCF2C3913C2006F868A /* GIDSignInResult+Testing.m */; };
+		C01E1FD32C39166F006F868A /* GIDGoogleUser+Testing.m in Sources */ = {isa = PBXBuildFile; fileRef = C01E1FD22C39166F006F868A /* GIDGoogleUser+Testing.m */; };
+		C01E1FD62C39177A006F868A /* GIDToken+Testing.m in Sources */ = {isa = PBXBuildFile; fileRef = C01E1FD52C39177A006F868A /* GIDToken+Testing.m */; };
 		C0BE621F299C149C00ADBD43 /* Capacitor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50ADFFA52020D75100D50D53 /* Capacitor.framework */; };
 		C0BE6222299C14A000ADBD43 /* Pods_Plugin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B2A61DA5A1F2DD4F959604D /* Pods_Plugin.framework */; };
 /* End PBXBuildFile section */
@@ -43,6 +50,17 @@
 		5E23F77F099397094342571A /* Pods-Plugin.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Plugin.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Plugin/Pods-Plugin.debug.xcconfig"; sourceTree = "<group>"; };
 		8373A98B5ECC494B71BABFF1 /* Pods-Plugin-PluginTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Plugin-PluginTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Plugin-PluginTests/Pods-Plugin-PluginTests.debug.xcconfig"; sourceTree = "<group>"; };
 		91781294A431A2A7CC6EB714 /* Pods-Plugin.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Plugin.release.xcconfig"; path = "Pods/Target Support Files/Pods-Plugin/Pods-Plugin.release.xcconfig"; sourceTree = "<group>"; };
+		C01E1FBF2C387E6F006F868A /* MockBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBridge.swift; sourceTree = "<group>"; };
+		C01E1FC12C387E95006F868A /* MockViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockViewController.swift; sourceTree = "<group>"; };
+		C01E1FC32C388A36006F868A /* MockGIDSignIn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockGIDSignIn.swift; sourceTree = "<group>"; };
+		C01E1FC52C389851006F868A /* GIDSignInProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GIDSignInProtocol.swift; sourceTree = "<group>"; };
+		C01E1FCD2C391344006F868A /* GIDSignInResult+Testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "GIDSignInResult+Testing.h"; sourceTree = "<group>"; };
+		C01E1FCE2C3913C2006F868A /* PluginTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "PluginTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		C01E1FCF2C3913C2006F868A /* GIDSignInResult+Testing.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "GIDSignInResult+Testing.m"; sourceTree = "<group>"; };
+		C01E1FD12C391618006F868A /* GIDGoogleUser+Testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "GIDGoogleUser+Testing.h"; sourceTree = "<group>"; };
+		C01E1FD22C39166F006F868A /* GIDGoogleUser+Testing.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "GIDGoogleUser+Testing.m"; sourceTree = "<group>"; };
+		C01E1FD42C391704006F868A /* GIDToken+Testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "GIDToken+Testing.h"; sourceTree = "<group>"; };
+		C01E1FD52C39177A006F868A /* GIDToken+Testing.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "GIDToken+Testing.m"; sourceTree = "<group>"; };
 		C5DBEB1C0497B6A0D0829A4E /* Pods-PluginTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PluginTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PluginTests/Pods-PluginTests.debug.xcconfig"; sourceTree = "<group>"; };
 		E98DB64A6627A5A64318EF72 /* Pods-PluginTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PluginTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-PluginTests/Pods-PluginTests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -93,6 +111,7 @@
 			isa = PBXGroup;
 			children = (
 				50E1A94720377CB70090CE1A /* Plugin.swift */,
+				C01E1FC52C389851006F868A /* GIDSignInProtocol.swift */,
 				50ADFF8B201F53D600D50D53 /* Plugin.h */,
 				50ADFFA72020EE4F00D50D53 /* Plugin.m */,
 				50ADFF8C201F53D600D50D53 /* Info.plist */,
@@ -104,7 +123,12 @@
 			isa = PBXGroup;
 			children = (
 				50ADFF96201F53D600D50D53 /* PluginTests.swift */,
+				C01E1FC32C388A36006F868A /* MockGIDSignIn.swift */,
+				C01E1FBF2C387E6F006F868A /* MockBridge.swift */,
+				C01E1FC12C387E95006F868A /* MockViewController.swift */,
 				50ADFF98201F53D600D50D53 /* Info.plist */,
+				C01E1FCE2C3913C2006F868A /* PluginTests-Bridging-Header.h */,
+				C01E1FD82C392101006F868A /* GoogleSignIn */,
 			);
 			path = PluginTests;
 			sourceTree = "<group>";
@@ -130,6 +154,19 @@
 				205A25BA65407F47727D28AC /* Pods_PluginTests.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		C01E1FD82C392101006F868A /* GoogleSignIn */ = {
+			isa = PBXGroup;
+			children = (
+				C01E1FCF2C3913C2006F868A /* GIDSignInResult+Testing.m */,
+				C01E1FCD2C391344006F868A /* GIDSignInResult+Testing.h */,
+				C01E1FD12C391618006F868A /* GIDGoogleUser+Testing.h */,
+				C01E1FD22C39166F006F868A /* GIDGoogleUser+Testing.m */,
+				C01E1FD52C39177A006F868A /* GIDToken+Testing.m */,
+				C01E1FD42C391704006F868A /* GIDToken+Testing.h */,
+			);
+			path = GoogleSignIn;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -202,7 +239,7 @@
 					};
 					50ADFF90201F53D600D50D53 = {
 						CreatedOnToolsVersion = 9.2;
-						LastSwiftMigration = "";
+						LastSwiftMigration = 1540;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -318,6 +355,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C01E1FC62C389851006F868A /* GIDSignInProtocol.swift in Sources */,
 				50E1A94820377CB70090CE1A /* Plugin.swift in Sources */,
 				50ADFFA82020EE4F00D50D53 /* Plugin.m in Sources */,
 			);
@@ -327,6 +365,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C01E1FD02C3913C2006F868A /* GIDSignInResult+Testing.m in Sources */,
+				C01E1FC42C388A36006F868A /* MockGIDSignIn.swift in Sources */,
+				C01E1FD32C39166F006F868A /* GIDGoogleUser+Testing.m in Sources */,
+				C01E1FC22C387E95006F868A /* MockViewController.swift in Sources */,
+				C01E1FC02C387E6F006F868A /* MockBridge.swift in Sources */,
+				C01E1FD62C39177A006F868A /* GIDToken+Testing.m in Sources */,
 				50ADFF97201F53D600D50D53 /* PluginTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -517,11 +561,14 @@
 			baseConfigurationReference = C5DBEB1C0497B6A0D0829A4E /* Pods-PluginTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = PluginTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.getcapacitor.PluginTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "PluginTests/PluginTests-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -532,11 +579,13 @@
 			baseConfigurationReference = E98DB64A6627A5A64318EF72 /* Pods-PluginTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = PluginTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.getcapacitor.PluginTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "PluginTests/PluginTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

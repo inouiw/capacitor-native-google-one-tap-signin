@@ -2,10 +2,20 @@ import Foundation
 import Capacitor
 import GoogleSignIn
 
+
 @objc(GoogleOneTapAuth)
 public class GoogleOneTapAuth: CAPPlugin {
-    var googleSignIn: GIDSignIn!
+    var googleSignIn: GIDSignInProtocol!
     let gIDSignInErrorCodeCanceled = -5
+    
+    override init() {
+        super.init()
+    }
+    
+    init(googleSignIn: GIDSignInProtocol = GIDSignIn.sharedInstance) {
+        super.init()
+        self.googleSignIn = googleSignIn
+    }
     
     public override func load() {
         googleSignIn = GIDSignIn.sharedInstance
@@ -19,8 +29,8 @@ public class GoogleOneTapAuth: CAPPlugin {
     @objc
     func tryAutoOrOneTapSignIn(_ call: CAPPluginCall) {
         nonInteractiveSignIn(call) { signInResult in
-            if let idToken = signInResult.idToken {
-                call.resolve(self.toJsonResult(SignInResult(idToken: idToken)))
+            if signInResult.idToken != nil {
+                call.resolve(self.toJsonResult(signInResult))
                 return
             }
             self.interactiveSignIn(call)
@@ -29,7 +39,9 @@ public class GoogleOneTapAuth: CAPPlugin {
     
     @objc
     func tryAutoSignIn(_ call: CAPPluginCall) {
-        nonInteractiveSignIn(call) { _ in }
+        nonInteractiveSignIn(call) { signInResult in
+            call.resolve(self.toJsonResult(signInResult))
+        }
     }
     
     @objc
@@ -61,8 +73,9 @@ public class GoogleOneTapAuth: CAPPlugin {
     }
     
     func interactiveSignIn(_ call: CAPPluginCall) {
+        let bridgeCaptured = self.bridge
         DispatchQueue.main.async {
-            guard let presentingVc = self.bridge?.viewController else {
+            guard let presentingVc = bridgeCaptured?.viewController else {
                 call.reject("ViewController not found")
                 return
             }
