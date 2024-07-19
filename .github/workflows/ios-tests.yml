@@ -16,6 +16,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    # Installing node packages is needed for '../node_modules/@capacitor/ios/scripts/pods_helpers'
+    - name: Install Node.js dependencies
+      run: npm install
+
     - name: Install dependencies
       run: |
         brew install cocoapods
