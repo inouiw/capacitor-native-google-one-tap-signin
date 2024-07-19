@@ -7,8 +7,8 @@
   "types": "dist/esm/index.d.ts",
   "unpkg": "dist/plugin.js",
   "files": [
-    "android/src/main/",
-    "android/build.gradle",
+    "android/Plugin/src/main/",
+    "android/Plugin/build.gradle",
     "dist/",
     "ios/Plugin/",
     "CapacitorNativeGoogleOneTapSignin.podspec"
@@ -83,7 +83,7 @@
       "src": "ios"
     },
     "android": {
-      "src": "android"
+      "src": "android/Plugin"
     }
   },
   "dependencies": {
