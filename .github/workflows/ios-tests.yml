@@ -60,6 +60,9 @@ jobs:
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
+    - name: List available simulators
+      run: xcrun simctl list
+
     - name: Build and test
       env:
         XCODE_WORKSPACE: Plugin.xcworkspace
