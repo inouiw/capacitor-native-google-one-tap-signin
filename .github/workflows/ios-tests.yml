@@ -1,0 +1,66 @@
+name: iOS Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        brew install cocoapods
+        pod install --project-directory=ios
+
+    - name: Set up signing certificate
+      env:
+          MAC_BUILD_CERTIFICATE_P12_BASE64: ${{ secrets.MAC_BUILD_CERTIFICATE_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.MAC_BUILD_CERTIFICATE_P12_BASE64_PW }}
+          MAC_BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.MAC_BUILD_PROVISION_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      run: |
+        # define variables
+        CERTIFICATE_PATH=$RUNNER_TEMP/certificate.p12
+        PP_PATH=$RUNNER_TEMP/provisioning_profile.mobileprovision
+        KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+        
+        # import certificate and provisioning profile from secrets
+        echo -n "$MAC_BUILD_CERTIFICATE_P12_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+        echo -n "$MAC_BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
+
+        # create temporary keychain
+        security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+        security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+        security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+        # import certificate to keychain
+        security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+        security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+        security list-keychain -d user -s $KEYCHAIN_PATH
+
+        # copy provisioning profile
+        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+        cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
+
+    - name: Build and test
+      env:
+        XCODE_WORKSPACE: Plugin.xcworkspace
+        XCODE_SCHEME: Plugin
+        XCODE_SDK: iphonesimulator
+        XCODE_DESTINATION: 'platform=iOS Simulator,name=iPhone 12,OS=14.4'
+      run: |
+        xcodebuild -workspace Plugin.xcworkspace \
+                   -scheme Plugin \
+                   -sdk iphonesimulator \
+                   -destination 'platform=iOS Simulator,name=iPhone 12,OS=14.4' \
+                   clean test | xcpretty
+
