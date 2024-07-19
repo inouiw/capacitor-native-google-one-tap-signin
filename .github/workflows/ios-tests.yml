@@ -60,8 +60,8 @@ jobs:
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
-    - name: List available simulators
-      run: xcrun simctl list
+    # - name: List available simulators
+    #   run: xcrun simctl list
 
     - name: Build and test
       env:
@@ -73,6 +73,6 @@ jobs:
         xcodebuild -workspace ios/Plugin.xcworkspace \
                    -scheme Plugin \
                    -sdk iphonesimulator \
-                   -destination 'platform=iOS Simulator,name=iPhone 12,OS=14.4' \
+                   -destination 'platform=iOS Simulator,name=iPhone 15,OS=18.0' \
                    clean test | xcpretty
 
