@@ -67,7 +67,7 @@ jobs:
         XCODE_SDK: iphonesimulator
         XCODE_DESTINATION: 'platform=iOS Simulator,name=iPhone 12,OS=14.4'
       run: |
-        xcodebuild -workspace Plugin.xcworkspace \
+        xcodebuild -workspace ios/Plugin.xcworkspace \
                    -scheme Plugin \
                    -sdk iphonesimulator \
                    -destination 'platform=iOS Simulator,name=iPhone 12,OS=14.4' \
