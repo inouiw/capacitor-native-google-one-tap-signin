@@ -40,7 +40,8 @@ public class GoogleOneTapAuth: CAPPlugin {
     @objc
     func tryAutoSignIn(_ call: CAPPluginCall) {
         nonInteractiveSignIn(call) { signInResult in
-            call.resolve(self.toJsonResult(signInResult))
+            // commented out to test failing test.
+            // call.resolve(self.toJsonResult(signInResult))
         }
     }
     
