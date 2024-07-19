@@ -64,11 +64,6 @@ jobs:
     #   run: xcrun simctl list
 
     - name: Build and test
-      env:
-        XCODE_WORKSPACE: Plugin.xcworkspace
-        XCODE_SCHEME: Plugin
-        XCODE_SDK: iphonesimulator
-        XCODE_DESTINATION: 'platform=iOS Simulator,name=iPhone 12,OS=14.4'
       run: |
         xcodebuild -workspace ios/Plugin.xcworkspace \
                    -scheme Plugin \
