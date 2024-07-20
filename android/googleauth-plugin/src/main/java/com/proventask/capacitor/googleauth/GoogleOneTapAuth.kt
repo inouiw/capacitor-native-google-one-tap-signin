@@ -26,12 +26,22 @@ class GoogleOneTapAuth : Plugin() {
     private val ReasonCodeSignInCancelled = "SIGN_IN_CANCELLED"
     private val ReasonCodeSignInInterrupted = "SIGN_IN_INTERRUPTED"
     private val ReasonCodeNoCredential = "NO_CREDENTIAL"
-    private var webClientId: String? = null
-    private var nonce: String? = null
-    private lateinit var credentialManager: CredentialManager
+    var webClientId: String? = null
+    var nonce: String? = null
+    lateinit var credentialManager: CredentialManager
+    // To remove dependencies on this.context in the code.
+    lateinit var contextProvider: () -> Context
+    // To remove dependencies on GoogleIdTokenCredential.createFrom in the code.
+    lateinit var idTokenFromCredential: (credential: Credential) -> String
 
     override fun load() {
         credentialManager = CredentialManager.create(context)
+        contextProvider = {
+            this.context
+        }
+        idTokenFromCredential = { credential: Credential ->
+            GoogleIdTokenCredential.createFrom(credential.data).idToken
+        }
     }
 
     @PluginMethod
@@ -111,7 +121,7 @@ class GoogleOneTapAuth : Plugin() {
             .build()
 
         try {
-            val result = credentialManager.getCredential(request = request, context = this.context)
+            val result = credentialManager.getCredential(request = request, context = contextProvider())
             handleSignIn(googleSignInDeferred, result)
         } catch (e: GetCredentialCancellationException) {
             googleSignInDeferred.complete(errorSignInResult(ReasonCodeSignInCancelled, e.message))
@@ -122,9 +132,9 @@ class GoogleOneTapAuth : Plugin() {
             googleSignInDeferred.complete(errorSignInResult(ReasonCodeNoCredential, "filterByAuthorizedAccounts: $filterByAuthorizedAccounts"))
         } catch (t: Throwable) {
             val errorMsg = "${t::class.java.simpleName} error in getCredential."
-            Log.i(TAG, errorMsg, t)
+            Log.w(TAG, errorMsg, t)
             var errorMessage = t.toString()
-            if (!isGooglePlayServicesAvailable(context)) {
+            if (!isGooglePlayServicesAvailable(contextProvider())) {
                 errorMessage += "\nGooglePlayService is not installed or must be updated."
             }
             if (errorMessage.contains("Missing Feature{name=auth_api_credentials_begin_sign_in")) {
@@ -150,8 +160,8 @@ class GoogleOneTapAuth : Plugin() {
             is CustomCredential -> {
                 if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                     try {
-                        val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-                        googleSignInDeferred.complete(successSignInResult(googleIdTokenCredential.idToken))
+                        val idToken = idTokenFromCredential(credential)
+                        googleSignInDeferred.complete(successSignInResult(idToken))
                     } catch (e: GoogleIdTokenParsingException) {
                         Log.e(TAG, "Received an invalid google id token response", e)
                         googleSignInDeferred.completeExceptionally(e)
