@@ -4,7 +4,16 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
+    plugins {
+        id 'org.jetbrains.kotlin.jvm' version '1.9.10'
+        id 'com.android.library' version '8.5.1'
+        id 'org.jetbrains.kotlin.android' version '1.9.10'
+    }
+}
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
 }
 
 include ':capacitor-android'
 project(':capacitor-android').projectDir = new File('../node_modules/@capacitor/android/capacitor')
+include ':googleauth-plugin'
