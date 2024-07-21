@@ -43,7 +43,7 @@ jobs:
       run: |
         set -e
         echo "no" | avdmanager create avd -n test -k "system-images;android-$API_LEVEL;$TARGET;$ABI" --force
-        $ANDROID_HOME/emulator/emulator-headless -avd test -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel on &
+        $ANDROID_HOME/emulator/emulator -avd test -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel on &
         adb wait-for-device
         adb shell settings put global window_animation_scale 0
         adb shell settings put global transition_animation_scale 0
