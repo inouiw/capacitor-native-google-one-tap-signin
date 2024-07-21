@@ -81,11 +81,14 @@ jobs:
         adb shell settings put global animator_duration_scale 0
         adb shell input keyevent 82
 
+    - name: list directory
+      run: pwd && ls -al
+
     - name: Make gradlew executable
-      run: chmod +x ./gradlew
+      run: chmod +x ./android/gradlew
 
     - name: Run Instrumented Tests
-      run: ./gradlew connectedAndroidTest
+      run: (cd android && ./gradlew build connectedAndroidTest --info)
 
     - name: Upload Test Results
       if: always()
