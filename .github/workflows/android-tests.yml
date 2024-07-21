@@ -94,13 +94,14 @@ jobs:
         # From the android emulator, output all messages with the TestRunner tag and ignore all other messages.
         adb logcat -c  # Clear the logcat buffer
         adb logcat "TestRunner:I *:S" > logcat_output.txt &
+        echo $! > logcat_pid.txt
 
     - name: Make gradlew executable
       run: chmod +x ./android/gradlew
 
     - name: Run Instrumented Tests
-      run: (cd android && ./gradlew build connectedAndroidTest && echo "logcat output" && cat ../logcat_output.txt)
+      run: (cd android && ./gradlew --no-daemon build connectedAndroidTest && echo "" && echo "==Logcat Output==" && cat ../logcat_output.txt)
 
     - name: Stop logcat
       run: |
-        adb shell pkill -f logcat
+        kill $(cat logcat_pid.txt)
