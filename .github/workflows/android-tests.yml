@@ -53,11 +53,14 @@ jobs:
         echo "y" | sdkmanager --channel=$CHANNEL "platform-tools"
         echo "y" | sdkmanager --channel=$CHANNEL "system-images;android-$API_LEVEL;$TARGET;$ABI"
 
+    - name: Create AVD Directory
+      run: |
+        mkdir -p $ANDROID_AVD_HOME
+
     - name: Create and List AVD
       run: |
         set -e
         echo "no" | avdmanager create avd -n test -k "system-images;android-$API_LEVEL;$TARGET;$ABI" --force
-        echo ""
         avdmanager list avd
         ls -al $ANDROID_AVD_HOME
 
