@@ -1,0 +1,55 @@
+name: android Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      API_LEVEL: 34
+      EMULATOR: pixel_3
+      TARGET: google_apis
+      ABI: x86_64
+      CHANNEL: 3
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v2
+      with:
+        distribution: 'adopt'
+        java-version: '17'
+
+    - name: Download and setup Android SDK
+      uses: android-actions/setup-android@v3
+    
+    - name: Prepare the Emulator
+      run: |
+        echo "y" | sdkmanager --channel=$CHANNEL "system-images;android-$API_LEVEL;$TARGET;$ABI"
+        echo "no" | avdmanager create avd -n test -k "system-images;android-$API_LEVEL;$TARGET;$ABI" --force
+        $ANDROID_HOME/emulator/emulator-headless -avd test -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel on &
+        adb wait-for-device
+        adb shell settings put global window_animation_scale 0 &
+        adb shell settings put global transition_animation_scale 0 &
+        adb shell settings put global animator_duration_scale 0 &
+
+    - name: Wait for Emulator
+      run: |
+        adb wait-for-device
+        adb shell input keyevent 82
+
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew
+
+    - name: Run Instrumented Tests
+      run: ./gradlew connectedAndroidTest
+
