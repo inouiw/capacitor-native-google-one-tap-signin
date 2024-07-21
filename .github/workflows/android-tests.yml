@@ -76,9 +76,7 @@ jobs:
       run: |
         set -e
         sudo kvm-ok
-
-        # Note the logcat option to output info messages if the message tag is 'TestRunner'.
-        $ANDROID_HOME/emulator/emulator -avd test -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel on -logcat '*:e TestRunner:i' &
+        $ANDROID_HOME/emulator/emulator -avd test -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel on &
         timeout 5m adb wait-for-device
         boot_completed=false; \
         while [ "$boot_completed" != "1" ]; do \
@@ -91,8 +89,18 @@ jobs:
         adb shell settings put global animator_duration_scale 0
         adb shell input keyevent 82
 
+
+    - name: Start logcat
+      run: |
+        # From the android emulator, output all messages with the TestRunner tag and ignore all other messages.
+        adb logcat "TestRunner:I *:S" &
+
     - name: Make gradlew executable
       run: chmod +x ./android/gradlew
 
     - name: Run Instrumented Tests
       run: (cd android && ./gradlew build connectedAndroidTest)
+
+    - name: Stop logcat
+      run: |
+        adb shell pkill -f logcat
