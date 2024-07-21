@@ -35,7 +35,7 @@ jobs:
       run: npm install
 
     - name: Set up JDK 17
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v4
       with:
         distribution: 'adopt'
         java-version: '17'
@@ -76,7 +76,7 @@ jobs:
       run: |
         set -e
         sudo kvm-ok
-        $ANDROID_HOME/emulator/emulator -avd test -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel on -logcat '*:e googleauth-plugin:i' &
+        $ANDROID_HOME/emulator/emulator -avd test -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel on -logcat '*:e com.proventask.capacitor.googleauth:i' &
         timeout 5m adb wait-for-device
         boot_completed=false; \
         while [ "$boot_completed" != "1" ]; do \
@@ -94,10 +94,3 @@ jobs:
 
     - name: Run Instrumented Tests
       run: (cd android && ./gradlew build connectedAndroidTest)
-
-    - name: Upload Test Results
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: test-results
-        path: app/build/reports/
