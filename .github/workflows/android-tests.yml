@@ -19,9 +19,9 @@ jobs:
       ABI: x86_64
       CHANNEL: 3
 
-    # Using docker to run images is vaster because it already includes the anroid sdk and emulator.
+    # Using docker to run images is faster because it already includes the anroid sdk and emulator
     container:
-      image: reactnativecommunity/android:2023-06-08
+      image: reactnativecommunity/react-native-android:latest
 
     steps:
     - name: Checkout code
