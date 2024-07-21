@@ -58,6 +58,8 @@ class GoogleOneTapAuthTest {
         verify(mockPluginCall).resolve()
         assertEquals("web_client_id", googleOneTapAuth.webClientId)
         assertEquals("nonce_value", googleOneTapAuth.nonce)
+
+        fail("Test github action.")
     }
 
     @Test
