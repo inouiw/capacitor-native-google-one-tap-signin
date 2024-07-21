@@ -66,18 +66,17 @@ jobs:
       run: |
         mkdir -p $ANDROID_AVD_HOME
 
-    - name: Create and List AVD
+    - name: Create AVD
       run: |
         set -e
         echo "no" | avdmanager create avd -n test -k "system-images;android-$API_LEVEL;$TARGET;$ABI" --force
-        avdmanager list avd
-        ls -al $ANDROID_AVD_HOME
+        # avdmanager list avd
 
     - name: Prepare and Start Emulator
       run: |
         set -e
         sudo kvm-ok
-        $ANDROID_HOME/emulator/emulator -avd test -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel on &
+        $ANDROID_HOME/emulator/emulator -avd test -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel on -logcat '*:e googleauth-plugin:i' &
         timeout 5m adb wait-for-device
         boot_completed=false; \
         while [ "$boot_completed" != "1" ]; do \
@@ -94,7 +93,7 @@ jobs:
       run: chmod +x ./android/gradlew
 
     - name: Run Instrumented Tests
-      run: (cd android && ./gradlew build connectedAndroidTest --info)
+      run: (cd android && ./gradlew build connectedAndroidTest)
 
     - name: Upload Test Results
       if: always()
