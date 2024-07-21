@@ -19,6 +19,10 @@ jobs:
       ABI: x86_64
       CHANNEL: 3
 
+    # Using docker to run images is vaster because it already includes the anroid sdk and emulator.
+    container:
+      image: reactnativecommunity/android:2023-06-08
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -29,23 +33,21 @@ jobs:
         distribution: 'adopt'
         java-version: '17'
 
-    - name: Download and setup Android SDK
-      uses: android-actions/setup-android@v3
-    
-    - name: Prepare the Emulator
+    - name: Prepare and Start Emulator
       run: |
-        echo "y" | sdkmanager --channel=$CHANNEL "system-images;android-$API_LEVEL;$TARGET;$ABI"
+        set -e
         echo "no" | avdmanager create avd -n test -k "system-images;android-$API_LEVEL;$TARGET;$ABI" --force
         $ANDROID_HOME/emulator/emulator-headless -avd test -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel on &
         adb wait-for-device
-        adb shell settings put global window_animation_scale 0 &
-        adb shell settings put global transition_animation_scale 0 &
-        adb shell settings put global animator_duration_scale 0 &
+        adb shell settings put global window_animation_scale 0
+        adb shell settings put global transition_animation_scale 0
+        adb shell settings put global animator_duration_scale 0
+        adb shell input keyevent 82
 
     - name: Wait for Emulator
       run: |
+        set -e
         adb wait-for-device
-        adb shell input keyevent 82
 
     - name: Make gradlew executable
       run: chmod +x ./gradlew
@@ -53,3 +55,9 @@ jobs:
     - name: Run Instrumented Tests
       run: ./gradlew connectedAndroidTest
 
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: app/build/reports/
