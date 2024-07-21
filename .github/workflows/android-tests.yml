@@ -43,8 +43,8 @@ jobs:
       run: |
         sudo apt-get update
         DEBIAN_FRONTEND=noninteractive sudo apt-get install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
-        sudo adduser $USER libvirt
-        sudo adduser $USER kvm
+        sudo usermod -aG kvm $USER
+        sudo chown $USER /dev/kvm
 
     - name: Install Android SDK and Emulator
       run: |
