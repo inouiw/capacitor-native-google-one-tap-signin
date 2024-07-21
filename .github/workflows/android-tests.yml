@@ -18,8 +18,9 @@ jobs:
       TARGET: google_apis
       ABI: x86_64
       CHANNEL: 3
+      ANDROID_AVD_HOME: $HOME/.android/avd
+      ANDROID_SDK_HOME: $ANDROID_HOME
 
-    # Using docker to run images is faster because it already includes the anroid sdk
     container:
       image: reactnativecommunity/react-native-android:latest
 
@@ -44,12 +45,16 @@ jobs:
       run: |
         set -e
         echo "no" | avdmanager create avd -n test -k "system-images;android-$API_LEVEL;$TARGET;$ABI" --force
+        echo ""
         avdmanager list avd
 
     - name: Prepare and Start Emulator
       run: |
         set -e
+        export ANDROID_AVD_HOME=$HOME/.android/avd
+        export ANDROID_SDK_HOME=$ANDROID_HOME
         $ANDROID_HOME/emulator/emulator -avd test -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel on &
+        echo "calling wait-for-emulator"
         adb wait-for-device
         adb shell settings put global window_animation_scale 0
         adb shell settings put global transition_animation_scale 0
