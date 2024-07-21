@@ -19,7 +19,7 @@ jobs:
       ABI: x86_64
       CHANNEL: 3
       ANDROID_HOME: /opt/android
-      ANDROID_AVD_HOME: /root/.android/avd
+      ANDROID_AVD_HOME: /home/runner/.android/avd
 
     steps:
     - name: Checkout code
