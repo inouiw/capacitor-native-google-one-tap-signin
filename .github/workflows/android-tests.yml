@@ -16,13 +16,10 @@ jobs:
       API_LEVEL: 34
       EMULATOR: pixel_3
       TARGET: google_apis
-      ABI: arm64-v8a # x86_64 requires hardware acceleration
+      ABI: x86_64
       CHANNEL: 3
       ANDROID_HOME: /opt/android
       ANDROID_AVD_HOME: /root/.android/avd
-
-    container:
-      image: reactnativecommunity/react-native-android:latest
 
     steps:
     - name: Checkout code
@@ -33,6 +30,21 @@ jobs:
       with:
         distribution: 'adopt'
         java-version: '17'
+
+    - name: Download and setup Android SDK
+      uses: android-actions/setup-android@v3
+    
+    - name: Pre-configure geographic area and city for qemu-kvm
+      run: |
+        echo 'tzdata tzdata/Areas select Etc' | sudo debconf-set-selections
+        echo 'tzdata tzdata/Zones/Etc select UTC' | sudo debconf-set-selections
+
+    - name: Install KVM and dependencies
+      run: |
+        sudo apt-get update
+        DEBIAN_FRONTEND=noninteractive sudo apt-get install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
+        sudo adduser $USER libvirt
+        sudo adduser $USER kvm
 
     - name: Install Android SDK and Emulator
       run: |
@@ -52,8 +64,8 @@ jobs:
     - name: Prepare and Start Emulator
       run: |
         set -e
-        $ANDROID_HOME/emulator/emulator -avd test -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel on &
-        echo "calling wait-for-emulator"
+        sudo kvm-ok
+        $ANDROID_HOME/emulator/emulator -avd test -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel kvm &
         timeout 5m adb wait-for-device
         adb shell settings put global window_animation_scale 0
         adb shell settings put global transition_animation_scale 0
