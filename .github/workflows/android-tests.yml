@@ -68,7 +68,7 @@ jobs:
       run: |
         set -e
         sudo kvm-ok
-        $ANDROID_HOME/emulator/emulator -avd test -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel kvm &
+        $ANDROID_HOME/emulator/emulator -avd test -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel on &
         timeout 5m adb wait-for-device
         adb shell settings put global window_animation_scale 0
         adb shell settings put global transition_animation_scale 0
