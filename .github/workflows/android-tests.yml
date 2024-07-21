@@ -76,7 +76,9 @@ jobs:
       run: |
         set -e
         sudo kvm-ok
-        $ANDROID_HOME/emulator/emulator -avd test -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel on -logcat '*:e googleauth-plugin:i' &
+
+        # Note the logcat option to output info messages if the message tag is 'TestRunner'.
+        $ANDROID_HOME/emulator/emulator -avd test -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel on -logcat '*:e TestRunner:i' &
         timeout 5m adb wait-for-device
         boot_completed=false; \
         while [ "$boot_completed" != "1" ]; do \
