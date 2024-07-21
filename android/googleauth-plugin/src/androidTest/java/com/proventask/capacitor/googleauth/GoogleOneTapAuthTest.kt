@@ -18,9 +18,11 @@ import org.mockito.kotlin.whenever
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
+/**
+ * Instrumented test, which will execute on an Android device.
+ */
 @RunWith(AndroidJUnit4::class)
 class GoogleOneTapAuthTest {
-
     private lateinit var googleOneTapAuth: GoogleOneTapAuth
     private lateinit var mockContext: Context
     private lateinit var mockPluginCall: PluginCall
@@ -65,17 +67,15 @@ class GoogleOneTapAuthTest {
 
         doAnswer { _ ->
             latch.countDown()
-            null
         }.whenever(mockPluginCall).resolve(any())
 
-        // Mock the suspend function getCredential
-        `when`(runBlocking { mockCredentialManager.getCredential(isA<Context>(), isA<GetCredentialRequest>()) })
+        `when`(mockCredentialManager.getCredential(isA<Context>(), isA<GetCredentialRequest>()))
             .thenReturn(createGetCredentialResponse())
 
         // Act
         googleOneTapAuth.tryAutoOrOneTapSignIn(mockPluginCall)
 
-        // Wait for async operations to complete
+        // Wait for resolve to be called.
         latch.await(60 * 5, TimeUnit.SECONDS)
 
         // Assert
