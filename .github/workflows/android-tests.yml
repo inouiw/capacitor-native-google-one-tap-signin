@@ -33,9 +33,10 @@ jobs:
         distribution: 'adopt'
         java-version: '17'
 
-    - name: Install Android SDK System Image
+    - name: Install Android SDK and Emulator
       run: |
         set -e
+        echo "y" | sdkmanager --channel=$CHANNEL "emulator"
         echo "y" | sdkmanager --channel=$CHANNEL "system-images;android-$API_LEVEL;$TARGET;$ABI"
 
     - name: Prepare and Start Emulator
