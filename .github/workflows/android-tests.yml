@@ -70,6 +70,12 @@ jobs:
         sudo kvm-ok
         $ANDROID_HOME/emulator/emulator -avd test -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel on &
         timeout 5m adb wait-for-device
+        boot_completed=false; \
+        while [ "$boot_completed" != "1" ]; do \
+          echo "Waiting for emulator to boot..."; \
+          sleep 5; \
+          boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r'); \
+        done
         adb shell settings put global window_animation_scale 0
         adb shell settings put global transition_animation_scale 0
         adb shell settings put global animator_duration_scale 0
