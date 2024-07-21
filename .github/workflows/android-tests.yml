@@ -19,7 +19,7 @@ jobs:
       ABI: x86_64
       CHANNEL: 3
 
-    # Using docker to run images is faster because it already includes the anroid sdk and emulator
+    # Using docker to run images is faster because it already includes the anroid sdk
     container:
       image: reactnativecommunity/react-native-android:latest
 
@@ -32,6 +32,11 @@ jobs:
       with:
         distribution: 'adopt'
         java-version: '17'
+
+    - name: Install Android SDK System Image
+      run: |
+        set -e
+        echo "y" | sdkmanager --channel=$CHANNEL "system-images;android-$API_LEVEL;$TARGET;$ABI"
 
     - name: Prepare and Start Emulator
       run: |
