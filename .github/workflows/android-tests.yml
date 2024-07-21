@@ -89,17 +89,17 @@ jobs:
         adb shell settings put global animator_duration_scale 0
         adb shell input keyevent 82
 
-
     - name: Start logcat
       run: |
         # From the android emulator, output all messages with the TestRunner tag and ignore all other messages.
-        adb logcat "TestRunner:I *:S" &
+        adb logcat -c  # Clear the logcat buffer
+        adb logcat "TestRunner:I *:S" > logcat_output.txt &
 
     - name: Make gradlew executable
       run: chmod +x ./android/gradlew
 
     - name: Run Instrumented Tests
-      run: (cd android && ./gradlew build connectedAndroidTest)
+      run: (cd android && ./gradlew build connectedAndroidTest && echo "logcat output" && cat ../logcat_output.txt)
 
     - name: Stop logcat
       run: |
