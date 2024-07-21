@@ -18,9 +18,8 @@ jobs:
       TARGET: google_apis
       ABI: x86_64
       CHANNEL: 3
-      ANDROID_HOME: /opt/android-sdk
+      ANDROID_HOME: /opt/android
       ANDROID_AVD_HOME: /root/.android/avd
-      ANDROID_SDK_HOME: /opt/android-sdk
 
     container:
       image: reactnativecommunity/react-native-android:latest
@@ -53,11 +52,6 @@ jobs:
     - name: Prepare and Start Emulator
       run: |
         set -e
-        export ANDROID_AVD_HOME=/root/.android/avd
-        export ANDROID_SDK_HOME=/opt/android-sdk
-        export ANDROID_HOME=/opt/android-sdk
-        ls -al $ANDROID_AVD_HOME
-        cat $ANDROID_AVD_HOME/test.ini
         $ANDROID_HOME/emulator/emulator -avd test -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect -accel on &
         echo "calling wait-for-emulator"
         adb wait-for-device
