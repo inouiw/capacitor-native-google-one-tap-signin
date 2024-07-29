@@ -7,8 +7,8 @@
   "types": "dist/esm/index.d.ts",
   "unpkg": "dist/plugin.js",
   "files": [
-    "android/Plugin/src/main/",
-    "android/Plugin/build.gradle",
+    "android/googleauth-plugin/src/main/",
+    "android/googleauth-plugin/build.gradle",
     "dist/",
     "ios/Plugin/",
     "CapacitorNativeGoogleOneTapSignin.podspec"
@@ -82,7 +82,7 @@
       "src": "ios"
     },
     "android": {
-      "src": "android/Plugin"
+      "src": "android/googleauth-plugin"
     }
   },
   "dependencies": {
