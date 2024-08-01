@@ -196,16 +196,9 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
     const onClickAction = () => {
       void this.withHandleError(onResult, async () => {
         const notEnrichedSuccessSignInResultOption: NotEnrichedSignInResultOption = await (GoogleOneTapAuthPlatform as any).signInWithGoogleButtonFlowForNativePlatform();
-        if (notEnrichedSuccessSignInResultOption.isSuccess) {
-          const enrichedSignInResultOption = this.enrichOptionResultWithDecodedIdToken(notEnrichedSuccessSignInResultOption);
-          this.onResultReceived(enrichedSignInResultOption);
-          onResult(enrichedSignInResultOption);
-        }
-        else {
-          if (notEnrichedSuccessSignInResultOption.noSuccess?.noSuccessReasonCode === 'SIGN_IN_CANCELLED') {
-            // console.log('User cancelled sign in. Waiting for next sign in attempt.');
-          }
-        }
+        const enrichedSignInResultOption = this.enrichOptionResultWithDecodedIdToken(notEnrichedSuccessSignInResultOption);
+        this.onResultReceived(enrichedSignInResultOption);
+        onResult(enrichedSignInResultOption);
       });
     };
     androidOrIosButtonElem.onclick = onClickAction;
