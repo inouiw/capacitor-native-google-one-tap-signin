@@ -124,16 +124,15 @@ class GoogleOneTapAuth : Plugin() {
             val result = credentialManager.getCredential(request = request, context = contextProvider())
             handleSignIn(googleSignInDeferred, result)
         } catch (e: GetCredentialCancellationException) {
-            googleSignInDeferred.complete(errorSignInResult(ReasonCodeSignInCancelled, e.message))
+            googleSignInDeferred.complete(errorSignInResult(ReasonCodeSignInCancelled, addClientIdInfo(e.message)))
         } catch (e: GetCredentialInterruptedException) { // should retry
             googleSignInDeferred.complete(errorSignInResult(ReasonCodeSignInInterrupted, e.message))
         } catch (e: NoCredentialException) {
             val filterByAuthorizedAccounts = (credentialOption as? GetGoogleIdOption)?.filterByAuthorizedAccounts ?: false
             googleSignInDeferred.complete(errorSignInResult(ReasonCodeNoCredential, "filterByAuthorizedAccounts: $filterByAuthorizedAccounts"))
         } catch (t: Throwable) {
-            val errorMsg = "${t::class.java.simpleName} error in getCredential."
-            Log.w(TAG, errorMsg, t)
-            var errorMessage = t.toString()
+            Log.w(TAG, "${t::class.java.simpleName} error in getCredential.", t)
+            var errorMessage = addClientIdInfo(t.toString())
             if (!isGooglePlayServicesAvailable(contextProvider())) {
                 errorMessage += "\nGooglePlayService is not installed or must be updated."
             }
@@ -150,6 +149,13 @@ class GoogleOneTapAuth : Plugin() {
             googleSignInDeferred.complete(errorSignInResult(null, errorMessage))
         }
         return googleSignInDeferred
+    }
+
+    private fun addClientIdInfo(message: String?): String {
+        val packageSha1 = AppSignatureHelper.getSHA1(contextProvider())
+        val packageName = contextProvider().packageName
+        var errorMessage = "Verify you have created a OAuth 2.0 Client ID of type 'Android' in the Google Cloud Console with Package name: '$packageName' and SHA-1 certificate fingerprint: '$packageSha1'"
+        return "$errorMessage\n$message"
     }
 
     private fun handleSignIn(
