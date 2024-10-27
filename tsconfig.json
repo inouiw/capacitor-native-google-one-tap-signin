@@ -22,5 +22,6 @@
     "sourceMap": true,
     "inlineSources": true
   },
+  "references": [{ "path": "./tsconfig.node.json" }],
   "files": ["src/index.ts"]
 }

@@ -9,7 +9,7 @@ let fedCMAbortController: AbortController | undefined = undefined;
 const cancelCalledAbortReason = 'CANCEL_CALLED';
 
 export function isFedCMSupported(): boolean {
-  return 'IdentityCredential' in window;
+  return typeof(window) !== 'undefined' && 'IdentityCredential' in window;
 }
 
 export async function signIn(autoSelect: boolean, clientId: string, nonce?: string): Promise<NotEnrichedSuccessSignInResult | NoSuccessSignInResult> {

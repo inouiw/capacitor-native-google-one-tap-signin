@@ -1,4 +1,3 @@
 {
-  "java.configuration.updateBuildConfiguration": "interactive",
-  "FSharp.suggestGitignore": false
+  "java.configuration.updateBuildConfiguration": "interactive"
 }

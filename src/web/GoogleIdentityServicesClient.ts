@@ -37,28 +37,30 @@ function oneTapInitialize(autoSelect: boolean, clientId: string, nonce: string |
 
 export async function signIn(autoSelect: boolean, clientId: string, nonce?: string): Promise<NotEnrichedSuccessSignInResult | NoSuccessSignInResult> {
   return new Promise<NotEnrichedSuccessSignInResult | NoSuccessSignInResult>(async (resolve, _reject) => {
-    // The resolve function is passed, so it can be called in handleCredentialResponse.
-    oneTapInitialize(autoSelect, clientId, nonce, resolve);
-    // Display the One Tap prompt or the browser native credential manager.
-    google.accounts.id.prompt((notification) => {
-      const configurationErrors = ['missing_client_id', 'unregistered_origin'];
-      const momentReason = getMomentReason(notification);
+    await withHandleError(resolve, async () => {
+      // The resolve function is passed, so it can be called in handleCredentialResponse.
+      oneTapInitialize(autoSelect, clientId, nonce, resolve);
+      // Display the One Tap prompt or the browser native credential manager.
+      google.accounts.id.prompt((notification) => {
+        const configurationErrors = ['missing_client_id', 'unregistered_origin'];
+        const momentReason = getMomentReason(notification);
 
-      if (momentReason !== undefined && configurationErrors.includes(momentReason)) {
-        resolve({
-          noSuccessReasonCode: 'configuration_error',
-          noSuccessAdditionalInfo: momentReason
-        });
-      } else if (momentReason === 'credential_returned') {
-        // Do nothing, handled in handleCredentialResponse.
-      } else if (notification.isSkippedMoment()
-        || notification.isDismissedMoment()) {
-        resolve({
-          noSuccessReasonCode: momentReason
-        });
-      } else {
-        // Do nothing, may be display moment indicating that the prompt is displayed.
-      }
+        if (momentReason !== undefined && configurationErrors.includes(momentReason)) {
+          resolve({
+            noSuccessReasonCode: 'configuration_error',
+            noSuccessAdditionalInfo: momentReason
+          });
+        } else if (momentReason === 'credential_returned') {
+          // Do nothing, handled in handleCredentialResponse.
+        } else if (notification.isSkippedMoment()
+          || notification.isDismissedMoment()) {
+          resolve({
+            noSuccessReasonCode: momentReason
+          });
+        } else {
+          // Do nothing, may be display moment indicating that the prompt is displayed.
+        }
+      });
     });
   });
 }
@@ -82,17 +84,19 @@ export async function renderSignInButton(clientId: string, nonce: string | undef
   const parentElem = document.getElementById(parentElementId);
   assert(() => !!parentElem);
   
-  const signInPromise = new Promise<NotEnrichedSuccessSignInResult>((resolve) => {
-    oneTapInitialize(false, clientId, nonce, resolve, options.webOptions);
+  const signInPromise = new Promise<NotEnrichedSuccessSignInResult | NoSuccessSignInResult>(async (resolve) => {
+    await withHandleError(resolve, async () => {
+      oneTapInitialize(false, clientId, nonce, resolve, options.webOptions);
 
-    // // Adding a click_listener allows to detect when the popup is opened.
-    // (gsiButtonConfiguration as any).click_listener = () => {
-    //   console.log('click_listener');
-    // };
-    google.accounts.id.renderButton(
-      parentElem!,
-      gsiButtonConfiguration!
-    );
+      // // Adding a click_listener allows to detect when the popup is opened.
+      // (gsiButtonConfiguration as any).click_listener = () => {
+      //   console.log('click_listener');
+      // };
+      google.accounts.id.renderButton(
+        parentElem!,
+        gsiButtonConfiguration!
+      );
+    });
   });
   return signInPromise;
 }
@@ -115,18 +119,45 @@ export function signOut(_authenticatedUserId: string | undefined): Promise<SignO
 }
 
 export function disconnect(authenticatedUserId: string | undefined): Promise<DisconnectResult> {
-  return new Promise<DisconnectResult>((resolve) => {
-    if (authenticatedUserId) {
-      // Calling revoke method revokes all OAuth2 scopes previously granted by the Sign In With Google client library.
-      google.accounts.id.revoke(authenticatedUserId, response => {
-        if (response.successful) {
-          resolve({ isSuccess: true });
-        } else {
-          resolve({ isSuccess: false, error: response.error });
-        }
-      });
-    } else {
-      resolve({ isSuccess: true });
-    }
+  return new Promise<DisconnectResult>(async (resolve) => {
+    await withHandleErrorDisconnect(resolve, async () => {
+      if (authenticatedUserId) {
+        // Calling revoke method revokes all OAuth2 scopes previously granted by the Sign In With Google client library.
+        google.accounts.id.revoke(authenticatedUserId, response => {
+          if (response.successful) {
+            resolve({ isSuccess: true });
+          } else {
+            resolve({ isSuccess: false, error: response.error });
+          }
+        });
+      } else {
+        resolve({ isSuccess: true });
+      }
+    });
   });
 }
+
+  // To run code and call onResult with NoSuccessSignInResult in case of error. Uses an existing onResult callback that the caller must provide.
+  async function withHandleError(onResult: (value: NotEnrichedSuccessSignInResult | NoSuccessSignInResult) => void, fn: () => Promise<void>): Promise<void> {
+    try {
+      await fn();
+    }
+    catch (e) {
+      onResult({
+        noSuccessAdditionalInfo: (e as any).toString(),
+      });
+    }
+  }
+
+  // To run code and call onResult with NoSuccessSignInResult in case of error. Uses an existing onResult callback that the caller must provide.
+  async function withHandleErrorDisconnect(onResult: (value: DisconnectResult) => void, fn: () => Promise<void>): Promise<void> {
+    try {
+      await fn();
+    }
+    catch (e) {
+      onResult({
+        isSuccess: false,
+        error: (e as any).toString(),
+      });
+    }
+  }

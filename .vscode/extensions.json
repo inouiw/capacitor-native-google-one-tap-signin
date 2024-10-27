@@ -1,6 +1,5 @@
 {
     "recommendations": [
-        "ionic.ionic",
         "vitest.explorer"
     ]
 }

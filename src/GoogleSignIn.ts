@@ -207,14 +207,20 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
   // deprecated
   async addSignInActionToExistingButton(buttonParentId: string, buttonId: string): Promise<SuccessSignInResult> {
     return new Promise<SuccessSignInResult>(async (resolve, reject) => {
-      const resolveOnSuccess = (value: SignInResultOption) => {
-        if (value.isSuccess) {
-          resolve(value.success!);
-        } else if (value.noSuccess!.noSuccessReasonCode === 'configuration_error') {
-          reject(`configuration_error ${value.noSuccess!.noSuccessAdditionalInfo}`);
-        }
-      };
-      await this.addSignInActionToExistingButtonWithCallback(buttonParentId, buttonId, resolveOnSuccess);
+      try
+      {
+        const resolveOnSuccess = (value: SignInResultOption) => {
+          if (value.isSuccess) {
+            resolve(value.success!);
+          } else if (value.noSuccess!.noSuccessReasonCode === 'configuration_error') {
+            reject(`configuration_error ${value.noSuccess!.noSuccessAdditionalInfo}`);
+          }
+        };
+        await this.addSignInActionToExistingButtonWithCallback(buttonParentId, buttonId, resolveOnSuccess);
+      }
+      catch (e) {
+        reject((e as any).toString());
+      }
     });
   }
 
@@ -270,13 +276,19 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
     if (element.offsetWidth !== 0 && element.offsetHeight !== 0) {
       return Promise.resolve({width: element.offsetWidth, height: element.offsetHeight});
     }
-    return new Promise<ElementOffsetSize>((resolve) => {
-      const resizeObserver = new ResizeObserver(() => {
-        if (element.offsetWidth !== 0 && element.offsetHeight !== 0) {
-          resolve({width: element.offsetWidth, height: element.offsetHeight});
-        }
-      });
-      resizeObserver.observe(element);
+    return new Promise<ElementOffsetSize>((resolve, reject) => {
+      try
+      {
+        const resizeObserver = new ResizeObserver(() => {
+          if (element.offsetWidth !== 0 && element.offsetHeight !== 0) {
+            resolve({width: element.offsetWidth, height: element.offsetHeight});
+          }
+        });
+        resizeObserver.observe(element);
+      }
+      catch (e) {
+        reject ((e as any).toString());
+      }
     });
   }
 
