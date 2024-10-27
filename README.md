@@ -1,3 +1,7 @@
+[![JavaScript Tests](https://github.com/inouiw/capacitor-native-google-one-tap-signin/actions/workflows/javascript-tests.yml/badge.svg)](https://github.com/inouiw/capacitor-native-google-one-tap-signin/actions/workflows/javascript-tests.yml)
+[![android Tests](https://github.com/inouiw/capacitor-native-google-one-tap-signin/actions/workflows/android-tests.yml/badge.svg)](https://github.com/inouiw/capacitor-native-google-one-tap-signin/actions/workflows/android-tests.yml)
+[![iOS Tests](https://github.com/inouiw/capacitor-native-google-one-tap-signin/actions/workflows/ios-tests.yml/badge.svg)](https://github.com/inouiw/capacitor-native-google-one-tap-signin/actions/workflows/ios-tests.yml)
+
 # Capacitor Native Sign-In with Google plugin
 
 Wraps the native android, iOS and JavaScript Google Identity Services api for ionic capacitor apps.

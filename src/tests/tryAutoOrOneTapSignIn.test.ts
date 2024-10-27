@@ -31,8 +31,4 @@ describe('GoogleSignIn - tryAutoOrOneTapSignIn', () => {
 
     expect(signInResult).toBeDefined();
   });
-
-  test('this test will fail', () => {
-    expect(true).toBe(false);
-  });
 });
