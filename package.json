@@ -48,10 +48,10 @@
     "prettier": "prettier \"**/*.{css,html,ts,js,java}\"",
     "swiftlint": "node-swiftlint",
     "docgen": "docgen --api GoogleOneTapAuthPlugin --output-readme README.md --output-json dist/docs.json",
-    "build": "npm run clean && tsc && rollup -c rollup.config.mjs",
-    "buildall": "npm run clean && npm run docgen && tsc && rollup -c rollup.config.mjs && (cd ./demo/react && npm install && npm run build && npx cap sync --inline && cd -)",
+    "build": "npm run clean && npx tsc && rollup -c rollup.config.mjs",
+    "buildall": "npm run clean && npm run docgen && npx tsc && rollup -c rollup.config.mjs && (cd ./demo/react && npm install && npm run build && npx cap sync --inline && cd -)",
     "clean": "rimraf ./dist",
-    "watch": "tsc --watch",
+    "watch": "npx tsc --watch",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {

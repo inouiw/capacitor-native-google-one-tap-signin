@@ -5,8 +5,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
   appName: 'Google One Tap Signin React Demo',
-  webDir: 'build',
-  bundledWebRuntime: false
+  webDir: 'dist'
 };
 
 export default config;
