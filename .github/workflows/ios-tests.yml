@@ -60,14 +60,44 @@ jobs:
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
+    - name: Install jq
+      run: brew install jq
+
+    - name: Get the latest iPhone 15 device UDID
+      id: get_device_udid
+      run: |
+          # Get the device details for iPhone 15 and parse the UDID
+          device_json=$(xcrun simctl list devices --json | jq -r '
+            [
+              .devices | to_entries[] 
+              | {runtime: .key, devices: .value[]} 
+              | select(.devices.name == "iPhone 15" and .devices.isAvailable == true) 
+              | {runtime: .runtime, udid: .devices.udid, name: .devices.name}
+            ]
+            | sort_by(.runtime)
+            | last 
+          ')
+
+          echo "Selected device: $device_json"
+
+          # Extract the UDID from the device JSON
+          udid=$(echo "$device_json" | jq -r '.udid')
+          echo "UDID: $udid"
+
+          # Set the UDID as an output variable
+          echo "::set-output name=udid::$udid"
+
     # - name: List available simulators
     #   run: xcrun simctl list
 
     - name: Build and test
       run: |
+        # Use the UDID from the previous step as the destination
+        udid="${{ steps.get_device_udid.outputs.udid }}"
+
         xcodebuild -workspace ios/Plugin.xcworkspace \
                    -scheme Plugin \
                    -sdk iphonesimulator \
-                   -destination 'platform=iOS Simulator,name=iPhone 15,OS=18.0' \
+                   -destination "id=$udid" \
                    clean test
 
