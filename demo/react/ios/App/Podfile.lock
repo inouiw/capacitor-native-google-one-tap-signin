@@ -5,16 +5,16 @@ PODS:
   - AppAuth/Core (1.7.5)
   - AppAuth/ExternalUserAgent (1.7.5):
     - AppAuth/Core
-  - Capacitor (6.1.2):
+  - Capacitor (7.2.0):
     - CapacitorCordova
   - CapacitorApp (6.0.1):
     - Capacitor
-  - CapacitorCordova (6.1.2)
+  - CapacitorCordova (7.2.0)
   - CapacitorHaptics (6.0.1):
     - Capacitor
   - CapacitorKeyboard (6.0.2):
     - Capacitor
-  - CapacitorNativeGoogleOneTapSignin (6.1.8):
+  - CapacitorNativeGoogleOneTapSignin (7.0.0):
     - Capacitor
     - GoogleSignIn
   - CapacitorStatusBar (6.0.1):
@@ -62,17 +62,17 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   AppAuth: 501c04eda8a8d11f179dbe8637b7a91bb7e5d2fa
-  Capacitor: 679f9673fdf30597493a6362a5d5bf233d46abc2
-  CapacitorApp: 0bc633b4eae40a1f32cd2834788fad3bc42da6a1
-  CapacitorCordova: f48c89f96c319101cd2f0ce8a2b7449b5fb8b3dd
-  CapacitorHaptics: fe689ade56ef20ec9b041a753c6da70c5d8ec9a9
-  CapacitorKeyboard: 2700f9b18687be021e28b5a09b59eb151a46d5e0
-  CapacitorNativeGoogleOneTapSignin: 2fd893bf1e3f48798d0fb365f5e1e7753e4682ef
-  CapacitorStatusBar: b81d4fb5d4e0064c712018071b3ab4b810b39a63
+  Capacitor: 03bc7cbdde6a629a8b910a9d7d78c3cc7ed09ea7
+  CapacitorApp: f51c08c64df914fc934239fd1b3fc809d62a02f6
+  CapacitorCordova: 5967b9ba03915ef1d585469d6e31f31dc49be96f
+  CapacitorHaptics: 05d33e20e394b1977dfd2a00a2621e04098164c1
+  CapacitorKeyboard: 5bf4458dd989b56a60ea15c92cbca5fbfae6e9f9
+  CapacitorNativeGoogleOneTapSignin: 1aadee44c6e12e8f3607dce8444461fd42a5211e
+  CapacitorStatusBar: 9ed7f06318fd436917072a9bf60fda56d12c8bdb
   GoogleSignIn: d4281ab6cf21542b1cfaff85c191f230b399d2db
   GTMAppAuth: f69bd07d68cd3b766125f7e072c45d7340dea0de
   GTMSessionFetcher: 8000756fc1c19d2e5697b90311f7832d2e33f6cd
 
 PODFILE CHECKSUM: f8abc6fd2a9cb5bfb0920905b27ff9ca0c18d167
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

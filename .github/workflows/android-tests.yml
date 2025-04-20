@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      API_LEVEL: 34
+      API_LEVEL: 35
       EMULATOR: pixel_3
       TARGET: google_apis
       ABI: x86_64
