@@ -1,6 +1,6 @@
 {
   "name": "capacitor-native-google-one-tap-signin",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "description": "Google One Tap sign-in plugin for capacitor.",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -23,18 +23,13 @@
     "url": "https://github.com/inouiw/capacitor-native-google-one-tap-signin/issues"
   },
   "keywords": [
-    "capacitor",
-    "plugin",
-    "native",
-    "google",
-    "auth",
-    "onetap",
-    "onetapsignin",
-    "googlesignin",
-    "angular",
-    "vue",
-    "react",
-    "ionic"
+    "capacitor-plugin",
+    "google-one-tap-signin",
+    "google-authentication",
+    "google-sign-in",
+    "android",
+    "ios",
+    "web"
   ],
   "scripts": {
     "test": "npm run test:ios && npm run test:android && npm run verify:web, && npm run test:web",
