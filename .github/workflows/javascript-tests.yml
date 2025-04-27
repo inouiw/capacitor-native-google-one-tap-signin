@@ -17,6 +17,9 @@ jobs:
       with:
         node-version: '20'
 
+    - name: Install Rollup binding for linux
+      run: npm install @rollup/rollup-linux-x64-gnu --save-optional
+
     - name: Install Node.js dependencies
       run: npm install
 
