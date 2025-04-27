@@ -2,11 +2,7 @@ name: JavaScript Tests
 
 on:
   push:
-    branches:
-      - main
   pull_request:
-    branches:
-      - main
 
 jobs:
   test:
@@ -20,6 +16,9 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20'
+
+    - name: Install Rollup binding for linux
+      run: npm install @rollup/rollup-linux-x64-gnu --save-optional
 
     - name: Install Node.js dependencies
       run: npm install
