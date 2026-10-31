@@ -53,7 +53,7 @@ If you get the error `[GSI_LOGGER]: The given origin is not allowed for the give
 
 - Android uses the web platform client ID in the plugin code, but additionally, you need to create a client ID of type "Android", as stated in [Set up your Google APIs console project](https://developer.android.com/identity/sign-in/credential-manager-siwg#set-google). The Android client ID consists of the package name and the SHA-1 fingerprint of your app package. The default debug signing key (AndroidDebugKey) is different on every computer, so the SHA-1 fingerprint will be different too. You just need to create the Android client ID, you do not need to include it in any config. It is linked to your app via the package name and SHA-1 signing certificate fingerprint of your app. Note that usually the signing certificate for developments builds is different than for app store builds so you will need to create a client ID for development builds and one for app store builds. The plugin will write your package name and SHA-1 in the error message if the authentication fails.
 
-- For the ios platform, you need to create a client ID of type iOS in the [Google Cloud Console](https://console.cloud.google.com/apis/dashboard). Add the client ID to the  `{your-app}/ios/App/App/Info.plist` file with the key `GIDClientID` (see the demo app for reference). When creating the client ID, you will see the "iOS URL scheme" value in the Google Cloud Console. Add this also to the `Info.plist` file.
+- For the ios platform, you need to create a client ID of type iOS in the [Google Cloud Console](https://console.cloud.google.com/apis/dashboard). Add the client ID to the  `{your-app}/ios/App/App/Info.plist` file with the key `GIDClientID` (see the demo app for reference). When creating the client ID, you will see the "iOS URL scheme" value in the Google Cloud Console. Add this also to the `Info.plist` file. If a server verifies the ID token, also add the web client ID with the key `GIDServerClientID`, so that the token is issued for it (its `aud` claim) like on web and Android; without it, the token is issued for the iOS client ID.
 
 After some testing the Chrome browser may decide to block third-party sign-in prompts on localhost. In the browser console you will see the message *Third-party sign in was disabled in browser Site Settings*. Re-enable it under `chrome://settings/content/federatedIdentityApi`.
 
@@ -123,7 +123,7 @@ console.log(signInResultOption);
 # Use with a backend, e.g. madAuth
 The plugin returns Google's ID token. An app without a backend uses it as is. An app with a backend sends it there to be verified. The backend's nonce, passed to `initialize`, is included unchanged in the ID token on web, Android and iOS, so the backend can check that the token was issued for this sign-in.
 
-On iOS, add the web client ID as `GIDServerClientID` to `Info.plist`, so that the ID token is issued for it (its `aud` claim) like on web and Android. Without it, the token is issued for the iOS client ID.
+On iOS, add the web client ID as `GIDServerClientID` to `Info.plist`, see [Configure](#3-configure).
 
 [madAuth](https://github.com/inouiw/madAuth) is one such backend. It has two ways for a Capacitor app (`@madauth/web@^0.7.1`):
 - **Tokens:** the app exchanges Google's ID token for madAuth's ID, access and refresh tokens, without cookies. See [Native apps](https://github.com/inouiw/madAuth/blob/main/docs/server.md#native-apps).

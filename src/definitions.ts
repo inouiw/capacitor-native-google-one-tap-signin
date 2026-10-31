@@ -31,7 +31,8 @@ export interface SignInResultOption {
 
 export interface SuccessSignInResult {
   /**
-   * How the credential was retrieved.
+   * How the credential was retrieved: true if Google selected the account automatically, without user interaction.
+   * Web only; not set on Android and iOS.
    */
   isAutoSelected?: boolean;
   /**
