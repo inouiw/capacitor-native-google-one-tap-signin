@@ -68,7 +68,9 @@ const Page1: React.FC = () => {
   }, [reportSignInResult]);
 
   function reportSignInResultSuccess(successResult: SuccessSignInResult) {
-    setAuthResult(`SignIn success! email: '${successResult.email}', userId: '${successResult.userId}', isAutoSelected: '${successResult.isAutoSelected}', nonce: '${successResult.decodedIdToken.nonce}'. See browser console for idToken and full result.`);
+    const tokenNonce = successResult.decodedIdToken.nonce;
+    const nonceCheck = tokenNonce === GoogleOneTapAuth.getNonce() ? 'equals the nonce passed to initialize' : `differs from the nonce passed to initialize: '${GoogleOneTapAuth.getNonce()}'`;
+    setAuthResult(`SignIn success! email: '${successResult.email}', userId: '${successResult.userId}', isAutoSelected: '${successResult.isAutoSelected}', nonce: '${tokenNonce}' (${nonceCheck}). See browser console for idToken and full result.`);
     console.log('Success! ' + JSON.stringify(successResult));
   }
 

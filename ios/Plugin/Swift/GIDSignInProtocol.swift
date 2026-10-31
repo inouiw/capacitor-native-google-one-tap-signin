@@ -2,8 +2,9 @@ import GoogleSignIn
 
 // Define a protocol for GIDSignIn for easier mocking.
 @objc protocol GIDSignInProtocol {
-    @objc(signInWithPresentingViewController:completion:)
-    func signIn(withPresenting presentingViewController: UIViewController, completion: ((GIDSignInResult?, Error?) -> Void)?)
+    // Available since GoogleSignIn 9.0. Without a nonce, GoogleSignIn sets its own.
+    @objc(signInWithPresentingViewController:hint:additionalScopes:nonce:completion:)
+    func signIn(withPresenting presentingViewController: UIViewController, hint: String?, additionalScopes: [String]?, nonce: String?, completion: ((GIDSignInResult?, Error?) -> Void)?)
     
     func hasPreviousSignIn() -> Bool
     

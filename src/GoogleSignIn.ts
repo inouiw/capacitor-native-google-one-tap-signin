@@ -3,7 +3,7 @@ import { jwtDecode } from "jwt-decode";
 
 import { createSignInButtonElement } from './SignInButtonElement'
 import type { InitializeOptions, GoogleOneTapAuthPlugin, SuccessSignInResult, SignOutResult, RenderSignInButtonOptions, SignInResultOption, DisconnectResult } from './definitions';
-import type { NotEnrichedSuccessSignInResult, NotEnrichedSignInResultOption } from './definitionsInternal';
+import type { NotEnrichedSuccessSignInResult, NotEnrichedSignInResultOption, PlatformInitializeOptions } from './definitionsInternal';
 import { assert, randomHexString } from './helpers';
 import { GoogleOneTapAuthWeb } from './web/GoogleSignInWeb';
 
@@ -44,14 +44,22 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
         if (!options.clientId || options.clientId.endsWith("apps.googleusercontent.com") == false) {
           throw new Error("clientId must end with 'apps.googleusercontent.com' but is: " + options.clientId);
         }
+        const isNonceFromApp = !!options.nonce;
         this.nonce = options.nonce = options.nonce || randomHexString(10);
-        GoogleOneTapAuthPlatform.initialize(options).then(() => {
+        const platformOptions: PlatformInitializeOptions = { ...options, isNonceFromApp };
+        GoogleOneTapAuthPlatform.initialize(platformOptions).then(() => {
           this.initializeStatus = InitializeStatus.Initialized;
           this.resolveIsInitializedPromise!();
         }).catch((e) => {
           this.initializeStatus = InitializeStatus.NotInitialized;
           this.rejectIsInitializedPromise!(e);
         });
+      }
+      else if (options.nonce && options.nonce !== this.nonce) {
+        // A new nonce, e.g. a server's nonce for the next sign-in. Pass it to the platform before the next sign-in.
+        this.nonce = options.nonce;
+        const platformOptions: PlatformInitializeOptions = { ...options, isNonceFromApp: true };
+        this.isInitializedPromise = this.isInitializedPromise.then(() => GoogleOneTapAuthPlatform.initialize(platformOptions));
       }
     }
     catch (e) {
@@ -62,9 +70,8 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
 
   private async ensureInitialized() {
     assert(() => this.initializeStatus !== InitializeStatus.NotInitialized, 'Must call initialize first.');
-    if (this.initializeStatus === InitializeStatus.Initializing) {
-      await this.isInitializedPromise;
-    }
+    // Also waits for a later initialize with a new nonce.
+    await this.isInitializedPromise;
   }
 
   async tryAutoOrOneTapSignIn(): Promise<SignInResultOption> {

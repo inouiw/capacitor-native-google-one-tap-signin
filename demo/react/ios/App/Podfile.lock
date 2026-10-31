@@ -22,7 +22,7 @@ PODS:
     - Capacitor
   - CapacitorNativeGoogleOneTapSignin (7.0.4):
     - Capacitor
-    - GoogleSignIn (< 10.0, >= 7.1)
+    - GoogleSignIn (< 10.0, >= 9.0)
   - CapacitorStatusBar (7.0.6):
     - Capacitor
   - GoogleSignIn (9.2.0):
@@ -93,7 +93,7 @@ SPEC CHECKSUMS:
   CapacitorCordova: 33313bf8891d44741970e16534be781ff3caa00a
   CapacitorHaptics: 1b145fa83c622e5383a3bac04ea81e2514f0b0f5
   CapacitorKeyboard: a2e0869edd229490ce36aed2549c0d6b95e27ee8
-  CapacitorNativeGoogleOneTapSignin: b6848296bb9feb4d9ed40f6169f85b7d85761785
+  CapacitorNativeGoogleOneTapSignin: a04680de63458079c1ceb9256bd119336b8c04ba
   CapacitorStatusBar: 416e9e53fd6397e668d4a181cd2131617d949bd6
   GoogleSignIn: e449a40a92e9f2eea56e98b5214d13725dc5a00a
   GoogleUtilities: 7dc09b3fa9ecb5c2298b952313d14628b61b9da3

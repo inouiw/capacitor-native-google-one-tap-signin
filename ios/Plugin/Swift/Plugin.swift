@@ -7,7 +7,10 @@ import GoogleSignIn
 public class GoogleOneTapAuth: CAPPlugin {
     var googleSignIn: GIDSignInProtocol!
     let gIDSignInErrorCodeCanceled = -5
-    
+    var nonce: String?
+    // True if the app passed its own nonce to initialize, e.g. one its server checks.
+    var isNonceFromApp = false
+
     override init() {
         super.init()
     }
@@ -23,6 +26,8 @@ public class GoogleOneTapAuth: CAPPlugin {
     
     @objc
     func initialize(_ call: CAPPluginCall) {
+        nonce = call.getString("nonce")
+        isNonceFromApp = call.getBool("isNonceFromApp") ?? false
         call.resolve()
     }
     
@@ -65,6 +70,12 @@ public class GoogleOneTapAuth: CAPPlugin {
                     completion(SignInResult(noSuccessReasonCode: "NO_CREDENTIAL", noSuccessAdditionalInfo: nil))
                     return
                 }
+                // A restored ID token carries the nonce of the sign-in that created it. If the app passed its own
+                // nonce, e.g. one its server checks, such a token would be rejected, so a new sign-in is needed.
+                if self.isNonceFromApp && GoogleOneTapAuth.nonceClaim(ofIdToken: idToken) != self.nonce {
+                    completion(SignInResult(noSuccessReasonCode: "NO_CREDENTIAL", noSuccessAdditionalInfo: "The restored sign-in has a different nonce than the one passed to initialize."))
+                    return
+                }
                 completion(SignInResult(idToken: idToken))
             }
         } else {
@@ -79,7 +90,7 @@ public class GoogleOneTapAuth: CAPPlugin {
                 call.reject("ViewController not found")
                 return
             }
-            self.googleSignIn.signIn(withPresenting: presentingVc) { signInResult, error in
+            self.googleSignIn.signIn(withPresenting: presentingVc, hint: nil, additionalScopes: nil, nonce: self.nonce) { signInResult, error in
                 if let error = error {
                     if error._code == self.gIDSignInErrorCodeCanceled {
                         call.resolve(self.toJsonResult(SignInResult(noSuccessReasonCode: "SIGN_IN_CANCELLED", noSuccessAdditionalInfo: nil)))
@@ -124,6 +135,21 @@ public class GoogleOneTapAuth: CAPPlugin {
         }
     }
     
+    /// Returns the `nonce` claim of an ID token (a JWT), or nil if it has none or cannot be decoded.
+    static func nonceClaim(ofIdToken idToken: String) -> String? {
+        let parts = idToken.split(separator: ".")
+        guard parts.count >= 2 else {
+            return nil
+        }
+        var base64 = String(parts[1]).replacingOccurrences(of: "-", with: "+").replacingOccurrences(of: "_", with: "/")
+        base64 += String(repeating: "=", count: (4 - base64.count % 4) % 4)
+        guard let data = Data(base64Encoded: base64),
+              let payload = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return nil
+        }
+        return payload["nonce"] as? String
+    }
+
     private func toJsonResult(_ signInResult: SignInResult) -> [String: Any] {
         var result: [String: Any] = [:]
         let isSuccess = signInResult.idToken != nil
