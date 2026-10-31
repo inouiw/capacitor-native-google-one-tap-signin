@@ -150,6 +150,8 @@ To test it using an emulator, you need to create an emulator with android play s
 # Supported platforms
 Android, iOS, Web.
 
+On the web, the plugin uses [`@madauth/google-identity`](https://www.npmjs.com/package/@madauth/google-identity): the browser's FedCM dialog where the browser supports it, Google One Tap and Google's sign-in button otherwise. On Android it uses the Credential Manager, on iOS GoogleSignIn-iOS.
+
 # Detailed description of different use cases
 
 See https://developers.google.com/identity/gsi/web/guides/features
@@ -252,7 +254,7 @@ addSignInActionToExistingButtonWithCallback(
  * The returned promise will only resolve if successful.
  * The returned promise is rejected for unrecoverable errors as 'unregistered_origin' 
  * for the web platform.
- * @param parentElementId 
+ * @param parentElementId The id of the element to render the button into. On the web, its content is replaced by the button.
  * @param options 
  * @param gsiButtonConfiguration Not all button configuration options are supported on android.
  * @returns A Promise with a success result, that resolves when the signIn is successful.
@@ -265,7 +267,7 @@ renderSignInButton(
 
 /**
  * Renders a google style sign-in button.
- * @param parentElementId 
+ * @param parentElementId The id of the element to render the button into. On the web, its content is replaced by the button.
  * @param options 
  * @param gsiButtonConfiguration Not all button configuration options are supported on android.
  * @param onResult A callback that is passed the result option object.
