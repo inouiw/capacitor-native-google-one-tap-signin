@@ -26,7 +26,16 @@ export async function signIn(autoSelect: boolean, clientId: string, nonce?: stri
             configURL: 'https://accounts.google.com/gsi/fedcm.json',
             clientId: clientId,
             // loginHint: ''
-            nonce: nonce
+            nonce: nonce,
+            fields: ['name', 'email', 'picture'],
+            // Google builds the continuation popup URL from these params. Without them, the popup fails with
+            // "Required parameter is missing: response_type". Same values as the google gsi/client library sends.
+            params: {
+              response_type: 'id_token',
+              scope: 'email profile openid',
+              ss_domain: location.origin,
+              nonce: nonce ?? 'not_provided'
+            }
           }
         ]
       },
