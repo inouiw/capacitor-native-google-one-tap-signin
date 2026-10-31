@@ -2,24 +2,17 @@
 
 import { describe, beforeEach, test, expect, vi } from 'vitest';
 import { GoogleOneTapAuth } from '../GoogleSignIn';
-import { GoogleOneTapAuthWeb } from '../web/GoogleSignInWeb';
 
-// import * as helpers from '../helpers';
+const base64Url = (json: object) => Buffer.from(JSON.stringify(json)).toString('base64url');
+const idToken = `${base64Url({ alg: 'none' })}.${base64Url({ sub: '123', email: 'user@example.com', nonce: 'sample_nonce' })}.signature`;
 
-vi.mock('../helpers', async () => {
-  const actual = await vi.importActual<typeof import('../helpers')>('../helpers');
-  return {
-    ...actual,
-    loadScript: vi.fn(() => Promise.resolve()),
-  };
-});
+vi.mock('@madauth/google-identity', () => ({
+  signIn: vi.fn(() => Promise.resolve({ isSuccess: true, idToken, isAutoSelected: false })),
+  loadGis: vi.fn(() => Promise.resolve()),
+}));
 
 describe('GoogleSignIn - tryAutoOrOneTapSignIn', () => {
-  let googleOneTapAuthWeb: GoogleOneTapAuthWeb;
-
   beforeEach(async () => {
-    googleOneTapAuthWeb = new GoogleOneTapAuthWeb();
-    
     await GoogleOneTapAuth.initialize({
       clientId: 'your-client-id.apps.googleusercontent.com',
       nonce: 'sample_nonce'
@@ -29,6 +22,8 @@ describe('GoogleSignIn - tryAutoOrOneTapSignIn', () => {
   test('should successfully sign in with tryAutoOrOneTapSignIn', async () => {
     const signInResult = await GoogleOneTapAuth.tryAutoOrOneTapSignIn();
 
-    expect(signInResult).toBeDefined();
+    expect(signInResult.isSuccess).toBe(true);
+    expect(signInResult.success).toMatchObject({ idToken, userId: '123', email: 'user@example.com' });
+    expect(signInResult.success!.decodedIdToken.nonce).toBe('sample_nonce');
   });
 });

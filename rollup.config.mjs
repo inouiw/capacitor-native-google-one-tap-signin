@@ -9,6 +9,7 @@ export default {
         '@capacitor/core': 'capacitorExports',
         'scriptjs': 'scriptjs',
         'jwt-decode': 'jwtDecode',
+        '@madauth/google-identity': 'madauthGoogleIdentity',
       },
       sourcemap: true,
       inlineDynamicImports: true,
@@ -20,5 +21,5 @@ export default {
       inlineDynamicImports: true,
     },
   ],
-  external: ['@capacitor/core', 'scriptjs', 'jwt-decode'],
+  external: ['@capacitor/core', 'scriptjs', 'jwt-decode', '@madauth/google-identity'],
 };
