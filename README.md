@@ -120,6 +120,26 @@ console.log(signInResultOption);
 // See the demo folder for an example application.
 ```
 
+# Use with a backend, e.g. madAuth
+The plugin returns Google's ID token. An app without a backend uses it as is. An app with a backend sends it there to be verified. The backend's nonce, passed to `initialize`, is included unchanged in the ID token on web, Android and iOS, so the backend can check that the token was issued for this sign-in.
+
+On iOS, add the web client ID as `GIDServerClientID` to `Info.plist`, so that the ID token is issued for it (its `aud` claim) like on web and Android. Without it, the token is issued for the iOS client ID.
+
+[madAuth](https://github.com/inouiw/madAuth) is one such backend. It has two ways for a Capacitor app (`@madauth/web@^0.7.1`):
+- **Tokens:** the app exchanges Google's ID token for madAuth's ID, access and refresh tokens, without cookies. See [Native apps](https://github.com/inouiw/madAuth/blob/main/docs/server.md#native-apps).
+- **Session cookie:** for an app whose WebView is on the same site as the madAuth server (`server: { hostname: 'app.example.com', androidScheme: 'https' }` in `capacitor.config`). See [An ID token the app obtained itself](https://github.com/inouiw/madAuth/blob/main/docs/custom-ui.md#an-id-token-the-app-obtained-itself).
+
+```TypeScript
+const start = await Madauth.tokens.nonce({ clientId });
+await GoogleOneTapAuth.initialize({ clientId: start.googleClientId, nonce: start.nonce });
+const signIn = await GoogleOneTapAuth.tryAutoOrOneTapSignIn();
+const tokens = await Madauth.tokens.exchange({ clientId, credential: signIn.success!.idToken });
+```
+- Get a new nonce for each sign-in. madAuth accepts it once, within five minutes.
+- `exchange` can answer `interaction_required` when the user needs a second factor or has to set one up. The app then finishes the sign-in through the authorization code flow in the system browser.
+- The app keeps madAuth's refresh token, not Google's ID token. On launch it first renews the session with `Madauth.tokens.refresh`, and signs in with Google only if there is no refresh token or it is no longer valid.
+- Because the app passes its own nonce, a restored iOS sign-in whose ID token has an older nonce is not returned: `tryAutoOrOneTapSignIn` shows the sign-in instead.
+
 # Run the demo app
 The `demo/react` folder contains a demo app for web, Android and iOS. See [demo/react/README.md](demo/react/README.md) for how to build and run it.
 
@@ -273,8 +293,8 @@ disconnect(): Promise<DisconnectResult>;
 
 /**
  * Gets the last user defined or auto-created nonce.
- * Unfortunately not all google libraries support setting a nonce, so this is currently 
- * not universally useful.
+ * Note that on iOS, without a nonce passed to initialize, a restored sign-in has the nonce of
+ * the earlier sign-in that created it.
  */
 getNonce(): string;
 ```
