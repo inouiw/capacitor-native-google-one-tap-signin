@@ -163,6 +163,8 @@ See `src/definitions.ts` for a complete definition.
  * For the web platform, starts pre-loading the google one tap JavaScript library.
  * initialize must be called before any other method.
  * initialize remembers if it was called so it is safe to be called multiple times.
+ * Calling it again with a different nonce, e.g. a new one from your server for each sign-in,
+ * passes that nonce to the following sign-ins.
  * Other methods wait till initialize is finished so you must not await initialize.
  * If you await the result, it will throw on error.
  * @param options 

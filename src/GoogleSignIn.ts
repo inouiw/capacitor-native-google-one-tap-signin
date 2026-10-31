@@ -55,6 +55,12 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
           this.rejectIsInitializedPromise!(e);
         });
       }
+      else if (options.nonce && options.nonce !== this.nonce) {
+        // A new nonce, e.g. a server's nonce for the next sign-in. Pass it to the platform before the next sign-in.
+        this.nonce = options.nonce;
+        const platformOptions: PlatformInitializeOptions = { ...options, isNonceFromApp: true };
+        this.isInitializedPromise = this.isInitializedPromise.then(() => GoogleOneTapAuthPlatform.initialize(platformOptions));
+      }
     }
     catch (e) {
       this.rejectIsInitializedPromise!((e as Error).message);
@@ -64,9 +70,8 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
 
   private async ensureInitialized() {
     assert(() => this.initializeStatus !== InitializeStatus.NotInitialized, 'Must call initialize first.');
-    if (this.initializeStatus === InitializeStatus.Initializing) {
-      await this.isInitializedPromise;
-    }
+    // Also waits for a later initialize with a new nonce.
+    await this.isInitializedPromise;
   }
 
   async tryAutoOrOneTapSignIn(): Promise<SignInResultOption> {
