@@ -37,7 +37,7 @@
     "@testing-library/user-event": "^14.6.8",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
-    "@vitejs/plugin-legacy": "^5.4.3",
+    "@vitejs/plugin-legacy": "^6.1.1",
     "@vitejs/plugin-react": "^4.7.0",
     "cypress": "^13.17.0",
     "eslint": "^8.57.1",
@@ -45,8 +45,8 @@
     "jsdom": "^22.1.0",
     "terser": "^5.51.2",
     "typescript": "^5.9.3",
-    "vite": "~5.2.0",
-    "vitest": "^2.1.9"
+    "vite": "^6.4.5",
+    "vitest": "^4.1.12"
   },
   "description": "An Ionic project"
 }
