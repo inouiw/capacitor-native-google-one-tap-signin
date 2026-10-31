@@ -33,6 +33,12 @@ jobs:
           MAC_BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.MAC_BUILD_PROVISION_PROFILE_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
       run: |
+        # Secrets are not available in pull requests from forks. The simulator tests do not need signing.
+        if [ -z "$MAC_BUILD_CERTIFICATE_P12_BASE64" ]; then
+          echo "No signing certificate available (e.g. pull request from a fork), skipping."
+          exit 0
+        fi
+
         # define variables
         CERTIFICATE_PATH=$RUNNER_TEMP/certificate.p12
         PP_PATH=$RUNNER_TEMP/provisioning_profile.mobileprovision
