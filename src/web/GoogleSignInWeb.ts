@@ -84,10 +84,24 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
   }
 }
 
+/**
+ * With FedCM `params`, Google's FedCM token is JSON with the ID token in `id_token`, e.g.
+ * `{ "iss": "https://accounts.google.com", "id_token": "eyJ…", "authuser": "0", "prompt": "none" }`.
+ * Unwraps it as Google's gsi/client does; a plain JWT is returned as is.
+ */
+function idTokenOf(token: string): string {
+  try {
+    const idToken = (JSON.parse(token) as { id_token?: unknown }).id_token;
+    return typeof idToken === 'string' ? idToken : token;
+  } catch {
+    return token;
+  }
+}
+
 /** Maps the package's result to the plugin's: `cancelled` is SIGN_IN_CANCELLED, other reasons keep their names. */
 function toSignInResultOption(result: CredentialResult | ({ isSuccess: false } & NoCredential)): NotEnrichedSignInResultOption {
   if (result.isSuccess) {
-    return { isSuccess: true, success: { idToken: result.idToken, isAutoSelected: result.isAutoSelected } };
+    return { isSuccess: true, success: { idToken: idTokenOf(result.idToken), isAutoSelected: result.isAutoSelected } };
   }
   return {
     isSuccess: false,

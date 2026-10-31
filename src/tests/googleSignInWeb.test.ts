@@ -38,6 +38,16 @@ describe('GoogleOneTapAuthWeb on @madauth/google-identity', () => {
     expect(result).toEqual({ isSuccess: true, success: { idToken: 'id-token', isAutoSelected: true } });
   });
 
+  test('unwraps the ID token from the JSON token FedCM returns with params', async () => {
+    const fedcmToken = JSON.stringify({ iss: 'https://accounts.google.com', id_token: 'id-token', authuser: '0', prompt: 'none' });
+    googleIdentity.signIn.mockResolvedValueOnce({ isSuccess: true, idToken: fedcmToken, isAutoSelected: false });
+    const web = await initializedWebPlugin();
+
+    const result = await web.tryOneTapSignIn();
+
+    expect(result).toEqual({ isSuccess: true, success: { idToken: 'id-token', isAutoSelected: false } });
+  });
+
   test('tryAutoOrOneTapSignIn asks the user when auto sign-in was skipped', async () => {
     googleIdentity.signIn
       .mockResolvedValueOnce({ isSuccess: false, reason: 'skipped' })
