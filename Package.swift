@@ -12,7 +12,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", from: "7.0.0"),
-        .package(url: "https://github.com/google/GoogleSignIn-iOS.git", from: "7.1.0")
+        .package(url: "https://github.com/google/GoogleSignIn-iOS.git", "7.1.0"..<"10.0.0")
     ],
     targets: [
         .target(
