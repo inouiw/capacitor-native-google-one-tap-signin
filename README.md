@@ -121,7 +121,7 @@ console.log(signInResultOption);
 ```
 
 # Run the demo app
-This repository contains a demo app in the `demo/react` folder. See the README there.
+The `demo/react` folder contains a demo app for web, Android and iOS. See [demo/react/README.md](demo/react/README.md) for how to build and run it.
 
 # Notes about testing with an emulator
 
