@@ -150,6 +150,8 @@ To test it using an emulator, you need to create an emulator with android play s
 # Supported platforms
 Android, iOS, Web.
 
+On the web, the plugin uses [`@madauth/google-identity`](https://www.npmjs.com/package/@madauth/google-identity): the browser's FedCM dialog where the browser supports it, Google One Tap and Google's sign-in button otherwise. On Android it uses the Credential Manager, on iOS GoogleSignIn-iOS.
+
 # Detailed description of different use cases
 
 See https://developers.google.com/identity/gsi/web/guides/features
