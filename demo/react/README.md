@@ -15,7 +15,7 @@ The demo depends on the plugin via `file:../..`, so it always uses the plugin bu
 npm install
 npm run buildall
 ```
-`buildall` builds the plugin, regenerates the API docs in the root README (`docgen`), builds the demo app and syncs it to the Android and iOS projects. Afterwards continue with the "Run" step of your target below.
+`buildall` builds the plugin (including the API docs in `dist/docs.json`), builds the demo app and syncs it to the Android and iOS projects. Afterwards continue with the "Run" step of your target below.
 
 ## Web
 ```bash
