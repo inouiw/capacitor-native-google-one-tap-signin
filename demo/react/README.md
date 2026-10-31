@@ -35,15 +35,14 @@ Open http://localhost:3000. The port must be 3000, because that origin is allowe
 npm install
 npm run build
 
-# In the demo/react folder: build the web app and copy it into the Android project
+# In the demo/react folder: build the web app
 npm install
 npm run build
-npx cap sync --inline android
 
-# Run on an emulator or device (you are asked to pick one)
+# Copy the web app into the Android project, then build and run it on an emulator or device (you are asked to pick one)
 npx cap run android
 ```
-To edit and debug the plugin and the demo app together, run `npx cap open android` instead of `npx cap run android` and press Run in Android Studio.
+To edit and debug the plugin and the demo app together in Android Studio, run `npx cap sync --inline android` and `npx cap open android` instead of `npx cap run android`, then press Run. `--inline` adds inline source maps, so you can debug the TypeScript code in the WebView.
 
 ## iOS
 ```bash
@@ -51,19 +50,18 @@ To edit and debug the plugin and the demo app together, run `npx cap open androi
 npm install
 npm run build
 
-# In the demo/react folder: build the web app and copy it into the iOS project (also runs pod install)
+# In the demo/react folder: build the web app
 npm install
 npm run build
-npx cap sync --inline ios
 
-# Run on a simulator or device (you are asked to pick one)
+# Copy the web app into the iOS project (also runs pod install), then build and run it on a simulator or device (you are asked to pick one)
 npx cap run ios
 ```
-To edit and debug the plugin and the demo app together, run `npx cap open ios` instead of `npx cap run ios` and press Run in Xcode.
+To edit and debug the plugin and the demo app together in Xcode, run `npx cap sync --inline ios` and `npx cap open ios` instead of `npx cap run ios`, then press Run.
 
 ## After changing code
 - Plugin code (`src/`, `android/`, `ios/` in the root folder): run `npm run build` in the root folder, then repeat the steps of your target.
-- Demo web code (`demo/react/src`): the web dev server reloads automatically. For Android and iOS, run `npm run build` and `npx cap sync --inline` again.
+- Demo web code (`demo/react/src`): the web dev server reloads automatically. For Android and iOS, run `npm run build` and `npx cap run <platform>` again (or `npx cap sync --inline <platform>` when you run from Android Studio or Xcode).
 
 ## Client IDs
 The demo uses client IDs of a Google Cloud project of the plugin author:
@@ -75,4 +73,4 @@ To use your own Google Cloud project, replace these values. See "Configure" in t
 
 ## Troubleshooting
 - Chrome may block the sign-in prompt on localhost after repeated tests (*Third-party sign in was disabled in browser Site Settings*). Re-enable it under `chrome://settings/content/federatedIdentityApi`.
-- `No connected devices!` from `npm run test:android` or `npx cap run android`: start an emulator first (Android Studio Device Manager, or `emulator -avd <name>`).
+- `No connected devices!` from `npm run test:android` or `npx cap run android`: start an emulator first (Android Studio Device Manager, or `$ANDROID_HOME/emulator/emulator -avd <name>`; on macOS `ANDROID_HOME` is usually `~/Library/Android/sdk`).

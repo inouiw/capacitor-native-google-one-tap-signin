@@ -64,4 +64,4 @@ Before considering a task done, run what CI runs at the repo root: `npm run buil
 
 `README.md` and `demo/react/README.md` describe the behavior users and agents rely on. Update them **in the same commit** as the code change, and never leave them describing behavior that no longer exists. The "Exposed API" section of `README.md` is a manual copy of the `GoogleOneTapAuthPlugin` interface in `src/definitions.ts`: keep it in sync. Do not amend commits; create a new commit instead.
 
-Releases are published to npm: bump `version` in `package.json`, commit ("publish version x.y.z"), then `npm publish`, which builds the plugin first (`prepublishOnly`).
+Releases to npm are done by the maintainer; the steps are not documented yet. Do not bump the version or publish unless the user asks, and then ask them for the steps.
