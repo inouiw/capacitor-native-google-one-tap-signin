@@ -1,5 +1,3 @@
-import type { NoSuccessSignInResult, SignInResultOption, SuccessSignInResult } from "./definitions";
-
 export function assert(predicate: () => boolean, customMessage?: string): void {
   if (!predicate()) {
     const callerName = callingFunctionName();
@@ -23,19 +21,5 @@ function callingFunctionName() {
   }
   catch {
     // ignore.
-  }
-}
-
-export function toSignInResultOption(signInResult: SuccessSignInResult | NoSuccessSignInResult): SignInResultOption {
-  if ((signInResult as SuccessSignInResult).idToken) {
-    return {
-      isSuccess: true,
-      success: signInResult as SuccessSignInResult
-    }
-  } else {
-    return {
-      isSuccess: false,
-      noSuccess: signInResult as NoSuccessSignInResult
-    }
   }
 }

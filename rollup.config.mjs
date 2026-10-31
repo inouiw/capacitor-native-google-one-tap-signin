@@ -1,3 +1,5 @@
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+
 export default {
   input: 'dist/esm/index.js',
   output: [
@@ -9,7 +11,6 @@ export default {
         '@capacitor/core': 'capacitorExports',
         'scriptjs': 'scriptjs',
         'jwt-decode': 'jwtDecode',
-        '@madauth/google-identity': 'madauthGoogleIdentity',
       },
       sourcemap: true,
       inlineDynamicImports: true,
@@ -21,5 +22,8 @@ export default {
       inlineDynamicImports: true,
     },
   ],
-  external: ['@capacitor/core', 'scriptjs', 'jwt-decode', '@madauth/google-identity'],
+  // @madauth/google-identity is ESM only and has no global build, so it is bundled into these two builds.
+  // The ESM build (dist/esm) imports it, so that app bundlers share one copy.
+  plugins: [nodeResolve({ resolveOnly: ['@madauth/google-identity'] })],
+  external: ['@capacitor/core', 'scriptjs', 'jwt-decode'],
 };

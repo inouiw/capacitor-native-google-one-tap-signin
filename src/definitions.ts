@@ -57,8 +57,14 @@ export interface SuccessSignInResult {
 export interface NoSuccessSignInResult {
   /**
    * A reason code for the no success result.
+   * On all platforms, SIGN_IN_CANCELLED: the user closed the dialog, or cancelOneTapDialog was called.
+   * On the web also: skipped (the prompt was not shown, e.g. no Google session in the browser or Chrome's cooldown
+   * after dismissals), configuration_error (the client ID is missing or the page's origin is not authorized),
+   * load_failed (Google's script could not be loaded) and error.
+   * On Android and iOS also: NO_CREDENTIAL (no account to sign in with); on Android SIGN_IN_INTERRUPTED;
+   * and the platform's error message otherwise.
    */
-  noSuccessReasonCode?: 'SIGN_IN_CANCELLED' | string;
+  noSuccessReasonCode?: 'SIGN_IN_CANCELLED' | 'skipped' | 'configuration_error' | 'load_failed' | 'error' | 'NO_CREDENTIAL' | 'SIGN_IN_INTERRUPTED' | string;
   /**
    * Additional information relating to the cause of the no success result.
    */
@@ -184,7 +190,7 @@ export interface GoogleOneTapAuthPlugin {
    * The returned promise will only resolve if successful.
    * The returned promise is rejected for unrecoverable errors as 'unregistered_origin' 
    * for the web platform.
-   * @param parentElementId 
+   * @param parentElementId The id of the element to render the button into. On the web, its content is replaced by the button.
    * @param options 
    * @param gsiButtonConfiguration Not all button configuration options are supported on android.
    * @returns A Promise with a success result, that resolves when the signIn is successful.
@@ -197,7 +203,7 @@ export interface GoogleOneTapAuthPlugin {
 
   /**
    * Renders a google style sign-in button.
-   * @param parentElementId 
+   * @param parentElementId The id of the element to render the button into. On the web, its content is replaced by the button.
    * @param options 
    * @param gsiButtonConfiguration Not all button configuration options are supported on android.
    * @param onResult A callback that is passed the result option object.
