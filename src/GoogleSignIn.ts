@@ -3,7 +3,7 @@ import { jwtDecode } from "jwt-decode";
 
 import { createSignInButtonElement } from './SignInButtonElement'
 import type { InitializeOptions, GoogleOneTapAuthPlugin, SuccessSignInResult, SignOutResult, RenderSignInButtonOptions, SignInResultOption, DisconnectResult } from './definitions';
-import type { NotEnrichedSuccessSignInResult, NotEnrichedSignInResultOption } from './definitionsInternal';
+import type { NotEnrichedSuccessSignInResult, NotEnrichedSignInResultOption, PlatformInitializeOptions } from './definitionsInternal';
 import { assert, randomHexString } from './helpers';
 import { GoogleOneTapAuthWeb } from './web/GoogleSignInWeb';
 
@@ -44,8 +44,10 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
         if (!options.clientId || options.clientId.endsWith("apps.googleusercontent.com") == false) {
           throw new Error("clientId must end with 'apps.googleusercontent.com' but is: " + options.clientId);
         }
+        const isNonceFromApp = !!options.nonce;
         this.nonce = options.nonce = options.nonce || randomHexString(10);
-        GoogleOneTapAuthPlatform.initialize(options).then(() => {
+        const platformOptions: PlatformInitializeOptions = { ...options, isNonceFromApp };
+        GoogleOneTapAuthPlatform.initialize(platformOptions).then(() => {
           this.initializeStatus = InitializeStatus.Initialized;
           this.resolveIsInitializedPromise!();
         }).catch((e) => {

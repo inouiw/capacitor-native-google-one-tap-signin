@@ -6,10 +6,10 @@ export interface InitializeOptions {
    */
   clientId: string;
   /**
-   * A string that is included in the ID token if supported. It is auto-generated if not provided.
-   * The com.google.android.gms.auth.api.identity api supports nonce, however the 
-   * com.google.android.gms.auth.api.signin does currently not, and for ios there is an open issue.
-   * See https://github.com/google/GoogleSignIn-iOS/issues/135
+   * A string that Google includes unchanged in the ID token's `nonce` claim, on web, Android and iOS.
+   * It is auto-generated if not provided. Pass your server's nonce if the server checks it, e.g. madAuth.
+   * If you pass a nonce, a restored iOS sign-in whose ID token has a different nonce is not returned:
+   * tryAutoSignIn returns noSuccess and tryAutoOrOneTapSignIn shows the sign-in.
    */
   nonce?: string;
 }
@@ -224,8 +224,8 @@ export interface GoogleOneTapAuthPlugin {
 
   /**
    * Gets the last user defined or auto-created nonce.
-   * Unfortunately not all google libraries support setting a nonce, so this is currently 
-   * not universally useful.
+   * Note that on iOS, without a nonce passed to initialize, a restored sign-in has the nonce of
+   * the earlier sign-in that created it.
    */
   getNonce(): string;
 }
