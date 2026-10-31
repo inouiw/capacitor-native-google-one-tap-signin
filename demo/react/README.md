@@ -67,7 +67,7 @@ To edit and debug the plugin and the demo app together in Xcode, run `npx cap sy
 The demo uses client IDs of a Google Cloud project of the plugin author:
 - Web: `clientId` in `src/pages/Page1.tsx`. Allowed origins: http://localhost:3000, http://localhost.
 - Android: uses the same web client ID (passed to `initialize`). Sign-in only works if an Android client ID with package name `io.ionic.starter` and the SHA-1 fingerprint of your signing key is registered in the same Google Cloud project. If it is missing, the error message contains the package name and SHA-1 to register.
-- iOS: `GIDClientID` and the URL scheme in `ios/App/App/Info.plist`.
+- iOS: `GIDClientID` and the URL scheme in `ios/App/App/Info.plist`. `GIDServerClientID` there is the web client ID, so that the ID token is issued for it, as on web and Android.
 
 To use your own Google Cloud project, replace these values. See "Configure" in the [root README](../../README.md#3-configure).
 
