@@ -38,7 +38,10 @@ jobs:
 
     - name: Download and setup Android SDK
       uses: android-actions/setup-android@v3
-    
+      with:
+        # The default 'tools platform-tools' fails: the legacy 'tools' package no longer exists in current cmdline-tools.
+        packages: platform-tools
+
     - name: Pre-configure geographic area and city for qemu-kvm
       run: |
         echo 'tzdata tzdata/Areas select Etc' | sudo debconf-set-selections
