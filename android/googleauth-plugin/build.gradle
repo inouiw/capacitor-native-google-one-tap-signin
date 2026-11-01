@@ -1,8 +1,24 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
+// As in Capacitor's own plugins: the app's Kotlin version if it sets kotlin_version, else the one Capacitor 8 uses.
+buildscript {
+    ext.kotlin_version = project.hasProperty('kotlin_version') ? rootProject.ext.kotlin_version : '2.2.20'
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
 plugins {
     id 'com.android.library'
-    id 'org.jetbrains.kotlin.android' version '2.2.20'
+}
+
+// An app that already applies Kotlin to this project keeps its own.
+if (project.extensions.findByName('kotlin') == null) {
+    apply plugin: 'kotlin-android'
 }
 
 android {
