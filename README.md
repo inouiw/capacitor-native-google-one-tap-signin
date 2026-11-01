@@ -55,7 +55,7 @@ If you get the error `[GSI_LOGGER]: The given origin is not allowed for the give
 
 - For the ios platform, you need to create a client ID of type iOS in the [Google Cloud Console](https://console.cloud.google.com/apis/dashboard). Add the client ID to the  `{your-app}/ios/App/App/Info.plist` file with the key `GIDClientID` (see the demo app for reference). When creating the client ID, you will see the "iOS URL scheme" value in the Google Cloud Console. Add this also to the `Info.plist` file. If a server verifies the ID token, also add the web client ID with the key `GIDServerClientID`, so that the token is issued for it (its `aud` claim) like on web and Android; without it, the token is issued for the iOS client ID.
 
-After some testing the Chrome browser may decide to block third-party sign-in prompts on localhost. In the browser console you will see the message *Third-party sign in was disabled in browser Site Settings*. Re-enable it under `chrome://settings/content/federatedIdentityApi`.
+After the user closed the prompt, Chrome stops showing it on the site for a while: `chrome://settings/content/federatedIdentityApi` lists the site as *Automatically blocked*. A sign-in then resolves right away with `SIGN_IN_CANCELLED`, as when the user closes the prompt; Chrome reports both the same way. To see the prompt again while testing, remove the site from that list.
 
 #### FAQ
 - How to see and disconnect the link between your google account and your app?  
@@ -67,7 +67,7 @@ After some testing the Chrome browser may decide to block third-party sign-in pr
 # Usage
   
 ### Example 1: Trigger auto-sign-in and if not successful one-tap sign and show the button in parallel.
-For the web platform the one-tap or FedCM prompt may not be shown with no error returned. Therefore it is recommened to always also show the button.
+For the web platform the browser may not show the one-tap or FedCM prompt, for example after the user closed it (see above). The sign-in then resolves with a no-success result. Therefore it is recommended to always also show the button.
 The button also allows the user to select an account with which she did not sign-in previously.
 ```TypeScript
 import { GoogleOneTapAuth, SignInResultOption } from 'capacitor-native-google-one-tap-signin';

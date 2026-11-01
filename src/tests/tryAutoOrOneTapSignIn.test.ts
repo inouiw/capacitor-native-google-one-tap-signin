@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
 
 import { describe, beforeEach, test, expect, vi } from 'vitest';
+import { signIn } from '@madauth/google-identity';
 import { GoogleOneTapAuth } from '../GoogleSignIn';
 
 const base64Url = (json: object) => Buffer.from(JSON.stringify(json)).toString('base64url');
@@ -25,5 +26,26 @@ describe('GoogleSignIn - tryAutoOrOneTapSignIn', () => {
     expect(signInResult.isSuccess).toBe(true);
     expect(signInResult.success).toMatchObject({ idToken, userId: '123', email: 'user@example.com' });
     expect(signInResult.success!.decodedIdToken.nonce).toBe('sample_nonce');
+  });
+
+  // Issue #25: closing the prompt, or a prompt the browser does not show, must call back instead of leaving the app waiting.
+  test('calls back with SIGN_IN_CANCELLED when the user closes the prompt', async () => {
+    vi.mocked(signIn).mockResolvedValueOnce({ isSuccess: false, reason: 'cancelled' });
+    const onResult = vi.fn();
+
+    await GoogleOneTapAuth.tryAutoOrOneTapSignInWithCallback(onResult);
+
+    expect(onResult).toHaveBeenCalledWith({ isSuccess: false, noSuccess: { noSuccessReasonCode: 'SIGN_IN_CANCELLED', noSuccessAdditionalInfo: undefined } });
+  });
+
+  test('calls back with the reason when the browser does not show the prompt', async () => {
+    vi.mocked(signIn)
+      .mockResolvedValueOnce({ isSuccess: false, reason: 'skipped', detail: 'NotAllowedError: FedCM is disabled' })
+      .mockResolvedValueOnce({ isSuccess: false, reason: 'skipped', detail: 'NotAllowedError: FedCM is disabled' });
+    const onResult = vi.fn();
+
+    await GoogleOneTapAuth.tryAutoOrOneTapSignInWithCallback(onResult);
+
+    expect(onResult).toHaveBeenCalledWith({ isSuccess: false, noSuccess: { noSuccessReasonCode: 'skipped', noSuccessAdditionalInfo: 'NotAllowedError: FedCM is disabled' } });
   });
 });

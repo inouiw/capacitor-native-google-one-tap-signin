@@ -58,8 +58,9 @@ export interface NoSuccessSignInResult {
   /**
    * A reason code for the no success result.
    * On all platforms, SIGN_IN_CANCELLED: the user closed the dialog, or cancelOneTapDialog was called.
-   * On the web also: skipped (the prompt was not shown, e.g. no Google session in the browser or Chrome's cooldown
-   * after dismissals), configuration_error (the client ID is missing or the page's origin is not authorized),
+   * On the web, Chrome reports a prompt it blocks after the user closed it (its cooldown) as SIGN_IN_CANCELLED too.
+   * On the web also: skipped (the prompt was not shown, e.g. no Google session in the browser),
+   * configuration_error (the client ID is missing or the page's origin is not authorized),
    * load_failed (Google's script could not be loaded) and error.
    * On Android and iOS also: NO_CREDENTIAL (no account to sign in with); on Android SIGN_IN_INTERRUPTED;
    * and the platform's error message otherwise.
