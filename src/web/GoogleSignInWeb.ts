@@ -41,12 +41,12 @@ export class GoogleOneTapAuthWeb extends WebPlugin {
   }
 
   /** Renders Google's button into the element and resolves with the first sign-in through it. */
-  renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.accounts.id.GsiButtonConfiguration): Promise<NotEnrichedSignInResultOption> {
+  renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: GsiButtonConfiguration): Promise<NotEnrichedSignInResultOption> {
     return new Promise<NotEnrichedSignInResultOption>((resolve) => {
       void renderButton(document.getElementById(parentElementId)!, {
         clientId: this.initializeOptions!.clientId,
         nonce: this.initializeOptions!.nonce!,
-        button: gsiButtonConfiguration as GsiButtonConfiguration | undefined,
+        button: gsiButtonConfiguration,
         uxMode: options.webOptions?.uxMode,
         onCredential: (credential) => resolve(toSignInResultOption({ isSuccess: true, ...credential })),
       }).then((rendered) => {

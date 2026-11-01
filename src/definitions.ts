@@ -1,5 +1,12 @@
 /// <reference types="@capacitor/cli" />
 
+import type { GsiButtonConfiguration } from '@madauth/google-identity';
+
+/**
+ * Options of Google's sign-in button, see https://developers.google.com/identity/gsi/web/reference/js-reference#GsiButtonConfiguration.
+ */
+export type { GsiButtonConfiguration };
+
 export interface InitializeOptions {
   /**
    * Your client ID of type Web application.
@@ -198,7 +205,7 @@ export interface GoogleOneTapAuthPlugin {
   renderSignInButton(
     parentElementId: string,
     options: RenderSignInButtonOptions,
-    gsiButtonConfiguration?: google.accounts.id.GsiButtonConfiguration)
+    gsiButtonConfiguration?: GsiButtonConfiguration)
     : Promise<SuccessSignInResult>;
 
   /**
@@ -211,7 +218,7 @@ export interface GoogleOneTapAuthPlugin {
   renderSignInButtonWithCallback(
     parentElementId: string,
     options: RenderSignInButtonOptions,
-    gsiButtonConfiguration: google.accounts.id.GsiButtonConfiguration | undefined,
+    gsiButtonConfiguration: GsiButtonConfiguration | undefined,
     onResult: (value: SignInResultOption) => void)
     : Promise<void>;
 
