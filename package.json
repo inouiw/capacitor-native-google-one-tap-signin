@@ -49,11 +49,11 @@
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
-    "@capacitor/android": "^7.6.10",
-    "@capacitor/cli": "^7.6.10",
-    "@capacitor/core": "^7.6.10",
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/cli": "^8.6.0",
+    "@capacitor/core": "^8.6.0",
     "@capacitor/docgen": "^0.3.1",
-    "@capacitor/ios": "^7.6.10",
+    "@capacitor/ios": "^8.6.0",
     "@ionic/eslint-config": "^0.4.0",
     "@ionic/prettier-config": "^4.0.0",
     "@ionic/swiftlint-config": "^2.0.0",
@@ -70,7 +70,7 @@
     "vitest": "^4.1.12"
   },
   "peerDependencies": {
-    "@capacitor/core": "^7.0.0"
+    "@capacitor/core": "^8.0.0"
   },
   "prettier": "@ionic/prettier-config",
   "swiftlint": "@ionic/swiftlint-config",

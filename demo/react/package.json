@@ -13,11 +13,11 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@capacitor/app": "^7.1.2",
-    "@capacitor/core": "^7.6.10",
-    "@capacitor/haptics": "^7.0.5",
-    "@capacitor/keyboard": "^7.0.6",
-    "@capacitor/status-bar": "^7.0.6",
+    "@capacitor/app": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/haptics": "^8.0.0",
+    "@capacitor/keyboard": "^8.0.0",
+    "@capacitor/status-bar": "^8.0.0",
     "@ionic/react": "^8.0.0",
     "@ionic/react-router": "^8.8.19",
     "@types/react-router": "^5.1.20",
@@ -30,7 +30,7 @@
     "react-router-dom": "^5.3.4"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.6.10",
+    "@capacitor/cli": "^8.0.0",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^14.3.1",

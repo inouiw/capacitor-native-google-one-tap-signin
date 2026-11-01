@@ -24,11 +24,11 @@ This GoogleSignIn library intends to provide the best google authentication expe
 
 After a successful authentication, the idToken is returned as base64 and as object.
 
-The android minSdkVersion is 24. Tested with android 10 and above.
+The android minSdkVersion is 24. Tested with android 10 and above. The iOS deployment target is 15.0.
 
 # Install and Configure
 
-The major version of this plugin indicates the capacitor version that it is compatible with.
+The major version of this plugin indicates the capacitor version that it is compatible with. For Capacitor 7, install `capacitor-native-google-one-tap-signin@7`.
 
 #### 1. Install package
 
