@@ -81,7 +81,7 @@
     }
   },
   "dependencies": {
-    "@madauth/google-identity": "^0.1.1",
+    "@madauth/google-identity": "^0.1.2",
     "jwt-decode": "^4.0.0"
   }
 }
