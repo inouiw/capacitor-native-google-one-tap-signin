@@ -15,6 +15,9 @@ The GitHub default labels are used: `bug`, `enhancement`, `documentation`, `ques
 - Keep responses concise and technical — avoid filler, hedging, and restating what the user already knows.
 - When a change can reasonably be implemented in more than one way, ask the user which approach they prefer before writing code.
 - Ask clarifying questions whenever requirements, scope, or expected behavior are ambiguous — don't guess silently.
+- **Make sure the developer understands the consequences of each choice before they answer.** For every option of a non-trivial decision (simple yes/no confirmations stay short), state what it changes and what it costs or rules out (e.g. migration effort, irreversibility, price, performance, maintenance, user-visible behavior). Name your recommendation and why. The developer must be able to decide from the question alone, without reading the code first.
+  - **Offer an "Explain in more detail" option** alongside the answers (e.g. as an extra option in a multiple-choice question), so the developer can ask for a deeper explanation instead of having to pick an answer or type one. If the question tool's option limit is already used by real alternatives, keep the alternatives and say in the question that answering "explain" asks for more detail. When chosen, explain the trade-offs in depth, then ask the question again.
+  - **Where it helps the decision, research first how similar products or libraries solve it** (e.g. other Capacitor or Cordova sign-in plugins, Google's own Identity SDKs, Firebase Auth, platform conventions) and summarize the relevant approaches with links in the question. Skip this for project-internal choices where no outside comparison exists.
 
 ## Repository structure
 
