@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "CapacitorNativeGoogleOneTapSignin",
-    platforms: [.iOS(.v14)],
+    platforms: [.iOS(.v15)],
     products: [
         .library(
             name: "CapacitorNativeGoogleOneTapSignin",
@@ -11,7 +11,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", from: "7.0.0"),
+        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", from: "8.0.0"),
         .package(url: "https://github.com/google/GoogleSignIn-iOS.git", "9.0.0"..<"10.0.0")
     ],
     targets: [

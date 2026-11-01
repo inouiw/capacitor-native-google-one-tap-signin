@@ -11,19 +11,19 @@ PODS:
     - PromisesObjC (~> 2.4)
     - PromisesSwift (~> 2.4)
     - RecaptchaInterop (~> 101.0)
-  - Capacitor (7.6.10):
+  - Capacitor (8.6.0):
     - CapacitorCordova
-  - CapacitorApp (7.1.2):
+  - CapacitorApp (8.1.2):
     - Capacitor
-  - CapacitorCordova (7.6.10)
-  - CapacitorHaptics (7.0.5):
+  - CapacitorCordova (8.6.0)
+  - CapacitorHaptics (8.0.2):
     - Capacitor
-  - CapacitorKeyboard (7.0.6):
+  - CapacitorKeyboard (8.0.6):
     - Capacitor
-  - CapacitorNativeGoogleOneTapSignin (7.1.1):
+  - CapacitorNativeGoogleOneTapSignin (8.0.0):
     - Capacitor
     - GoogleSignIn (< 10.0, >= 9.0)
-  - CapacitorStatusBar (7.0.6):
+  - CapacitorStatusBar (8.0.4):
     - Capacitor
   - GoogleSignIn (9.2.0):
     - AppAuth (~> 2.1)
@@ -88,13 +88,13 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   AppAuth: ef4da5a3fc2e10b90c09a0a94a9baeaedc0341d5
   AppCheckCore: be8fce5469f68d7f6a29aa94b25f097409ff7fdc
-  Capacitor: f50a57c9ce466bce30d574e1348ab25b1f572536
-  CapacitorApp: f01a913211780e0718dae9750442c3e23f96e106
-  CapacitorCordova: 33313bf8891d44741970e16534be781ff3caa00a
-  CapacitorHaptics: 1b145fa83c622e5383a3bac04ea81e2514f0b0f5
-  CapacitorKeyboard: a2e0869edd229490ce36aed2549c0d6b95e27ee8
-  CapacitorNativeGoogleOneTapSignin: ed5a8c0b128c3ff7f89fcd2b32fefa98a435989b
-  CapacitorStatusBar: 416e9e53fd6397e668d4a181cd2131617d949bd6
+  Capacitor: 62cab4ab4ba04ea925576ddd1be188869e90d9ea
+  CapacitorApp: 7b7e43debe505bc61beedb83796aa1368c86078b
+  CapacitorCordova: 922f0a94dae286165215f0c7cf16fbde662d5ee4
+  CapacitorHaptics: 296f771ecd89c7a1bd92a7b6826a7d268e2e70f5
+  CapacitorKeyboard: f9e85e685082e9f63404de15db4a4291448b0912
+  CapacitorNativeGoogleOneTapSignin: a28339b3866384fa28029654bd372168f3722757
+  CapacitorStatusBar: ff844df1f126da6c4fbc4028272425fa3a91e7e3
   GoogleSignIn: e449a40a92e9f2eea56e98b5214d13725dc5a00a
   GoogleUtilities: 7dc09b3fa9ecb5c2298b952313d14628b61b9da3
   GTMAppAuth: 217a876b249c3c585a54fd6f73e6b58c4f5c4238
@@ -103,6 +103,6 @@ SPEC CHECKSUMS:
   PromisesSwift: 217dea0fd5d2ad65222a109c48698add13cc1c5b
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
 
-PODFILE CHECKSUM: 6a3578274163f2b17795d6678bb1e188a97dbdd3
+PODFILE CHECKSUM: f840c9f4607b22ad27e1a4f30c4943ff807ea961
 
 COCOAPODS: 1.16.2
