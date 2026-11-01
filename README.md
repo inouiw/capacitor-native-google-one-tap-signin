@@ -55,7 +55,7 @@ If you get the error `[GSI_LOGGER]: The given origin is not allowed for the give
 
 - For the ios platform, you need to create a client ID of type iOS in the [Google Cloud Console](https://console.cloud.google.com/apis/dashboard). Add the client ID to the  `{your-app}/ios/App/App/Info.plist` file with the key `GIDClientID` (see the demo app for reference). When creating the client ID, you will see the "iOS URL scheme" value in the Google Cloud Console. Add this also to the `Info.plist` file. If a server verifies the ID token, also add the web client ID with the key `GIDServerClientID`, so that the token is issued for it (its `aud` claim) like on web and Android; without it, the token is issued for the iOS client ID.
 
-After the user closed the prompt, Chrome stops showing it on the site for a while: `chrome://settings/content/federatedIdentityApi` lists the site as *Automatically blocked*. A sign-in then resolves right away with `SIGN_IN_CANCELLED`, as when the user closes the prompt; Chrome reports both the same way. To see the prompt again while testing, remove the site from that list.
+After the user closed the prompt, Chrome stops showing it on the site for a while: `chrome://settings/content/federatedIdentityApi` lists the site as *Automatically blocked*. A sign-in then resolves right away with `SIGN_IN_CANCELLED`, as when the user closes the prompt; Chrome reports both the same way. A site blocked by hand is listed there too, and the browser console then says *Third-party sign in was disabled in browser Site Settings*. To see the prompt again while testing, remove the site from that list.
 
 #### FAQ
 - How to see and disconnect the link between your google account and your app?  

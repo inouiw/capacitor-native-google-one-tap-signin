@@ -40,12 +40,12 @@ describe('GoogleSignIn - tryAutoOrOneTapSignIn', () => {
 
   test('calls back with the reason when the browser does not show the prompt', async () => {
     vi.mocked(signIn)
-      .mockResolvedValueOnce({ isSuccess: false, reason: 'skipped', detail: 'NotAllowedError: FedCM is disabled' })
-      .mockResolvedValueOnce({ isSuccess: false, reason: 'skipped', detail: 'NotAllowedError: FedCM is disabled' });
+      .mockResolvedValueOnce({ isSuccess: false, reason: 'skipped', detail: 'opt_out_or_no_session' })
+      .mockResolvedValueOnce({ isSuccess: false, reason: 'skipped', detail: 'opt_out_or_no_session' });
     const onResult = vi.fn();
 
     await GoogleOneTapAuth.tryAutoOrOneTapSignInWithCallback(onResult);
 
-    expect(onResult).toHaveBeenCalledWith({ isSuccess: false, noSuccess: { noSuccessReasonCode: 'skipped', noSuccessAdditionalInfo: 'NotAllowedError: FedCM is disabled' } });
+    expect(onResult).toHaveBeenCalledWith({ isSuccess: false, noSuccess: { noSuccessReasonCode: 'skipped', noSuccessAdditionalInfo: 'opt_out_or_no_session' } });
   });
 });
