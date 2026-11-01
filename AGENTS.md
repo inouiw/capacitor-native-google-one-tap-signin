@@ -15,8 +15,8 @@ The GitHub default labels are used: `bug`, `enhancement`, `documentation`, `ques
 - Keep responses concise and technical — avoid filler, hedging, and restating what the user already knows.
 - When a change can reasonably be implemented in more than one way, ask the user which approach they prefer before writing code.
 - Ask clarifying questions whenever requirements, scope, or expected behavior are ambiguous — don't guess silently.
-- **Every question makes the consequences clear.** For each option, say what choosing it means for the people using the plugin and for the code: API shape, behavior on each platform, migration for existing users, maintenance. The developer must be able to decide from the question alone, without reading the code first.
-- **Every question offers "Explain the trade-offs in more detail" as one of its choices**, so the developer can ask for a deeper explanation instead of having to pick an option or type an answer. On that choice, give the explanation and ask again.
+- **A question that offers approaches makes the consequences clear.** For each option, say what choosing it means for the people using the plugin and for the code: API shape, behavior on each platform, migration for existing users, maintenance. The developer must be able to decide from the question alone, without reading the code first.
+- **Such a question offers "Explain the trade-offs in more detail" as one of its choices**, so the developer can ask for a deeper explanation instead of having to pick an option or type an answer. On that choice, give the explanation and ask again. The question tool allows four choices, so present at most three approaches per question; with more, ask in two rounds.
 - **When the question is one other libraries have faced** — other Capacitor or Cordova sign-in plugins, Google's own Identity SDKs, Firebase Auth — look up how they solved it before asking, and put what you found into the question with links to the sources.
 
 ## Repository structure
