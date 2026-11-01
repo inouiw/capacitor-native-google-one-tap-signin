@@ -157,7 +157,7 @@ On the web, the plugin uses [`@madauth/google-identity`](https://www.npmjs.com/p
 See https://developers.google.com/identity/gsi/web/guides/features
 
 # Exposed API
-See `src/definitions.ts` for a complete definition.
+See `src/definitions.ts` for a complete definition. The button options type `GsiButtonConfiguration` is exported by the plugin.
 
 ```TypeScript
 /**
@@ -262,7 +262,7 @@ addSignInActionToExistingButtonWithCallback(
 renderSignInButton(
   parentElementId: string,
   options: RenderSignInButtonOptions,
-  gsiButtonConfiguration?: google.accounts.id.GsiButtonConfiguration)
+  gsiButtonConfiguration?: GsiButtonConfiguration)
   : Promise<SuccessSignInResult>;
 
 /**
@@ -275,7 +275,7 @@ renderSignInButton(
 renderSignInButtonWithCallback(
   parentElementId: string,
   options: RenderSignInButtonOptions,
-  gsiButtonConfiguration: google.accounts.id.GsiButtonConfiguration | undefined,
+  gsiButtonConfiguration: GsiButtonConfiguration | undefined,
   onResult: (value: SignInResultOption) => void)
   : Promise<void>;
 

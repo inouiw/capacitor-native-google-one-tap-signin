@@ -1,3 +1,5 @@
+import type { GsiButtonConfiguration } from './definitions';
+
 type LocalizedStrings = {
   [key: string]: {
     signin: string;
@@ -7,7 +9,7 @@ type LocalizedStrings = {
   };
 };
 
-export function createSignInButtonElement(gsiButtonConfiguration?: google.accounts.id.GsiButtonConfiguration): HTMLButtonElement {
+export function createSignInButtonElement(gsiButtonConfiguration?: GsiButtonConfiguration): HTMLButtonElement {
   const localizedStrings: LocalizedStrings = {
     en: { signin: 'Sign in', continue_with: 'Continue with Google', signin_with: 'Sign in with Google', signup_with: 'Sign up with Google' },
     ar: { signin: '\u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644', continue_with: '\u0627\u0644\u0645\u0648\u0627\u0635\u0644\u0629 \u0628\u0627\u0633\u062a\u062e\u062f\u0627\u0645 Google', signin_with: '\u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644 \u0628\u0627\u0633\u062a\u062e\u062f\u0627\u0645 Google', signup_with: '\u0627\u0644\u0627\u0634\u062a\u0631\u0627\u0643 \u0645\u0646 \u062e\u0644\u0627\u0644 Google' },

@@ -2,7 +2,7 @@ import { Capacitor, registerPlugin } from '@capacitor/core';
 import { jwtDecode } from "jwt-decode";
 
 import { createSignInButtonElement } from './SignInButtonElement'
-import type { InitializeOptions, GoogleOneTapAuthPlugin, SuccessSignInResult, SignOutResult, RenderSignInButtonOptions, SignInResultOption, DisconnectResult } from './definitions';
+import type { InitializeOptions, GoogleOneTapAuthPlugin, SuccessSignInResult, SignOutResult, RenderSignInButtonOptions, SignInResultOption, DisconnectResult, GsiButtonConfiguration } from './definitions';
 import type { NotEnrichedSuccessSignInResult, NotEnrichedSignInResultOption, PlatformInitializeOptions } from './definitionsInternal';
 import { assert, randomHexString } from './helpers';
 import { GoogleOneTapAuthWeb } from './web/GoogleSignInWeb';
@@ -158,7 +158,7 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
   }
 
   // deprecated
-  async renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: google.accounts.id.GsiButtonConfiguration,): Promise<SuccessSignInResult> {
+  async renderSignInButton(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration?: GsiButtonConfiguration,): Promise<SuccessSignInResult> {
     return new Promise<SuccessSignInResult>(async (resolve, reject) => {
       const resolveOnSuccess = (value: SignInResultOption) => {
         if (value.isSuccess) {
@@ -171,7 +171,7 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
     });
   }
 
-  async renderSignInButtonWithCallback(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration: google.accounts.id.GsiButtonConfiguration | undefined, onResult: (value: SignInResultOption) => void): Promise<void> {
+  async renderSignInButtonWithCallback(parentElementId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration: GsiButtonConfiguration | undefined, onResult: (value: SignInResultOption) => void): Promise<void> {
     await this.withHandleError(onResult, async () => {
       await this.ensureInitialized();
       const parentElem = document.getElementById(parentElementId);
@@ -186,14 +186,14 @@ class GoogleSignIn implements GoogleOneTapAuthPlugin {
     });
   }
 
-  private async renderSignInButtonUsingGoogleIdentityServicesForWeb(onResult: (value: SignInResultOption) => void, invisibleGoogleButtonDivId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration: google.accounts.id.GsiButtonConfiguration | undefined) {
+  private async renderSignInButtonUsingGoogleIdentityServicesForWeb(onResult: (value: SignInResultOption) => void, invisibleGoogleButtonDivId: string, options: RenderSignInButtonOptions, gsiButtonConfiguration: GsiButtonConfiguration | undefined) {
     const notEnrichedSignInResultOption = await GoogleOneTapAuthPlatform.renderSignInButton(invisibleGoogleButtonDivId, options, gsiButtonConfiguration);
     const enrichedSignInResultOption = this.enrichOptionResultWithDecodedIdToken(notEnrichedSignInResultOption);
     this.onResultReceived(enrichedSignInResultOption);
     onResult(enrichedSignInResultOption);
   }
 
-  private async renderSignInButtonForNatitivePlatform(onResult: (value: SignInResultOption) => void, parentElem: HTMLElement, gsiButtonConfiguration: google.accounts.id.GsiButtonConfiguration | undefined) {
+  private async renderSignInButtonForNatitivePlatform(onResult: (value: SignInResultOption) => void, parentElem: HTMLElement, gsiButtonConfiguration: GsiButtonConfiguration | undefined) {
     const androidOrIosButtonElem = createSignInButtonElement(gsiButtonConfiguration)
     this.addOnClickHandlerToExistingButtonForNatitivePlatform(androidOrIosButtonElem, onResult);
     parentElem.appendChild(androidOrIosButtonElem);
